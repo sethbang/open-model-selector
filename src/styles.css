@@ -1,0 +1,312 @@
+/* Open Model Selector Styles */
+
+:root {
+  /* Default Shadcn/Tailwind Slate Theme - Scoped to oms components */
+  --oms-background: 0 0% 100%;
+  --oms-foreground: 222.2 84% 4.9%;
+
+  --oms-card: 0 0% 100%;
+  --oms-card-foreground: 222.2 84% 4.9%;
+
+  --oms-popover: 0 0% 100%;
+  --oms-popover-foreground: 222.2 84% 4.9%;
+
+  --oms-primary: 222.2 47.4% 11.2%;
+  --oms-primary-foreground: 210 40% 98%;
+
+  --oms-secondary: 210 40% 96.1%;
+  --oms-secondary-foreground: 222.2 47.4% 11.2%;
+
+  --oms-muted: 210 40% 96.1%;
+  --oms-muted-foreground: 215.4 16.3% 46.9%;
+
+  --oms-accent: 210 40% 96.1%;
+  --oms-accent-foreground: 222.2 47.4% 11.2%;
+
+  --oms-destructive: 0 84.2% 60.2%;
+  --oms-destructive-foreground: 210 40% 98%;
+
+  --oms-border: 214.3 31.8% 91.4%;
+  --oms-input: 214.3 31.8% 91.4%;
+  --oms-ring: 222.2 84% 4.9%;
+  
+  --oms-radius: 0.5rem;
+  
+  /* Dark Mode Support via media query or .dark class */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --oms-background: 222.2 84% 4.9%;
+    --oms-foreground: 210 40% 98%;
+
+    --oms-card: 222.2 84% 4.9%;
+    --oms-card-foreground: 210 40% 98%;
+
+    --oms-popover: 222.2 84% 4.9%;
+    --oms-popover-foreground: 210 40% 98%;
+
+    --oms-primary: 210 40% 98%;
+    --oms-primary-foreground: 222.2 47.4% 11.2%;
+
+    --oms-secondary: 217.2 32.6% 17.5%;
+    --oms-secondary-foreground: 210 40% 98%;
+
+    --oms-muted: 217.2 32.6% 17.5%;
+    --oms-muted-foreground: 215 20.2% 65.1%;
+
+    --oms-accent: 217.2 32.6% 17.5%;
+    --oms-accent-foreground: 210 40% 98%;
+
+    --oms-destructive: 0 62.8% 30.6%;
+    --oms-destructive-foreground: 210 40% 98%;
+
+    --oms-border: 217.2 32.6% 17.5%;
+    --oms-input: 217.2 32.6% 17.5%;
+    --oms-ring: 212.7 26.8% 83.9%;
+  }
+}
+
+/* Also support explicit .dark class if parent uses it */
+.dark {
+    --oms-background: 222.2 84% 4.9%;
+    --oms-foreground: 210 40% 98%;
+    --oms-card: 222.2 84% 4.9%;
+    --oms-card-foreground: 210 40% 98%;
+    --oms-popover: 222.2 84% 4.9%;
+    --oms-popover-foreground: 210 40% 98%;
+    --oms-primary: 210 40% 98%;
+    --oms-primary-foreground: 222.2 47.4% 11.2%;
+    --oms-secondary: 217.2 32.6% 17.5%;
+    --oms-secondary-foreground: 210 40% 98%;
+    --oms-muted: 217.2 32.6% 17.5%;
+    --oms-muted-foreground: 215 20.2% 65.1%;
+    --oms-accent: 217.2 32.6% 17.5%;
+    --oms-accent-foreground: 210 40% 98%;
+    --oms-destructive: 0 62.8% 30.6%;
+    --oms-destructive-foreground: 210 40% 98%;
+    --oms-border: 217.2 32.6% 17.5%;
+    --oms-input: 217.2 32.6% 17.5%;
+    --oms-ring: 212.7 26.8% 83.9%;
+}
+
+/* Utilities */
+.oms-reset {
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.oms-reset * {
+  box-sizing: border-box;
+}
+
+/* Icons */
+.oms-icon {
+    width: 1em;
+    height: 1em;
+    display: inline-block;
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+.oms-spin {
+    animation: oms-spin 1s linear infinite;
+}
+@keyframes oms-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Components */
+
+/* Trigger Button */
+.oms-trigger-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: var(--oms-radius);
+    border: 1px solid hsl(var(--oms-border));
+    background-color: transparent;
+    color: hsl(var(--oms-foreground));
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.oms-trigger-btn:hover {
+    background-color: hsl(var(--oms-accent));
+    color: hsl(var(--oms-accent-foreground));
+}
+.oms-trigger-btn:focus-visible {
+    outline: 2px solid hsl(var(--oms-ring));
+    outline-offset: 2px;
+}
+
+/* Popover Content */
+.oms-popover-content {
+    z-index: 50;
+    width: 300px; /* Could be variable */
+    border-radius: var(--oms-radius);
+    border: 1px solid hsl(var(--oms-border));
+    background-color: hsl(var(--oms-popover));
+    color: hsl(var(--oms-popover-foreground));
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    outline: none;
+    overflow: hidden;
+}
+
+/* Command (cmdk) */
+[cmdk-root] {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.oms-search-container {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid hsl(var(--oms-border));
+    padding: 0 12px;
+}
+
+[cmdk-input] {
+    display: flex;
+    height: 36px;
+    width: 100%;
+    border-radius: 0;
+    border: none;
+    background: transparent;
+    padding: 12px 0;
+    font-size: 12px;
+    outline: none;
+    color: hsl(var(--oms-foreground));
+}
+[cmdk-input]::placeholder {
+    color: hsl(var(--oms-muted-foreground));
+}
+
+[cmdk-list] {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 4px;
+}
+
+[cmdk-group-heading] {
+    padding: 8px 8px 4px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    color: hsl(var(--oms-muted-foreground));
+}
+
+[cmdk-item] {
+    display: flex;
+    align-items: center;
+    position: relative;
+    cursor: default;
+    user-select: none;
+    border-radius: 4px; /* somewhat smaller than main radius */
+    padding: 6px 8px;
+    font-size: 12px;
+    outline: none;
+}
+[cmdk-item][data-selected="true"] {
+    background-color: hsl(var(--oms-accent));
+    color: hsl(var(--oms-accent-foreground));
+}
+[cmdk-item][data-disabled="true"] {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.oms-item-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+.oms-item-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+    flex: 1;
+}
+
+/* Badges */
+.oms-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    border: 1px solid transparent;
+    padding: 0 8px;
+    font-size: 10px;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+.oms-badge-secondary {
+    border-color: transparent;
+    background-color: hsl(var(--oms-secondary));
+    color: hsl(var(--oms-secondary-foreground));
+}
+.oms-badge-outline {
+    border-color: hsl(var(--oms-border));
+    color: hsl(var(--oms-foreground));
+}
+
+/* Separator */
+[cmdk-separator] {
+    height: 1px;
+    background-color: hsl(var(--oms-border));
+    margin: 4px -4px;
+}
+
+/* Hover Card */
+.oms-hover-content {
+    z-index: 50;
+    width: 320px;
+    border-radius: var(--oms-radius);
+    border: 1px solid hsl(var(--oms-border));
+    background-color: hsl(var(--oms-popover));
+    color: hsl(var(--oms-popover-foreground));
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    padding: 16px;
+    outline: none;
+}
+
+/* Helpers */
+.oms-muted { color: hsl(var(--oms-muted-foreground)); }
+.oms-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+.oms-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oms-flex-col { display: flex; flex-direction: column; }
+.oms-flex-row { display: flex; flex-direction: row; }
+.oms-gap-2 { gap: 0.5rem; }
+.oms-mt-2 { margin-top: 0.5rem; }
+.oms-text-xs { font-size: 12px; }
+.oms-text-xxs { font-size: 10px; }
+.oms-border-t { border-top: 1px solid hsl(var(--oms-border)); }
+.oms-pt-2 { padding-top: 0.5rem; }
+.oms-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+
+/* Star Interaction */
+.oms-star-btn {
+    padding: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.oms-star-btn:hover {
+    background-color: hsl(var(--oms-accent)); /* Might conflict if item is selected, but ok */
+}
+[data-selected="true"] .oms-star-btn:hover {
+    background-color: hsl(var(--oms-background)); /* Contrast against selected item */
+}
+.oms-star-filled {
+    color: rgb(234 179 8); /* yellow-500 */
+    fill: rgb(250 204 21); /* yellow-400 */
+}

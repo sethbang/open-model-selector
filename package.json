@@ -1,0 +1,125 @@
+{
+    "name": "open-model-selector",
+    "version": "0.1.0",
+    "description": "A generic, OpenAI-compatible model selector component for React.",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.js"
+            },
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            }
+        },
+        "./utils": {
+            "import": {
+                "types": "./dist/utils.d.ts",
+                "default": "./dist/utils.js"
+            },
+            "require": {
+                "types": "./dist/utils.d.cts",
+                "default": "./dist/utils.cjs"
+            }
+        },
+        "./styles.css": "./dist/styles.css"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE",
+        "CHANGELOG.md"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/sethbang/open-model-selector.git"
+    },
+    "bugs": {
+        "url": "https://github.com/sethbang/open-model-selector/issues"
+    },
+    "homepage": "https://github.com/sethbang/open-model-selector#readme",
+    "scripts": {
+        "prebuild": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "typecheck": "tsc",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:watch": "vitest",
+        "prepublishOnly": "npm run typecheck && npm run test && npm run build",
+        "preversion": "npm run typecheck && npm run test && npm run build",
+        "version": "node scripts/check-changelog.cjs",
+        "postversion": "git push && git push --tags",
+        "storybook": "storybook dev -p 6006",
+        "build-storybook": "storybook build"
+    },
+    "keywords": [
+        "openai",
+        "openai-api",
+        "venice",
+        "venice-ai",
+        "openrouter",
+        "react",
+        "model-selector",
+        "selector",
+        "combobox",
+        "dropdown",
+        "components",
+        "radix",
+        "cmdk",
+        "typescript",
+        "ui",
+        "a11y",
+        "accessible",
+        "dark-mode",
+        "llm",
+        "ai",
+        "gpt"
+    ],
+    "author": "Seth Bang",
+    "license": "MIT",
+    "type": "module",
+    "sideEffects": [
+        "*.css"
+    ],
+    "peerDependencies": {
+        "@radix-ui/react-popover": "^1.1.15",
+        "cmdk": "^1.1.1",
+        "react": "^18.0.0 || ^19.2.4",
+        "react-dom": "^18.0.0 || ^19.2.4"
+    },
+    "devDependencies": {
+        "@chromatic-com/storybook": "^5.0.1",
+        "@radix-ui/react-popover": "^1.1.15",
+        "@storybook/addon-a11y": "^10.2.8",
+        "@storybook/addon-docs": "^10.2.8",
+        "@storybook/addon-onboarding": "^10.2.8",
+        "@storybook/addon-vitest": "^10.2.8",
+        "@storybook/react-vite": "^10.2.8",
+        "@testing-library/jest-dom": "^6.9.1",
+        "@testing-library/react": "^16.3.2",
+        "@testing-library/user-event": "^14.6.1",
+        "@types/react-dom": "^19.2.3",
+        "@vitest/browser-playwright": "^4.0.18",
+        "@vitest/coverage-v8": "^4.0.18",
+        "cmdk": "^1.1.1",
+        "jsdom": "^28.0.0",
+        "playwright": "^1.58.2",
+        "react": "^19.2.4",
+        "react-dom": "^19.2.4",
+        "storybook": "^10.2.8",
+        "tsup": "^8.5.1",
+        "typescript": "^5.9.3",
+        "vitest": "^4.0.18"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
+}

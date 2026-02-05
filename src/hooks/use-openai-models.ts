@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 
 /**
  * Pricing information for a model.
@@ -71,7 +71,14 @@ export interface UseOpenAIModelsProps {
   baseUrl?: string
   /** API key for authentication. Warning: exposed in browser if used client-side */
   apiKey?: string
-  /** Custom fetch function for SSR or testing */
+  /**
+   * Custom fetch function for SSR or testing.
+   *
+   * @remarks
+   * This function is stored in a ref internally, so you don't need to memoize it
+   * with `useCallback`. Changing the fetcher function will be picked up on the
+   * next fetch cycle without triggering a re-fetch.
+   */
   fetcher?: (url: string, init?: RequestInit) => Promise<Response>
 }
 
@@ -106,6 +113,12 @@ export function useOpenAIModels({ baseUrl, apiKey, fetcher }: UseOpenAIModelsPro
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
 
+  // Store fetcher in a ref to avoid infinite re-fetch loops when consumers
+  // pass an inline function. The ref is updated on every render so we always
+  // use the latest fetcher without triggering the effect.
+  const fetcherRef = useRef(fetcher)
+  fetcherRef.current = fetcher
+
   useEffect(() => {
     let isMounted = true
 
@@ -127,13 +140,14 @@ export function useOpenAIModels({ baseUrl, apiKey, fetcher }: UseOpenAIModelsPro
         }
 
         let data: OpenAIModelsResponse
-        if (fetcher) {
-          const res = await fetcher(url, { headers, signal: controller.signal })
-          if (!res.ok) throw new Error(`Failed to fetch models: ${res.statusText}`)
+        const currentFetcher = fetcherRef.current
+        if (currentFetcher) {
+          const res = await currentFetcher(url, { headers, signal: controller.signal })
+          if (!res.ok) throw new Error(`Failed to fetch models: ${res.status} ${res.statusText}`)
           data = await res.json()
         } else {
           const res = await fetch(url, { headers, signal: controller.signal })
-          if (!res.ok) throw new Error(`Failed to fetch models: ${res.statusText}`)
+          if (!res.ok) throw new Error(`Failed to fetch models: ${res.status} ${res.statusText}`)
           data = await res.json()
         }
 
@@ -182,7 +196,7 @@ export function useOpenAIModels({ baseUrl, apiKey, fetcher }: UseOpenAIModelsPro
       isMounted = false
       controller.abort()
     }
-  }, [baseUrl, apiKey, fetcher])
+  }, [baseUrl, apiKey])
 
   return { models, loading, error }
 }

@@ -58,14 +58,19 @@ export interface ModelSelectorProps {
   /**
    * Custom fetch function for SSR, testing, or proxy scenarios.
    * If not provided, uses global fetch.
-   * 
-   * **Important**: Must be memoized with `useCallback` to prevent infinite re-render loops.
-   * 
+   *
+   * @remarks
+   * This function is stored in a ref internally, so you don't need to memoize it
+   * with `useCallback`. Inline functions or changing the fetcher will be picked up
+   * on the next fetch cycle without triggering infinite re-renders.
+   *
    * @example
    * ```tsx
-   * const customFetcher = useCallback(async (url, init) => {
-   *   return fetch(url, { ...init, credentials: 'include' })
-   * }, [])
+   * // Inline function works fine - no memoization needed
+   * <ModelSelector
+   *   fetcher={(url, init) => fetch(url, { ...init, credentials: 'include' })}
+   *   ...
+   * />
    * ```
    */
   fetcher?: UseOpenAIModelsProps['fetcher']
@@ -73,8 +78,8 @@ export interface ModelSelectorProps {
   /** Currently selected model ID (controlled component pattern) */
   value?: string
   
-  /** Callback fired when a model is selected. Receives the model ID. */
-  onChange: (modelId: string) => void
+  /** Callback fired when a model is selected. Receives the model ID. Optional - if not provided, selection changes are ignored. */
+  onChange?: (modelId: string) => void
   
   /** Callback fired when a model is favorited/unfavorited. Only relevant if favorites are controlled. */
   onToggleFavorite?: (modelId: string) => void
@@ -93,6 +98,19 @@ export interface ModelSelectorProps {
   
   /** Additional CSS class name(s) to apply to the root element */
   className?: string
+  
+  /**
+   * Custom localStorage key for persisting favorites in uncontrolled mode.
+   * Use this to avoid namespace collisions when multiple ModelSelector instances
+   * exist in the same application or across microfrontends sharing localStorage.
+   *
+   * @default "open-model-selector-favorites"
+   * @example
+   * ```tsx
+   * <ModelSelector storageKey="my-app-model-favorites" />
+   * ```
+   */
+  storageKey?: string
 }
 
 export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps>(
@@ -110,6 +128,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
       onSortChange,
       side = "bottom",
       className,
+      storageKey = "open-model-selector-favorites",
     },
     ref
   ) {
@@ -136,7 +155,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
   React.useEffect(() => {
     if (!onToggleFavorite && typeof window !== 'undefined') {
         try {
-            const stored = localStorage.getItem("open-model-selector-favorites")
+            const stored = localStorage.getItem(storageKey)
             if (stored) {
                 setLocalFavorites(JSON.parse(stored))
             }
@@ -144,7 +163,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
             // Silent failure for localStorage favorites - acceptable for non-critical feature
         }
     }
-  }, [onToggleFavorite])
+  }, [onToggleFavorite, storageKey])
 
   const handleToggleFavorite = React.useCallback((modelId: string) => {
     if (onToggleFavorite) {
@@ -155,14 +174,14 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
             const isFav = prev.includes(modelId)
             const next = isFav ? prev.filter(id => id !== modelId) : [...prev, modelId]
             try {
-                localStorage.setItem("open-model-selector-favorites", JSON.stringify(next))
+                localStorage.setItem(storageKey, JSON.stringify(next))
             } catch {
                 // Silent failure for localStorage write - acceptable for non-critical feature
             }
             return next
         })
     }
-  }, [onToggleFavorite])
+  }, [onToggleFavorite, storageKey])
 
   const allModels = React.useMemo(() => {
     const map = new Map<string, Model>()
@@ -194,9 +213,20 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
     return list
   }, [models, fetchedModels, sortOrder, localFavorites, onToggleFavorite])
 
-  const selectedModel = allModels.find((model) => model.id === value)
-  const favorites = allModels.filter((m) => m.is_favorite)
-  const otherModels = allModels.filter((m) => !m.is_favorite)
+  const selectedModel = React.useMemo(
+    () => allModels.find((model) => model.id === value),
+    [allModels, value]
+  )
+
+  const { favorites, otherModels } = React.useMemo(() => ({
+    favorites: allModels.filter((m) => m.is_favorite),
+    otherModels: allModels.filter((m) => !m.is_favorite)
+  }), [allModels])
+
+  const handleModelSelect = React.useCallback((id: string) => {
+    onChange(id)
+    setOpen(false)
+  }, [onChange])
 
   return (
     <div ref={ref} className={cn("oms-reset", className)}>
@@ -318,10 +348,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
                             key={model.id}
                             model={model}
                             isSelected={value === model.id}
-                            onSelect={(id) => {
-                              onChange(id)
-                              setOpen(false)
-                            }}
+                            onSelect={handleModelSelect}
                             onToggleFavorite={handleToggleFavorite}
                           />
                         ))}
@@ -334,10 +361,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
                           key={model.id}
                           model={model}
                           isSelected={value === model.id}
-                          onSelect={(id) => {
-                            onChange(id)
-                            setOpen(false)
-                          }}
+                          onSelect={handleModelSelect}
                           onToggleFavorite={handleToggleFavorite}
                         />
                       ))}

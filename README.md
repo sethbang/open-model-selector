@@ -26,6 +26,17 @@ In uncontrolled mode, favorite models are persisted to `localStorage` under the 
 localStorage.removeItem("open-model-selector-favorites")
 ```
 
+## Accessibility
+
+The ModelSelector includes built-in accessibility features:
+
+- **Combobox pattern**: Proper `role="combobox"` with `aria-expanded` and `aria-haspopup="listbox"`
+- **Keyboard navigation**: Full support for arrow keys, Enter to select, Escape to close
+- **Screen reader announcements**: `aria-live` regions for loading and error states
+- **Focus management**: Automatic focus handling within the popover
+- **Visible focus indicators**: Clear focus styles for keyboard users
+- **Labeled controls**: All interactive elements have appropriate `aria-label` attributes
+
 ## Installation
 
 ```bash
@@ -37,6 +48,9 @@ pnpm add open-model-selector react react-dom @radix-ui/react-popover @radix-ui/r
 ```
 
 The package supports both ES Modules (`import`) and CommonJS (`require`).
+
+**Requirements:**
+- Node.js 18.0.0 or higher
 
 **Peer Dependencies:**
 - `react` >= 18 (React 19 supported)
@@ -63,8 +77,7 @@ function MyComponent() {
 
   return (
     <ModelSelector
-      baseUrl="https://openrouter.ai/api/v1"
-      apiKey={process.env.NEXT_PUBLIC_OPENROUTER_KEY}
+      baseUrl="https://openrouter.ai/api/v1"  // Public API - no key required for model listing
       value={model}
       onChange={setModel}
     />
@@ -136,9 +149,10 @@ function MyComponent() {
 | `models` | `Model[]` | `[]` | Static list of models to display. If provided, API fetching is disabled. |
 | `baseUrl` | `string` | - | Base URL for the OpenAI-compatible API endpoint (e.g., `"https://api.openai.com/v1"`) |
 | `apiKey` | `string` | - | API key for authentication. Warning: Visible in browser DevTools. |
-| `fetcher` | `(url: string, init?: RequestInit) => Promise<Response>` | `fetch` | Custom fetch function for API calls. **Must be memoized with `useCallback`** to prevent infinite re-renders. |
+| `fetcher` | `(url: string, init?: RequestInit) => Promise<Response>` | `fetch` | Custom fetch function for API calls. Memoization is handled internally. |
 | `value` | `string` | - | Currently selected model ID (controlled component pattern) |
-| `onChange` | `(modelId: string) => void` | **required** | Callback fired when a model is selected. Receives the model ID. |
+| `onChange` | `(modelId: string) => void` | - | Callback fired when a model is selected. Receives the model ID. |
+| `storageKey` | `string` | `"open-model-selector-favorites"` | Key used for persisting favorites to `localStorage`. |
 | `onToggleFavorite` | `(modelId: string) => void` | - | Callback fired when a model is favorited/unfavorited. Only relevant if favorites are controlled. |
 | `placeholder` | `string` | `"Select model..."` | Placeholder text shown when no model is selected |
 | `sortOrder` | `"name" \| "created"` | - | Current sort order for models. If provided, component operates in controlled mode for sorting. |
@@ -178,22 +192,25 @@ function MyComponent() {
 }
 ```
 
-## ⚠️ Important: Custom Fetcher Usage
+## Custom Fetcher Usage
 
-If you provide a custom `fetcher` prop, **it must be memoized** using `useCallback` to prevent infinite re-render loops. The fetcher is included in the internal `useEffect` dependency array, so an unstable function reference will cause the effect to re-run on every render.
+You can provide a custom `fetcher` prop to customize how API requests are made. The component handles reference stability internally, so **memoization with `useCallback` is not required**.
 
 ```tsx
-// ✅ Correct - memoized fetcher
-const customFetcher = useCallback(async (url: string, init?: RequestInit) => {
+// ✅ Both approaches work correctly
+
+// Inline function - works fine
+<ModelSelector
+  fetcher={(url, init) => fetch(url, { ...init, credentials: 'include' })}
+  ...
+/>
+
+// Or extracted function - also works
+const customFetcher = async (url: string, init?: RequestInit) => {
   return fetch(url, { ...init, credentials: 'include' })
-}, [])
+}
 
 <ModelSelector fetcher={customFetcher} ... />
-```
-
-```tsx
-// ❌ Wrong - inline function causes infinite loops
-<ModelSelector fetcher={(url, init) => fetch(url, init)} ... />
 ```
 
 ## useOpenAIModels Hook
@@ -239,11 +256,22 @@ function MyComponent() {
 The package exports these types for TypeScript consumers:
 
 ```typescript
-import type { 
-  Model, 
-  ModelSelectorProps, 
-  UseOpenAIModelsProps 
+import type {
+  Model,
+  ModelPricing,
+  ModelSelectorProps,
+  UseOpenAIModelsProps,
+  UseOpenAIModelsResult
 } from "open-model-selector"
+
+interface ModelPricing {
+  /** Price per token for input/prompt tokens */
+  prompt?: string | number
+  /** Price per token for output/completion tokens */
+  completion?: string | number
+  /** Additional pricing fields (e.g., cached tokens, fine-tuning) */
+  [key: string]: unknown
+}
 
 interface Model {
   /** Unique model identifier (e.g., "gpt-4" or "openai/gpt-4") */
@@ -259,9 +287,18 @@ interface Model {
   /** Maximum context window size in tokens */
   context_length: number
   /** Pricing information for the model */
-  pricing: Record<string, unknown>
+  pricing: ModelPricing
   /** Whether the user has marked this model as a favorite */
   is_favorite: boolean
+}
+
+interface UseOpenAIModelsResult {
+  /** Array of available models fetched from the API */
+  models: Model[]
+  /** Whether the hook is currently fetching models */
+  loading: boolean
+  /** Error object if the fetch failed, null otherwise */
+  error: Error | null
 }
 ```
 

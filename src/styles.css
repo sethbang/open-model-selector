@@ -304,6 +304,10 @@
 .oms-star-btn:hover {
     background-color: hsl(var(--oms-accent)); /* Might conflict if item is selected, but ok */
 }
+.oms-star-btn:focus-visible {
+    outline: 2px solid hsl(var(--oms-ring));
+    outline-offset: 1px;
+}
 [data-selected="true"] .oms-star-btn:hover {
     background-color: hsl(var(--oms-background)); /* Contrast against selected item */
 }

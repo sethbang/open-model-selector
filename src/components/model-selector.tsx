@@ -86,7 +86,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
       baseUrl,
       apiKey,
       value,
-      onChange,
+      onChange = () => {},
       onToggleFavorite,
       placeholder = "Select model...",
       sortOrder: controlledSortOrder,

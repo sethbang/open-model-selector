@@ -53,6 +53,7 @@ The package supports both ES Modules (`import`) and CommonJS (`require`).
 Let the component fetch models directly from OpenRouter or any OpenAI-compatible API:
 
 ```tsx
+import { useState } from "react";
 import "open-model-selector/styles.css"; // 👈 Import the styles
 import { ModelSelector } from "open-model-selector";
 
@@ -75,6 +76,7 @@ function MyComponent() {
 Fetch data yourself and pass models directly:
 
 ```tsx
+import { useState } from "react";
 import "open-model-selector/styles.css";
 import { ModelSelector } from "open-model-selector";
 
@@ -146,6 +148,7 @@ function MyComponent() {
 The package exports a `SYSTEM_DEFAULT_VALUE` constant (`"system_default"`) that enables a "Use System Default" option in the selector. When the user selects this option, your `onChange` callback will receive this value instead of a model ID.
 
 ```tsx
+import { useState } from "react";
 import { ModelSelector, SYSTEM_DEFAULT_VALUE } from "open-model-selector";
 
 function MyComponent() {
@@ -198,7 +201,7 @@ function MyComponent() {
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `baseUrl` | `string` | `"https://api.openai.com/v1"` | Base URL for the API |
+| `baseUrl` | `string` | - | Base URL for the API |
 | `apiKey` | `string` | - | API key for authentication |
 | `fetcher` | `(url: string, init?: RequestInit) => Promise<Response>` | `fetch` | Custom fetch function for SSR/testing |
 
@@ -222,11 +225,22 @@ import type {
 } from "open-model-selector"
 
 interface Model {
+  /** Unique model identifier (e.g., "gpt-4" or "openai/gpt-4") */
   id: string
+  /** Display name for the model */
   name: string
+  /** Provider extracted from model ID (e.g., "openai") */
+  provider: string
+  /** Unix timestamp when the model was created */
   created: number
-  is_favorite: boolean
+  /** Optional description of the model's capabilities */
+  description?: string
+  /** Maximum context window size in tokens */
+  context_length: number
+  /** Pricing information for the model */
   pricing: Record<string, unknown>
+  /** Whether the user has marked this model as a favorite */
+  is_favorite: boolean
 }
 ```
 

@@ -4,4 +4,4 @@ export type { ModelSelectorProps } from "./components/model-selector";
 
 // Hook exports
 export { useOpenAIModels } from "./hooks/use-openai-models";
-export type { Model, UseOpenAIModelsProps, UseOpenAIModelsResult } from "./hooks/use-openai-models";
+export type { Model, ModelPricing, UseOpenAIModelsProps, UseOpenAIModelsResult } from "./hooks/use-openai-models";

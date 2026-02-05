@@ -275,13 +275,13 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
         
                   <CommandPrimitive.List>
                     {loading && (
-                        <div style={{ padding: '24px', textAlign: 'center', color: 'var(--oms-muted-foreground)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                        <div role="status" aria-live="polite" style={{ padding: '24px', textAlign: 'center', color: 'var(--oms-muted-foreground)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                             <Icons.Loader2 className="oms-icon oms-spin" /> Loading...
                         </div>
                     )}
                     
                     {error && (
-                        <div style={{ padding: '24px', textAlign: 'center', color: 'var(--oms-destructive)' }}>
+                        <div role="alert" style={{ padding: '24px', textAlign: 'center', color: 'var(--oms-destructive)' }}>
                             Error: {error.message}
                         </div>
                     )}

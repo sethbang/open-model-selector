@@ -325,10 +325,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
                     <CommandPrimitive.Group>
                         <CommandPrimitive.Item
                           value={SYSTEM_DEFAULT_VALUE}
-                          onSelect={() => {
-                            onChange(SYSTEM_DEFAULT_VALUE)
-                            setOpen(false)
-                          }}
+                          onSelect={() => handleModelSelect(SYSTEM_DEFAULT_VALUE)}
                         >
                           <div className="oms-item-content">
                               <div className="oms-item-left">

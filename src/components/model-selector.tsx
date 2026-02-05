@@ -77,6 +77,9 @@ export interface ModelSelectorProps {
   
   /** Popover placement relative to the trigger. @default "bottom" */
   side?: "top" | "bottom" | "left" | "right"
+  
+  /** Additional CSS class name(s) to apply to the root element */
+  className?: string
 }
 
 export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps>(
@@ -92,6 +95,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
       sortOrder: controlledSortOrder,
       onSortChange,
       side = "bottom",
+      className,
     },
     ref
   ) {
@@ -135,7 +139,11 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
         setLocalFavorites(prev => {
             const isFav = prev.includes(modelId)
             const next = isFav ? prev.filter(id => id !== modelId) : [...prev, modelId]
-            localStorage.setItem("open-model-selector-favorites", JSON.stringify(next))
+            try {
+                localStorage.setItem("open-model-selector-favorites", JSON.stringify(next))
+            } catch {
+                // Silent failure for localStorage write - acceptable for non-critical feature
+            }
             return next
         })
     }
@@ -176,7 +184,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
   const otherModels = allModels.filter((m) => !m.is_favorite)
 
   return (
-    <div ref={ref} className="oms-reset">
+    <div ref={ref} className={cn("oms-reset", className)}>
       <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
         <PopoverPrimitive.Trigger asChild>
           <button

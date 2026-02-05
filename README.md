@@ -1,6 +1,7 @@
 # Open Model Selector
 
 [![npm version](https://badge.fury.io/js/open-model-selector.svg)](https://www.npmjs.com/package/open-model-selector)
+[![Bundle Size](https://img.shields.io/bundlephobia/minzip/open-model-selector)](https://bundlephobia.com/package/open-model-selector)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-blue.svg)](https://www.typescriptlang.org/)
 

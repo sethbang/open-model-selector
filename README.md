@@ -40,11 +40,11 @@ The ModelSelector includes built-in accessibility features:
 ## Installation
 
 ```bash
-npm install open-model-selector react react-dom @radix-ui/react-popover @radix-ui/react-hover-card @radix-ui/react-dropdown-menu @radix-ui/react-slot cmdk
+npm install open-model-selector react react-dom @radix-ui/react-popover @radix-ui/react-hover-card @radix-ui/react-dropdown-menu cmdk
 # or
-yarn add open-model-selector react react-dom @radix-ui/react-popover @radix-ui/react-hover-card @radix-ui/react-dropdown-menu @radix-ui/react-slot cmdk
+yarn add open-model-selector react react-dom @radix-ui/react-popover @radix-ui/react-hover-card @radix-ui/react-dropdown-menu cmdk
 # or
-pnpm add open-model-selector react react-dom @radix-ui/react-popover @radix-ui/react-hover-card @radix-ui/react-dropdown-menu @radix-ui/react-slot cmdk
+pnpm add open-model-selector react react-dom @radix-ui/react-popover @radix-ui/react-hover-card @radix-ui/react-dropdown-menu cmdk
 ```
 
 The package supports both ES Modules (`import`) and CommonJS (`require`).
@@ -58,7 +58,6 @@ The package supports both ES Modules (`import`) and CommonJS (`require`).
 - `@radix-ui/react-popover` >= 1.0.0
 - `@radix-ui/react-hover-card` >= 1.0.0
 - `@radix-ui/react-dropdown-menu` >= 2.0.0
-- `@radix-ui/react-slot` >= 1.0.0
 - `cmdk` >= 1.0.0
 
 ## Quick Start
@@ -112,6 +111,18 @@ function MyComponent() {
 }
 ```
 
+## Error Handling
+
+The component displays API errors inline, but for robust applications, wrap with an error boundary:
+
+```tsx
+import { ErrorBoundary } from 'react-error-boundary';
+
+<ErrorBoundary fallback={<div>Failed to load model selector</div>}>
+  <ModelSelector baseUrl="..." value={model} onChange={setModel} />
+</ErrorBoundary>
+```
+
 ## 🔒 Security
 
 **Important**: This component makes API calls directly from the browser.
@@ -142,6 +153,12 @@ function MyComponent() {
 <ModelSelector baseUrl="https://openrouter.ai/api/v1" value={model} onChange={setModel} />
 ```
 
+### Content Security Policy
+
+If your app uses CSP, ensure these directives allow:
+- `connect-src` for your API base URL (or `'self'` if using a proxy)
+- `style-src 'self'` (styles are bundled, no inline styles)
+
 ## Props
 
 | Prop | Type | Default | Description |
@@ -151,7 +168,7 @@ function MyComponent() {
 | `apiKey` | `string` | - | API key for authentication. Warning: Visible in browser DevTools. |
 | `fetcher` | `(url: string, init?: RequestInit) => Promise<Response>` | `fetch` | Custom fetch function for API calls. Memoization is handled internally. |
 | `value` | `string` | - | Currently selected model ID (controlled component pattern) |
-| `onChange` | `(modelId: string) => void` | - | Callback fired when a model is selected. Receives the model ID. |
+| `onChange` | `(modelId: string) => void` | - | **Required for state updates.** Callback fired when a model is selected. If not provided, selections are silently ignored. |
 | `storageKey` | `string` | `"open-model-selector-favorites"` | Key used for persisting favorites to `localStorage`. |
 | `onToggleFavorite` | `(modelId: string) => void` | - | Callback fired when a model is favorited/unfavorited. Only relevant if favorites are controlled. |
 | `placeholder` | `string` | `"Select model..."` | Placeholder text shown when no model is selected |
@@ -347,6 +364,9 @@ The component uses CSS custom properties prefixed with `--oms-`. You can overrid
 
   /* Radius */
   --oms-radius: 0.5rem;
+
+  /* Sizing */
+  --oms-popover-width: 300px;
 }
 ```
 

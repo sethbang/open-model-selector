@@ -157,7 +157,11 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
         try {
             const stored = localStorage.getItem(storageKey)
             if (stored) {
-                setLocalFavorites(JSON.parse(stored))
+                const parsed: unknown = JSON.parse(stored)
+                // Type guard: only set favorites if parsed value is a valid string array
+                if (Array.isArray(parsed) && parsed.every(item => typeof item === 'string')) {
+                    setLocalFavorites(parsed)
+                }
             }
         } catch {
             // Silent failure for localStorage favorites - acceptable for non-critical feature
@@ -470,9 +474,9 @@ const ModelItem = React.memo(function ModelItem({
 })
 
 function formatPrice(value: string | number | undefined): string {
-    if (value === undefined || value === null || value === '') return "$0"
+    if (value === undefined || value === null || value === '') return "—"
     const num = typeof value === "string" ? parseFloat(value) : value
-    if (isNaN(num)) return "$0"
+    if (isNaN(num)) return "—"
     const perMillion = num * 1000000
     if (perMillion < 0.01) return "$" + perMillion.toFixed(6)
     return "$" + perMillion.toFixed(2)

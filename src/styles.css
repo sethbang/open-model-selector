@@ -31,6 +31,7 @@
   --oms-ring: 222.2 84% 4.9%;
   
   --oms-radius: 0.5rem;
+  --oms-popover-width: 300px;
   
   /* Dark Mode Support via media query or .dark class */
 }
@@ -148,7 +149,7 @@
 /* Popover Content */
 .oms-popover-content {
     z-index: 50;
-    width: 300px; /* Could be variable */
+    width: var(--oms-popover-width, 300px);
     border-radius: var(--oms-radius);
     border: 1px solid hsl(var(--oms-border));
     background-color: hsl(var(--oms-popover));

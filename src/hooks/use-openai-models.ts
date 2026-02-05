@@ -141,7 +141,6 @@ export function useOpenAIModels({ baseUrl, apiKey, fetcher }: UseOpenAIModelsPro
         if (err instanceof Error && err.name === "AbortError") {
           return
         }
-        console.error("Error fetching models:", err)
         if (isMounted) {
           setError(err instanceof Error ? err : new Error(String(err)))
         }

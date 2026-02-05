@@ -121,8 +121,8 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
             if (stored) {
                 setLocalFavorites(JSON.parse(stored))
             }
-        } catch (e) {
-            console.error("Failed to load favorites", e)
+        } catch {
+            // Silent failure for localStorage favorites - acceptable for non-critical feature
         }
     }
   }, [onToggleFavorite])
@@ -183,6 +183,13 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
             role="combobox"
             aria-expanded={open}
             aria-haspopup="listbox"
+            aria-label={
+              value === SYSTEM_DEFAULT_VALUE
+                ? "Model selector, Use System Default"
+                : selectedModel
+                  ? `Model selector, ${selectedModel.name}`
+                  : placeholder
+            }
             className="oms-trigger-btn"
           >
             {value === SYSTEM_DEFAULT_VALUE ? (

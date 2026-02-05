@@ -3,6 +3,19 @@
 import { useState, useEffect } from "react"
 
 /**
+ * Pricing information for a model.
+ * Supports both numeric (decimal) and string representations of prices.
+ */
+export interface ModelPricing {
+  /** Price per token for input/prompt tokens */
+  prompt?: string | number
+  /** Price per token for output/completion tokens */
+  completion?: string | number
+  /** Allow additional pricing fields for flexibility (e.g., cached tokens, fine-tuning) */
+  [key: string]: unknown
+}
+
+/**
  * Raw model data as returned from the OpenAI-compatible API.
  */
 interface RawModel {
@@ -13,10 +26,10 @@ interface RawModel {
   context_length?: number
   context_window?: number
   max_tokens?: number
-  pricing?: Record<string, unknown>
-  cost?: Record<string, unknown>
+  pricing?: ModelPricing
+  cost?: ModelPricing
   metadata?: {
-    pricing?: Record<string, unknown>
+    pricing?: ModelPricing
   }
   [key: string]: unknown
 }
@@ -45,7 +58,7 @@ export interface Model {
   /** Maximum context window size in tokens */
   context_length: number
   /** Pricing information for the model */
-  pricing: Record<string, unknown>
+  pricing: ModelPricing
   /** Whether the user has marked this model as a favorite */
   is_favorite: boolean
 }

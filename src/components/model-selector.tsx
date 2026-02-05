@@ -58,6 +58,15 @@ export interface ModelSelectorProps {
   /**
    * Custom fetch function for SSR, testing, or proxy scenarios.
    * If not provided, uses global fetch.
+   * 
+   * **Important**: Must be memoized with `useCallback` to prevent infinite re-render loops.
+   * 
+   * @example
+   * ```tsx
+   * const customFetcher = useCallback(async (url, init) => {
+   *   return fetch(url, { ...init, credentials: 'include' })
+   * }, [])
+   * ```
    */
   fetcher?: UseOpenAIModelsProps['fetcher']
   
@@ -273,7 +282,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
                     
                     {error && (
                         <div style={{ padding: '24px', textAlign: 'center', color: 'var(--oms-destructive)' }}>
-                            Error: {(error as Error).message}
+                            Error: {error.message}
                         </div>
                     )}
         
@@ -394,11 +403,11 @@ const ModelItem = React.memo(function ModelItem({
                                 <div className="oms-grid-2 oms-text-xxs oms-border-t oms-pt-2">
                                      <div>
                                         <span className="oms-muted">Input:</span> <br/>
-                                        <span className="oms-mono">{formatPrice(model.pricing.prompt as string | number)} / 1M</span>
+                                        <span className="oms-mono">{formatPrice(model.pricing.prompt)} / 1M</span>
                                      </div>
                                      <div>
                                         <span className="oms-muted">Output:</span> <br/>
-                                        <span className="oms-mono">{formatPrice(model.pricing.completion as string | number)} / 1M</span>
+                                        <span className="oms-mono">{formatPrice(model.pricing.completion)} / 1M</span>
                                      </div>
                                 </div>
                             )}
@@ -438,7 +447,7 @@ const ModelItem = React.memo(function ModelItem({
   )
 })
 
-function formatPrice(value: string | number): string {
+function formatPrice(value: string | number | undefined): string {
     if (value === undefined || value === null || value === '') return "$0"
     const num = typeof value === "string" ? parseFloat(value) : value
     if (isNaN(num)) return "$0"

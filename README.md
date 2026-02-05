@@ -136,6 +136,7 @@ function MyComponent() {
 | `models` | `Model[]` | `[]` | Static list of models to display. If provided, API fetching is disabled. |
 | `baseUrl` | `string` | - | Base URL for the OpenAI-compatible API endpoint (e.g., `"https://api.openai.com/v1"`) |
 | `apiKey` | `string` | - | API key for authentication. Warning: Visible in browser DevTools. |
+| `fetcher` | `(url: string, init?: RequestInit) => Promise<Response>` | `fetch` | Custom fetch function for API calls. **Must be memoized with `useCallback`** to prevent infinite re-renders. |
 | `value` | `string` | - | Currently selected model ID (controlled component pattern) |
 | `onChange` | `(modelId: string) => void` | **required** | Callback fired when a model is selected. Receives the model ID. |
 | `onToggleFavorite` | `(modelId: string) => void` | - | Callback fired when a model is favorited/unfavorited. Only relevant if favorites are controlled. |
@@ -143,6 +144,7 @@ function MyComponent() {
 | `sortOrder` | `"name" \| "created"` | - | Current sort order for models. If provided, component operates in controlled mode for sorting. |
 | `onSortChange` | `(order: "name" \| "created") => void` | - | Callback fired when sort order changes. Only relevant if `sortOrder` is controlled. |
 | `side` | `"top" \| "bottom" \| "left" \| "right"` | `"bottom"` | Popover placement relative to the trigger |
+| `className` | `string` | `undefined` | Additional CSS class name(s) to apply to the root element |
 
 ### SYSTEM_DEFAULT_VALUE
 
@@ -174,6 +176,24 @@ function MyComponent() {
     />
   );
 }
+```
+
+## ⚠️ Important: Custom Fetcher Usage
+
+If you provide a custom `fetcher` prop, **it must be memoized** using `useCallback` to prevent infinite re-render loops. The fetcher is included in the internal `useEffect` dependency array, so an unstable function reference will cause the effect to re-run on every render.
+
+```tsx
+// ✅ Correct - memoized fetcher
+const customFetcher = useCallback(async (url: string, init?: RequestInit) => {
+  return fetch(url, { ...init, credentials: 'include' })
+}, [])
+
+<ModelSelector fetcher={customFetcher} ... />
+```
+
+```tsx
+// ❌ Wrong - inline function causes infinite loops
+<ModelSelector fetcher={(url, init) => fetch(url, init)} ... />
 ```
 
 ## useOpenAIModels Hook

@@ -63,6 +63,18 @@ export interface UseOpenAIModelsProps {
 }
 
 /**
+ * Return type of the useOpenAIModels hook.
+ */
+export interface UseOpenAIModelsResult {
+  /** Array of available models fetched from the API */
+  models: Model[]
+  /** Whether the hook is currently fetching models */
+  loading: boolean
+  /** Error object if the fetch failed, null otherwise */
+  error: Error | null
+}
+
+/**
  * Hook to fetch available models from an OpenAI-compatible API.
  *
  * @example
@@ -76,7 +88,7 @@ export interface UseOpenAIModelsProps {
  * @param props - Configuration options
  * @returns Object containing models array, loading state, and any error
  */
-export function useOpenAIModels({ baseUrl, apiKey, fetcher }: UseOpenAIModelsProps) {
+export function useOpenAIModels({ baseUrl, apiKey, fetcher }: UseOpenAIModelsProps): UseOpenAIModelsResult {
   const [models, setModels] = useState<Model[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)

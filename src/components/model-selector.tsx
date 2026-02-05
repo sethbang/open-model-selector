@@ -5,9 +5,7 @@ import { Command as CommandPrimitive } from "cmdk"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
 import * as HoverCardPrimitive from "@radix-ui/react-hover-card"
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
-import { Model, useOpenAIModels } from "../hooks/use-openai-models"
-
-export type { Model }
+import { Model, useOpenAIModels, UseOpenAIModelsProps } from "../hooks/use-openai-models"
 
 /** Sentinel value representing system default model selection */
 export const SYSTEM_DEFAULT_VALUE = "system_default" as const
@@ -57,6 +55,12 @@ export interface ModelSelectorProps {
   /** API key for authentication. Warning: This is visible in browser DevTools. Consider using a backend proxy. */
   apiKey?: string
   
+  /**
+   * Custom fetch function for SSR, testing, or proxy scenarios.
+   * If not provided, uses global fetch.
+   */
+  fetcher?: UseOpenAIModelsProps['fetcher']
+  
   /** Currently selected model ID (controlled component pattern) */
   value?: string
   
@@ -88,6 +92,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
       models = [],
       baseUrl,
       apiKey,
+      fetcher,
       value,
       onChange = () => {},
       onToggleFavorite,
@@ -100,7 +105,8 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
     ref
   ) {
   const [open, setOpen] = React.useState(false)
-  const { models: fetchedModels, loading, error } = useOpenAIModels({ baseUrl, apiKey })
+  const listboxId = React.useId() + '-listbox'
+  const { models: fetchedModels, loading, error } = useOpenAIModels({ baseUrl, apiKey, fetcher })
 
   // --- Internal Sort State (Uncontrolled Fallback) ---
   const [internalSortOrder, setInternalSortOrder] = React.useState<"name" | "created">("name")
@@ -191,6 +197,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
             role="combobox"
             aria-expanded={open}
             aria-haspopup="listbox"
+            aria-controls={listboxId}
             aria-label={
               value === SYSTEM_DEFAULT_VALUE
                 ? "Model selector, Use System Default"
@@ -219,7 +226,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
         </PopoverPrimitive.Trigger>
         
         <PopoverPrimitive.Portal>
-            <PopoverPrimitive.Content className="oms-popover-content" align="start" side={side} sideOffset={4}>
+            <PopoverPrimitive.Content id={listboxId} className="oms-popover-content" align="start" side={side} sideOffset={4}>
                 <CommandPrimitive className="oms-command">
                    <div className="oms-search-container">
                       <Icons.Search className="oms-icon oms-muted" style={{ marginRight: '8px', opacity: 0.5 }} />
@@ -432,7 +439,7 @@ const ModelItem = React.memo(function ModelItem({
 })
 
 function formatPrice(value: string | number): string {
-    if (!value) return "$0"
+    if (value === undefined || value === null || value === '') return "$0"
     const num = typeof value === "string" ? parseFloat(value) : value
     if (isNaN(num)) return "$0"
     const perMillion = num * 1000000

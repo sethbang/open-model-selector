@@ -9,6 +9,9 @@ import { Model, useOpenAIModels } from "../hooks/use-openai-models"
 
 export type { Model }
 
+/** Sentinel value representing system default model selection */
+export const SYSTEM_DEFAULT_VALUE = "system_default" as const
+
 // --- Icons (Inline SVGs) ---
 const Icons = {
   Check: (props: React.SVGProps<SVGSVGElement>) => (
@@ -37,31 +40,61 @@ function cn(...classes: (string | undefined | null | false)[]) {
 }
 
 // --- Types ---
-interface ModelSelectorProps {
+/**
+ * Props for the ModelSelector component.
+ *
+ * The component can operate in two modes:
+ * - **Managed Mode**: Provide `baseUrl` (and optionally `apiKey`) to fetch models from an API
+ * - **Controlled Mode**: Provide a static `models` array directly
+ */
+export interface ModelSelectorProps {
+  /** Static list of models to display. If provided, API fetching is disabled. */
   models?: Model[]
+  
+  /** Base URL for the OpenAI-compatible API endpoint (e.g., "https://api.openai.com/v1") */
   baseUrl?: string
+  
+  /** API key for authentication. Warning: This is visible in browser DevTools. Consider using a backend proxy. */
   apiKey?: string
+  
+  /** Currently selected model ID (controlled component pattern) */
   value?: string
-  onChange: (value: string) => void
+  
+  /** Callback fired when a model is selected. Receives the model ID. */
+  onChange: (modelId: string) => void
+  
+  /** Callback fired when a model is favorited/unfavorited. Only relevant if favorites are controlled. */
   onToggleFavorite?: (modelId: string) => void
+  
+  /** Placeholder text shown when no model is selected. @default "Select model..." */
   placeholder?: string
+  
+  /** Current sort order for models. If provided, component operates in controlled mode for sorting. */
   sortOrder?: "name" | "created"
+  
+  /** Callback fired when sort order changes. Only relevant if `sortOrder` is controlled. */
   onSortChange?: (order: "name" | "created") => void
+  
+  /** Popover placement relative to the trigger. @default "bottom" */
   side?: "top" | "bottom" | "left" | "right"
 }
 
-export function ModelSelector({
-  models = [],
-  baseUrl,
-  apiKey,
-  value,
-  onChange,
-  onToggleFavorite,
-  placeholder = "Select model...",
-  sortOrder: controlledSortOrder,
-  onSortChange,
-  side = "bottom",
-}: ModelSelectorProps) {
+export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps>(
+  function ModelSelector(
+    {
+      models = [],
+      baseUrl,
+      apiKey,
+      value,
+      onChange,
+      onToggleFavorite,
+      placeholder = "Select model...",
+      sortOrder: controlledSortOrder,
+      onSortChange,
+      side = "bottom",
+    },
+    ref
+  ) {
   const [open, setOpen] = React.useState(false)
   const { models: fetchedModels, loading, error } = useOpenAIModels({ baseUrl, apiKey })
 
@@ -69,13 +102,13 @@ export function ModelSelector({
   const [internalSortOrder, setInternalSortOrder] = React.useState<"name" | "created">("name")
   
   const sortOrder = controlledSortOrder ?? internalSortOrder
-  const handleSortChange = (newOrder: "name" | "created") => {
+  const handleSortChange = React.useCallback((newOrder: "name" | "created") => {
     if (onSortChange) {
         onSortChange(newOrder)
     } else {
         setInternalSortOrder(newOrder)
     }
-  }
+  }, [onSortChange])
 
   // --- Internal Favorites State (Uncontrolled Fallback) ---
   const [localFavorites, setLocalFavorites] = React.useState<string[]>([])
@@ -94,7 +127,7 @@ export function ModelSelector({
     }
   }, [onToggleFavorite])
 
-  const handleToggleFavorite = (modelId: string) => {
+  const handleToggleFavorite = React.useCallback((modelId: string) => {
     if (onToggleFavorite) {
         onToggleFavorite(modelId)
     } else {
@@ -106,7 +139,7 @@ export function ModelSelector({
             return next
         })
     }
-  }
+  }, [onToggleFavorite])
 
   const allModels = React.useMemo(() => {
     const map = new Map<string, Model>()
@@ -143,7 +176,7 @@ export function ModelSelector({
   const otherModels = allModels.filter((m) => !m.is_favorite)
 
   return (
-    <div className="oms-reset">
+    <div ref={ref} className="oms-reset">
       <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
         <PopoverPrimitive.Trigger asChild>
           <button
@@ -151,7 +184,7 @@ export function ModelSelector({
             aria-expanded={open}
             className="oms-trigger-btn"
           >
-            {value === "system_default" ? (
+            {value === SYSTEM_DEFAULT_VALUE ? (
                <span className="oms-muted">Use System Default</span>
             ) : selectedModel ? (
               <span className="oms-truncate oms-flex-row oms-items-center oms-gap-2" style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
@@ -181,7 +214,7 @@ export function ModelSelector({
                       
                       <DropdownMenuPrimitive.Root>
                         <DropdownMenuPrimitive.Trigger asChild>
-                          <button style={{ marginLeft: '4px', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px', padding: '4px' }}>
+                          <button aria-label="Sort models" style={{ marginLeft: '4px', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px', padding: '4px' }}>
                             <span className="oms-text-xxs" style={{ fontWeight: 700 }}>{sortOrder === "name" ? "AZ" : "New"}</span>
                             <Icons.ChevronDown className="oms-icon" style={{ width: '8px', height: '8px' }} />
                           </button>
@@ -228,15 +261,15 @@ export function ModelSelector({
                     
                     <CommandPrimitive.Group>
                         <CommandPrimitive.Item
-                          value="system_default"
+                          value={SYSTEM_DEFAULT_VALUE}
                           onSelect={() => {
-                            onChange("system_default")
+                            onChange(SYSTEM_DEFAULT_VALUE)
                             setOpen(false)
                           }}
                         >
                           <div className="oms-item-content">
                               <div className="oms-item-left">
-                                  <Icons.Check className="oms-icon" style={{ opacity: value === "system_default" ? 1 : 0 }} />
+                                  <Icons.Check className="oms-icon" style={{ opacity: value === SYSTEM_DEFAULT_VALUE ? 1 : 0 }} />
                                   <span>Use System Default</span>
                               </div>
                           </div>
@@ -283,9 +316,12 @@ export function ModelSelector({
       </PopoverPrimitive.Root>
     </div>
   )
-}
+  }
+)
 
-function ModelItem({
+ModelSelector.displayName = "ModelSelector"
+
+const ModelItem = React.memo(function ModelItem({
   model,
   isSelected,
   onSelect,
@@ -349,7 +385,16 @@ function ModelItem({
           </div>
           
           <div 
+            role="button"
+            tabIndex={0}
+            aria-label={model.is_favorite ? "Remove from favorites" : "Add to favorites"}
             className="oms-star-btn"
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    onToggleFavorite(model.id)
+                }
+            }}
             onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
@@ -367,11 +412,12 @@ function ModelItem({
       </div>
     </CommandPrimitive.Item>
   )
-}
+})
 
 function formatPrice(value: string | number): string {
-    if (!value) return "0"
+    if (!value) return "$0"
     const num = typeof value === "string" ? parseFloat(value) : value
+    if (isNaN(num)) return "$0"
     const perMillion = num * 1000000
     if (perMillion < 0.01) return "$" + perMillion.toFixed(6)
     return "$" + perMillion.toFixed(2)

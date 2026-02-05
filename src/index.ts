@@ -1,5 +1,3 @@
-import "./styles.css";
-
 // Component exports
 export { ModelSelector, SYSTEM_DEFAULT_VALUE } from "./components/model-selector";
 export type { ModelSelectorProps } from "./components/model-selector";

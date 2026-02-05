@@ -137,7 +137,7 @@ export function useOpenAIModels({ baseUrl, apiKey, fetcher }: UseOpenAIModelsPro
             id: m.id,
             name: m.name || m.id,
             provider: m.id.includes("/") ? m.id.split("/")[0] : "Unknown",
-            created: m.created || Date.now(),
+            created: m.created || Math.floor(Date.now() / 1000),
             description: m.description,
             context_length: contextLength,
             pricing: pricing,

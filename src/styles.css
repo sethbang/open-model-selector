@@ -283,6 +283,7 @@
 .oms-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .oms-flex-col { display: flex; flex-direction: column; }
 .oms-flex-row { display: flex; flex-direction: row; }
+.oms-items-center { align-items: center; }
 .oms-gap-2 { gap: 0.5rem; }
 .oms-mt-2 { margin-top: 0.5rem; }
 .oms-text-xs { font-size: 12px; }

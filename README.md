@@ -28,18 +28,23 @@ localStorage.removeItem("open-model-selector-favorites")
 ## Installation
 
 ```bash
-npm install open-model-selector
+npm install open-model-selector react react-dom @radix-ui/react-popover @radix-ui/react-hover-card @radix-ui/react-dropdown-menu @radix-ui/react-slot cmdk
 # or
-yarn add open-model-selector
+yarn add open-model-selector react react-dom @radix-ui/react-popover @radix-ui/react-hover-card @radix-ui/react-dropdown-menu @radix-ui/react-slot cmdk
 # or
-pnpm add open-model-selector
+pnpm add open-model-selector react react-dom @radix-ui/react-popover @radix-ui/react-hover-card @radix-ui/react-dropdown-menu @radix-ui/react-slot cmdk
 ```
 
 The package supports both ES Modules (`import`) and CommonJS (`require`).
 
 **Peer Dependencies:**
-- `react` >= 18
-- `react-dom` >= 18
+- `react` >= 18 (React 19 supported)
+- `react-dom` >= 18 (React 19 supported)
+- `@radix-ui/react-popover` >= 1.0.0
+- `@radix-ui/react-hover-card` >= 1.0.0
+- `@radix-ui/react-dropdown-menu` >= 2.0.0
+- `@radix-ui/react-slot` >= 1.0.0
+- `cmdk` >= 1.0.0
 
 ## Quick Start
 
@@ -125,20 +130,47 @@ function MyComponent() {
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `value` | `string` | - | The currently selected model ID |
-| `onChange` | `(modelId: string) => void` | - | Callback when a model is selected |
-| `models` | `Model[]` | - | Array of models (controlled mode) |
-| `baseUrl` | `string` | - | API base URL for fetching models (managed mode) |
-| `apiKey` | `string` | - | API key for authentication (managed mode) |
-| `favorites` | `string[]` | - | Controlled favorites list |
-| `onFavoritesChange` | `(favorites: string[]) => void` | - | Callback for favorites changes |
-| `onToggleFavorite` | `(modelId: string) => void` | - | Callback when a model is favorited/unfavorited |
-| `sortOrder` | `"default" \| "name" \| "created"` | `"default"` | Controls the sort order of models |
-| `onSortChange` | `(order: "default" \| "name" \| "created") => void` | - | Callback when sort order changes |
-| `side` | `"top" \| "bottom" \| "left" \| "right"` | `"bottom"` | Popover placement side |
-| `placeholder` | `string` | `"Select a model..."` | Placeholder text |
-| `disabled` | `boolean` | `false` | Disable the selector |
-| `className` | `string` | - | Additional CSS class |
+| `models` | `Model[]` | `[]` | Static list of models to display. If provided, API fetching is disabled. |
+| `baseUrl` | `string` | - | Base URL for the OpenAI-compatible API endpoint (e.g., `"https://api.openai.com/v1"`) |
+| `apiKey` | `string` | - | API key for authentication. Warning: Visible in browser DevTools. |
+| `value` | `string` | - | Currently selected model ID (controlled component pattern) |
+| `onChange` | `(modelId: string) => void` | **required** | Callback fired when a model is selected. Receives the model ID. |
+| `onToggleFavorite` | `(modelId: string) => void` | - | Callback fired when a model is favorited/unfavorited. Only relevant if favorites are controlled. |
+| `placeholder` | `string` | `"Select model..."` | Placeholder text shown when no model is selected |
+| `sortOrder` | `"name" \| "created"` | - | Current sort order for models. If provided, component operates in controlled mode for sorting. |
+| `onSortChange` | `(order: "name" \| "created") => void` | - | Callback fired when sort order changes. Only relevant if `sortOrder` is controlled. |
+| `side` | `"top" \| "bottom" \| "left" \| "right"` | `"bottom"` | Popover placement relative to the trigger |
+
+### SYSTEM_DEFAULT_VALUE
+
+The package exports a `SYSTEM_DEFAULT_VALUE` constant (`"system_default"`) that enables a "Use System Default" option in the selector. When the user selects this option, your `onChange` callback will receive this value instead of a model ID.
+
+```tsx
+import { ModelSelector, SYSTEM_DEFAULT_VALUE } from "open-model-selector";
+
+function MyComponent() {
+  const [model, setModel] = useState<string>("gpt-4");
+
+  const handleChange = (modelId: string) => {
+    if (modelId === SYSTEM_DEFAULT_VALUE) {
+      // User selected "Use System Default"
+      console.log("Using system default model");
+    } else {
+      // User selected a specific model
+      console.log("Selected model:", modelId);
+    }
+    setModel(modelId);
+  };
+
+  return (
+    <ModelSelector
+      baseUrl="https://openrouter.ai/api/v1"
+      value={model}
+      onChange={handleChange}
+    />
+  );
+}
+```
 
 ## useOpenAIModels Hook
 
@@ -262,7 +294,7 @@ Works with any OpenAI-compatible `/v1/models` endpoint:
 ## Browser Support
 
 - Modern browsers (Chrome, Firefox, Safari, Edge)
-- React 18+
+- React 18+ (including React 19)
 - Requires `fetch` API and `localStorage`
 
 ## Contributing

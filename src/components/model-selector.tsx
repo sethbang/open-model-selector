@@ -182,6 +182,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
           <button
             role="combobox"
             aria-expanded={open}
+            aria-haspopup="listbox"
             className="oms-trigger-btn"
           >
             {value === SYSTEM_DEFAULT_VALUE ? (
@@ -207,8 +208,9 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
                 <CommandPrimitive className="oms-command">
                    <div className="oms-search-container">
                       <Icons.Search className="oms-icon oms-muted" style={{ marginRight: '8px', opacity: 0.5 }} />
-                      <CommandPrimitive.Input 
-                          placeholder="Search models..." 
+                      <CommandPrimitive.Input
+                          placeholder="Search models..."
+                          aria-label="Search models"
                           autoFocus
                       />
                       

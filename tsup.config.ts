@@ -5,6 +5,7 @@ export default defineConfig({
   format: ['cjs', 'esm'],
   dts: true,
   clean: true,
+  sourcemap: true,
   external: [
     'react',
     'react-dom',

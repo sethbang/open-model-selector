@@ -265,7 +265,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
         </PopoverPrimitive.Trigger>
         
         <PopoverPrimitive.Portal>
-            <PopoverPrimitive.Content id={listboxId} className="oms-popover-content" align="start" side={side} sideOffset={4}>
+            <PopoverPrimitive.Content id={listboxId} role="listbox" className="oms-popover-content" align="start" side={side} sideOffset={4}>
                 <CommandPrimitive className="oms-command">
                    <div className="oms-search-container">
                       <Icons.Search className="oms-icon oms-muted" style={{ marginRight: '8px', opacity: 0.5 }} />
@@ -446,6 +446,7 @@ const ModelItem = React.memo(function ModelItem({
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault()
+                    e.stopPropagation()
                     onToggleFavorite(model.id)
                 }
             }}

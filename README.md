@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-blue.svg)](https://www.typescriptlang.org/)
 
-A generic, reusable React component for selecting models from OpenAI-compatible APIs (OpenAI, OpenRouter, vLLM, etc.).
+A generic, reusable React component for selecting models from OpenAI-compatible APIs (Venice.ai, OpenAI, OpenRouter, vLLM, etc.).
 
 ## Features
 
@@ -64,7 +64,7 @@ The package supports both ES Modules (`import`) and CommonJS (`require`).
 
 ### Managed Mode (simplest)
 
-Let the component fetch models directly from OpenRouter or any OpenAI-compatible API:
+Let the component fetch models directly from Venice.ai or any OpenAI-compatible API:
 
 ```tsx
 import { useState } from "react";
@@ -72,11 +72,11 @@ import "open-model-selector/styles.css"; // 👈 Import the styles
 import { ModelSelector } from "open-model-selector";
 
 function MyComponent() {
-  const [model, setModel] = useState("openai/gpt-4");
+  const [model, setModel] = useState("zai-org-glm-4.7");
 
   return (
     <ModelSelector
-      baseUrl="https://openrouter.ai/api/v1"  // Public API - no key required for model listing
+      baseUrl="https://api.venice.ai/api/v1"
       value={model}
       onChange={setModel}
     />
@@ -132,25 +132,32 @@ import { ErrorBoundary } from 'react-error-boundary';
 - **Never** hardcode API keys with billing enabled in client-side code
 - API keys passed to `apiKey` prop will be visible in browser DevTools
 - For server-rendered apps, use environment variables that are NOT exposed to the client
+- Some providers (like Venice.ai) don't require authentication for model discovery — you can omit `apiKey` entirely for those
 
 ### Recommended Patterns
 
-**Option 1: Backend Proxy** (Recommended)
+**Option 1: No Auth Required** (Venice.ai and similar)
+```tsx
+// Venice.ai's /models endpoint is public — no API key needed
+<ModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={setModel} />
+```
+
+**Option 2: Backend Proxy** (Recommended for authenticated APIs)
 ```tsx
 // Use your own endpoint that adds auth server-side
 <ModelSelector baseUrl="/api/models" value={model} onChange={setModel} />
 ```
 
-**Option 2: Pre-fetched Models**
+**Option 3: Pre-fetched Models**
 ```tsx
 // Fetch models server-side and pass directly
 <ModelSelector models={modelsFromServer} value={model} onChange={setModel} />
 ```
 
-**Option 3: Public APIs**
+**Option 4: Direct API Key** (Use with caution)
 ```tsx
-// Some APIs don't require auth for listing models
-<ModelSelector baseUrl="https://openrouter.ai/api/v1" value={model} onChange={setModel} />
+// API key will be visible in browser DevTools
+<ModelSelector baseUrl="https://api.openai.com/v1" apiKey={process.env.OPENAI_API_KEY} value={model} onChange={setModel} />
 ```
 
 ### Content Security Policy
@@ -164,9 +171,11 @@ If your app uses CSP, ensure these directives allow:
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `models` | `Model[]` | `[]` | Static list of models to display. If provided, API fetching is disabled. |
-| `baseUrl` | `string` | - | Base URL for the OpenAI-compatible API endpoint (e.g., `"https://api.openai.com/v1"`) |
-| `apiKey` | `string` | - | API key for authentication. Warning: Visible in browser DevTools. |
+| `baseUrl` | `string` | - | Base URL for the OpenAI-compatible API endpoint (e.g., `"https://api.venice.ai/api/v1"`) |
+| `apiKey` | `string` | - | API key for authentication. Only needed for providers that require it (e.g., OpenAI, OpenRouter). Not required for Venice.ai model discovery. Warning: Visible in browser DevTools. |
 | `fetcher` | `(url: string, init?: RequestInit) => Promise<Response>` | `fetch` | Custom fetch function for API calls. Memoization is handled internally. |
+| `responseExtractor` | `ResponseExtractor` | `defaultResponseExtractor` | Custom function to extract the raw model array from the API response body. |
+| `normalizer` | `ModelNormalizer` | `defaultModelNormalizer` | Custom function to normalize each raw model object into a `Model`. |
 | `value` | `string` | - | Currently selected model ID (controlled component pattern) |
 | `onChange` | `(modelId: string) => void` | - | **Required for state updates.** Callback fired when a model is selected. If not provided, selections are silently ignored. |
 | `storageKey` | `string` | `"open-model-selector-favorites"` | Key used for persisting favorites to `localStorage`. |
@@ -186,7 +195,7 @@ import { useState } from "react";
 import { ModelSelector, SYSTEM_DEFAULT_VALUE } from "open-model-selector";
 
 function MyComponent() {
-  const [model, setModel] = useState<string>("gpt-4");
+  const [model, setModel] = useState<string>("zai-org-glm-4.7");
 
   const handleChange = (modelId: string) => {
     if (modelId === SYSTEM_DEFAULT_VALUE) {
@@ -201,7 +210,7 @@ function MyComponent() {
 
   return (
     <ModelSelector
-      baseUrl="https://openrouter.ai/api/v1"
+      baseUrl="https://api.venice.ai/api/v1"
       value={model}
       onChange={handleChange}
     />
@@ -230,6 +239,68 @@ const customFetcher = async (url: string, init?: RequestInit) => {
 <ModelSelector fetcher={customFetcher} ... />
 ```
 
+## Custom Normalization
+
+The component ships with a smart `defaultModelNormalizer` that handles response shapes from Venice.ai, OpenAI, OpenRouter, and other common APIs. For exotic APIs, you can override both the response extraction and per-model normalization.
+
+### Response Extractor
+
+Override how the raw model array is extracted from the API response body:
+
+```tsx
+// API returns { results: { items: [...] } } instead of { data: [...] }
+<ModelSelector
+  baseUrl="https://my-api.com/v1"
+  responseExtractor={(body) => body.results.items}
+  value={model}
+  onChange={setModel}
+/>
+```
+
+The `defaultResponseExtractor` handles `{ data: [...] }`, `{ models: [...] }`, and top-level arrays.
+
+### Model Normalizer
+
+Override how each raw model object is transformed into a `Model`:
+
+```tsx
+import { defaultModelNormalizer } from "open-model-selector";
+
+// Extend the default normalizer with custom overrides
+<ModelSelector
+  baseUrl="https://my-api.com/v1"
+  normalizer={(raw) => ({
+    ...defaultModelNormalizer(raw),
+    provider: raw.vendor ?? "custom",
+    name: raw.display_name ?? raw.id,
+  })}
+  value={model}
+  onChange={setModel}
+/>
+```
+
+For fully custom APIs, provide a complete normalizer:
+
+```tsx
+<ModelSelector
+  baseUrl="https://exotic-api.com/models"
+  responseExtractor={(body) => body.available_models}
+  normalizer={(raw) => ({
+    id: raw.model_id,
+    name: raw.label,
+    provider: raw.org,
+    created: raw.released_at ?? Date.now() / 1000,
+    context_length: raw.max_context ?? 0,
+    pricing: { prompt: raw.cost_per_input, completion: raw.cost_per_output },
+    is_favorite: false,
+  })}
+  value={model}
+  onChange={setModel}
+/>
+```
+
+Both `responseExtractor` and `normalizer` are stored in refs internally — **no memoization needed**.
+
 ## useOpenAIModels Hook
 
 Fetch models from any OpenAI-compatible API.
@@ -241,8 +312,7 @@ import { useOpenAIModels } from "open-model-selector"
 
 function MyComponent() {
   const { models, loading, error } = useOpenAIModels({
-    baseUrl: "https://api.openai.com/v1",
-    apiKey: process.env.OPENAI_API_KEY
+    baseUrl: "https://api.venice.ai/api/v1",
   })
   
   if (loading) return <div>Loading models...</div>
@@ -257,8 +327,10 @@ function MyComponent() {
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `baseUrl` | `string` | - | Base URL for the API |
-| `apiKey` | `string` | - | API key for authentication |
+| `apiKey` | `string` | - | API key for authentication. Only needed for providers that require it. |
 | `fetcher` | `(url: string, init?: RequestInit) => Promise<Response>` | `fetch` | Custom fetch function for SSR/testing |
+| `responseExtractor` | `ResponseExtractor` | `defaultResponseExtractor` | Custom function to extract the raw model array from the API response body |
+| `normalizer` | `ModelNormalizer` | `defaultModelNormalizer` | Custom function to normalize each raw model into a `Model` |
 
 ### Return Value
 
@@ -278,8 +350,13 @@ import type {
   ModelPricing,
   ModelSelectorProps,
   UseOpenAIModelsProps,
-  UseOpenAIModelsResult
+  UseOpenAIModelsResult,
+  ModelNormalizer,
+  ResponseExtractor
 } from "open-model-selector"
+
+// Also available as runtime exports for extending:
+import { defaultModelNormalizer, defaultResponseExtractor } from "open-model-selector"
 
 interface ModelPricing {
   /** Price per token for input/prompt tokens */
@@ -291,11 +368,11 @@ interface ModelPricing {
 }
 
 interface Model {
-  /** Unique model identifier (e.g., "gpt-4" or "openai/gpt-4") */
+  /** Unique model identifier (e.g., "zai-org-glm-4.7" or "openai/gpt-4") */
   id: string
   /** Display name for the model */
   name: string
-  /** Provider extracted from model ID (e.g., "openai") */
+  /** Provider extracted from model ID or response metadata (e.g., "openai", "venice.ai") */
   provider: string
   /** Unix timestamp when the model was created */
   created: number
@@ -309,14 +386,11 @@ interface Model {
   is_favorite: boolean
 }
 
-interface UseOpenAIModelsResult {
-  /** Array of available models fetched from the API */
-  models: Model[]
-  /** Whether the hook is currently fetching models */
-  loading: boolean
-  /** Error object if the fetch failed, null otherwise */
-  error: Error | null
-}
+/** Extract raw model array from API response body */
+type ResponseExtractor = (body: Record<string, unknown>) => Record<string, unknown>[]
+
+/** Transform a single raw model object into a normalized Model */
+type ModelNormalizer = (raw: Record<string, unknown>) => Model
 ```
 
 ## Theming
@@ -376,6 +450,7 @@ Dark mode is automatically supported via `prefers-color-scheme: dark` media quer
 
 Works with any OpenAI-compatible `/v1/models` endpoint:
 
+- Venice.ai
 - OpenAI
 - OpenRouter
 - vLLM
@@ -405,11 +480,11 @@ import { ModelSelector } from 'open-model-selector'
 import 'open-model-selector/styles.css'
 
 export default function MyModelPicker() {
-  const [model, setModel] = useState('gpt-4')
+  const [model, setModel] = useState('zai-org-glm-4.7')
   
   return (
     <ModelSelector
-      baseUrl="https://openrouter.ai/api/v1"
+      baseUrl="https://api.venice.ai/api/v1"
       value={model}
       onChange={setModel}
     />

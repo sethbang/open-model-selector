@@ -49,7 +49,7 @@ export interface ModelSelectorProps {
   /** Static list of models to display. If provided, API fetching is disabled. */
   models?: Model[]
   
-  /** Base URL for the OpenAI-compatible API endpoint (e.g., "https://api.openai.com/v1") */
+  /** Base URL for the OpenAI-compatible API endpoint (e.g., "https://api.venice.ai/api/v1") */
   baseUrl?: string
   
   /** API key for authentication. Warning: This is visible in browser DevTools. Consider using a backend proxy. */
@@ -74,6 +74,18 @@ export interface ModelSelectorProps {
    * ```
    */
   fetcher?: UseOpenAIModelsProps['fetcher']
+  
+  /**
+   * Custom function to extract the raw model array from the API response body.
+   * @see UseOpenAIModelsProps.responseExtractor
+   */
+  responseExtractor?: UseOpenAIModelsProps['responseExtractor']
+  
+  /**
+   * Custom function to normalize each raw model object into a Model.
+   * @see UseOpenAIModelsProps.normalizer
+   */
+  normalizer?: UseOpenAIModelsProps['normalizer']
   
   /** Currently selected model ID (controlled component pattern) */
   value?: string
@@ -120,6 +132,8 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
       baseUrl,
       apiKey,
       fetcher,
+      responseExtractor,
+      normalizer,
       value,
       onChange = () => {},
       onToggleFavorite,
@@ -134,7 +148,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
   ) {
   const [open, setOpen] = React.useState(false)
   const listboxId = React.useId() + '-listbox'
-  const { models: fetchedModels, loading, error } = useOpenAIModels({ baseUrl, apiKey, fetcher })
+  const { models: fetchedModels, loading, error } = useOpenAIModels({ baseUrl, apiKey, fetcher, responseExtractor, normalizer })
 
   // --- Internal Sort State (Uncontrolled Fallback) ---
   const [internalSortOrder, setInternalSortOrder] = React.useState<"name" | "created">("name")

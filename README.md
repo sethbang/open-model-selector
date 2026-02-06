@@ -400,6 +400,7 @@ When using with Next.js App Router or other React Server Component frameworks, y
 ```tsx
 'use client'
 
+import { useState } from 'react'
 import { ModelSelector } from 'open-model-selector'
 import 'open-model-selector/styles.css'
 

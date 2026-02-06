@@ -33,7 +33,6 @@
         "build": "tsup",
         "dev": "tsup --watch",
         "typecheck": "tsc",
-        "prepack": "npm run build",
         "prepublishOnly": "npm run build"
     },
     "keywords": [

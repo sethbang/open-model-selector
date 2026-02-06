@@ -160,7 +160,7 @@
 }
 
 /* Command (cmdk) */
-[cmdk-root] {
+.oms-reset [cmdk-root] {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -173,7 +173,7 @@
     padding: 0 12px;
 }
 
-[cmdk-input] {
+.oms-reset [cmdk-input] {
     display: flex;
     height: 36px;
     width: 100%;
@@ -185,25 +185,25 @@
     outline: none;
     color: hsl(var(--oms-foreground));
 }
-[cmdk-input]::placeholder {
+.oms-reset [cmdk-input]::placeholder {
     color: hsl(var(--oms-muted-foreground));
 }
 
-[cmdk-list] {
+.oms-reset [cmdk-list] {
     max-height: 300px;
     overflow-y: auto;
     overflow-x: hidden;
     padding: 4px;
 }
 
-[cmdk-group-heading] {
+.oms-reset [cmdk-group-heading] {
     padding: 8px 8px 4px 8px;
     font-size: 10px;
     font-weight: 600;
     color: hsl(var(--oms-muted-foreground));
 }
 
-[cmdk-item] {
+.oms-reset [cmdk-item] {
     display: flex;
     align-items: center;
     position: relative;
@@ -214,11 +214,11 @@
     font-size: 12px;
     outline: none;
 }
-[cmdk-item][data-selected="true"] {
+.oms-reset [cmdk-item][data-selected="true"] {
     background-color: hsl(var(--oms-accent));
     color: hsl(var(--oms-accent-foreground));
 }
-[cmdk-item][data-disabled="true"] {
+.oms-reset [cmdk-item][data-disabled="true"] {
     opacity: 0.5;
     pointer-events: none;
 }
@@ -259,7 +259,7 @@
 }
 
 /* Separator */
-[cmdk-separator] {
+.oms-reset [cmdk-separator] {
     height: 1px;
     background-color: hsl(var(--oms-border));
     margin: 4px -4px;
@@ -314,7 +314,7 @@
     outline: 2px solid hsl(var(--oms-ring));
     outline-offset: 1px;
 }
-[data-selected="true"] .oms-star-btn:hover {
+.oms-reset [data-selected="true"] .oms-star-btn:hover {
     background-color: hsl(var(--oms-background)); /* Contrast against selected item */
 }
 .oms-star-filled {

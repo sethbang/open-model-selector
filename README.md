@@ -389,9 +389,85 @@ Works with any OpenAI-compatible `/v1/models` endpoint:
 - React 18+ (including React 19)
 - Requires `fetch` API and `localStorage`
 
+## Server-Side Rendering (SSR)
+
+This component requires client-side JavaScript and uses browser APIs including `localStorage` for favorites persistence.
+
+### Next.js App Router
+
+When using with Next.js App Router or other React Server Component frameworks, you must mark your component file as a Client Component:
+
+```tsx
+'use client'
+
+import { ModelSelector } from 'open-model-selector'
+import 'open-model-selector/styles.css'
+
+export default function MyModelPicker() {
+  const [model, setModel] = useState('gpt-4')
+  
+  return (
+    <ModelSelector
+      baseUrl="https://openrouter.ai/api/v1"
+      value={model}
+      onChange={setModel}
+    />
+  )
+}
+```
+
+### Server-Side Data Fetching
+
+If you prefer to fetch models server-side (to hide API keys or improve initial load time), you can pass pre-fetched data via the `models` prop:
+
+```tsx
+// app/page.tsx (Server Component)
+async function getModels() {
+  const res = await fetch('https://api.example.com/v1/models', {
+    headers: { Authorization: `Bearer ${process.env.API_KEY}` }
+  })
+  return res.json()
+}
+
+export default async function Page() {
+  const { data: models } = await getModels()
+  return <ClientModelSelector models={models} />
+}
+```
+
+```tsx
+// components/client-model-selector.tsx
+'use client'
+
+import { useState } from 'react'
+import { ModelSelector, Model } from 'open-model-selector'
+import 'open-model-selector/styles.css'
+
+export function ClientModelSelector({ models }: { models: Model[] }) {
+  const [model, setModel] = useState('')
+  
+  return (
+    <ModelSelector
+      models={models}
+      value={model}
+      onChange={setModel}
+    />
+  )
+}
+```
+
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Here's how you can help:
+
+- 🐛 **Report bugs** - [Open an issue](https://github.com/sethbang/open-model-selector/issues) with reproduction steps
+- 💡 **Suggest features** - Share your ideas via [GitHub issues](https://github.com/sethbang/open-model-selector/issues)
+- 🔧 **Submit PRs** - Bug fixes and improvements are appreciated
+
+When submitting a pull request, please:
+- Ensure your changes build successfully (`npm run build`)
+- Update documentation if needed
+- Describe your changes clearly in the PR
 
 ## License
 

@@ -11,7 +11,10 @@
             "import": "./dist/index.js",
             "require": "./dist/index.cjs"
         },
-        "./styles.css": "./dist/styles.css"
+        "./styles.css": {
+            "import": "./dist/styles.css",
+            "require": "./dist/styles.css"
+        }
     },
     "files": [
         "dist",

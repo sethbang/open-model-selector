@@ -301,6 +301,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    /* Button reset */
+    background: transparent;
+    border: none;
+    font: inherit;
+    color: inherit;
 }
 .oms-star-btn:hover {
     background-color: hsl(var(--oms-accent)); /* Might conflict if item is selected, but ok */

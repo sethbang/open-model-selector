@@ -442,20 +442,16 @@ const ModelItem = React.memo(function ModelItem({
             </HoverCardPrimitive.Root>
           </div>
           
-          <div 
-            role="button"
-            tabIndex={0}
+          <button
+            type="button"
             aria-label={model.is_favorite ? "Remove from favorites" : "Add to favorites"}
             className="oms-star-btn"
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
                     e.stopPropagation()
-                    onToggleFavorite(model.id)
                 }
             }}
             onClick={(e) => {
-                e.preventDefault()
                 e.stopPropagation()
                 onToggleFavorite(model.id)
             }}
@@ -467,7 +463,7 @@ const ModelItem = React.memo(function ModelItem({
                 )}
                 style={{ opacity: model.is_favorite ? 1 : 0.2 }}
             />
-          </div>
+          </button>
       </div>
     </CommandPrimitive.Item>
   )

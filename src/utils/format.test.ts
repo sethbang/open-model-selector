@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatPrice, formatContextLength } from './model-selector'
+import { formatPrice, formatContextLength } from './format'
 
 describe('formatPrice', () => {
   it('returns "—" for undefined', () => {

@@ -71,9 +71,10 @@
 /*
  * Class-based dark mode override (e.g., Tailwind's `dark` class on <html>).
  * Variables use the --oms- prefix to avoid collisions with host app variables.
- * This selector is intentionally global so variables cascade to all OMS components.
+ * Scoped to .oms-reset so variables only cascade within OMS component boundaries.
  */
-.dark {
+.dark .oms-reset,
+.oms-reset.dark {
     --oms-background: 222.2 84% 4.9%;
     --oms-foreground: 210 40% 98%;
     --oms-card: 222.2 84% 4.9%;

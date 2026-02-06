@@ -24,19 +24,20 @@
     ],
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/sethbang/open-model-selector.git"
+        "url": "git+https://github.com/sethbang/hypno-bunny-app.git",
+        "directory": "packages/open-model-selector"
     },
     "bugs": {
-        "url": "https://github.com/sethbang/open-model-selector/issues"
+        "url": "https://github.com/sethbang/hypno-bunny-app/issues"
     },
-    "homepage": "https://github.com/sethbang/open-model-selector#readme",
+    "homepage": "https://github.com/sethbang/hypno-bunny-app/tree/main/packages/open-model-selector#readme",
     "scripts": {
         "build": "tsup",
         "dev": "tsup --watch",
         "typecheck": "tsc",
         "test": "vitest run",
         "test:watch": "vitest",
-        "prepublishOnly": "npm run typecheck && npm run build",
+        "prepublishOnly": "npm run typecheck && npm run test && npm run build",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build"
     },

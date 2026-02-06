@@ -21,14 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - TypeScript types exported for all public APIs
 - CSS custom properties for theming (`--oms-*` prefix)
 - `SYSTEM_DEFAULT_VALUE` constant for "Use System Default" option
-
-### Changed
-
-- `onChange` prop is now optional (previously required with default value)
-- `fetcher` prop no longer requires `useCallback` memoization — the component handles stability internally
-
-### Fixed
-
-- Internal fetcher reference is now stable, preventing infinite re-render loops when using custom fetchers without memoization
+- Optional `onChange` prop with dev-mode warning when omitted
+- Built-in `fetcher` stability — no `useCallback` memoization required for custom fetchers
+- Stable internal callback refs to prevent unnecessary re-renders
 
 [0.1.0]: https://github.com/sethbang/open-model-selector/releases/tag/v0.1.0

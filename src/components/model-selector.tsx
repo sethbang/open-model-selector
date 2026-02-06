@@ -6,6 +6,7 @@ import * as PopoverPrimitive from "@radix-ui/react-popover"
 import * as HoverCardPrimitive from "@radix-ui/react-hover-card"
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
 import { Model, useOpenAIModels, UseOpenAIModelsProps } from "../hooks/use-openai-models"
+import { formatPrice, formatContextLength } from "../utils/format"
 
 /** Sentinel value representing system default model selection */
 export const SYSTEM_DEFAULT_VALUE = "system_default" as const
@@ -179,7 +180,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
         'Pass an `onChange` prop to handle selection changes.'
       )
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- Intentionally runs only on mount to warn once about missing onChange
 
   // --- Internal Sort State (Uncontrolled Fallback) ---
   const [internalSortOrder, setInternalSortOrder] = React.useState<"name" | "created">("name")
@@ -516,19 +517,3 @@ const ModelItem = React.memo(function ModelItem({
   )
 })
 
-export function formatContextLength(tokens: number): string {
-    if (tokens >= 1_000_000) {
-        const millions = tokens / 1_000_000
-        return millions % 1 === 0 ? `${millions}M` : `${millions.toFixed(1)}M`
-    }
-    return `${Math.round(tokens / 1000)}k`
-}
-
-export function formatPrice(value: string | number | undefined): string {
-    if (value === undefined || value === null || value === '') return "—"
-    const num = typeof value === "string" ? parseFloat(value) : value
-    if (isNaN(num)) return "—"
-    const perMillion = num * 1000000
-    if (perMillion < 0.01) return "$" + perMillion.toFixed(6)
-    return "$" + perMillion.toFixed(2)
-}

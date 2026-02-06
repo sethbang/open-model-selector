@@ -19,7 +19,8 @@
     "files": [
         "dist",
         "README.md",
-        "LICENSE"
+        "LICENSE",
+        "CHANGELOG.md"
     ],
     "repository": {
         "type": "git",
@@ -33,7 +34,11 @@
         "build": "tsup",
         "dev": "tsup --watch",
         "typecheck": "tsc",
-        "prepublishOnly": "npm run build"
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "prepublishOnly": "npm run typecheck && npm run build",
+        "storybook": "storybook dev -p 6006",
+        "build-storybook": "storybook build"
     },
     "keywords": [
         "openai",
@@ -87,7 +92,18 @@
         "react": "^19.2.4",
         "react-dom": "^19.2.4",
         "tsup": "^8.5.1",
-        "typescript": "^5.9.3"
+        "typescript": "^5.9.3",
+        "storybook": "^10.2.7",
+        "@storybook/react-vite": "^10.2.7",
+        "@chromatic-com/storybook": "^5.0.0",
+        "@storybook/addon-vitest": "^10.2.7",
+        "@storybook/addon-a11y": "^10.2.7",
+        "@storybook/addon-docs": "^10.2.7",
+        "@storybook/addon-onboarding": "^10.2.7",
+        "vitest": "^4.0.18",
+        "playwright": "^1.58.1",
+        "@vitest/browser-playwright": "^4.0.18",
+        "@vitest/coverage-v8": "^4.0.18"
     },
     "engines": {
         "node": ">=18.0.0"

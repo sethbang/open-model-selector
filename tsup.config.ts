@@ -4,9 +4,11 @@ export default defineConfig({
   entry: ['src/index.ts', 'src/styles.css'],
   format: ['cjs', 'esm'],
   dts: true,
-  declarationMap: true,
   clean: true,
-  sourcemap: false,
+  sourcemap: true,
+  banner: {
+    js: '"use client";',
+  },
   external: [
     'react',
     'react-dom',

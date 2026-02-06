@@ -122,9 +122,13 @@ export function defaultModelNormalizer(m: Record<string, unknown>): Model {
     const specPricing = spec.pricing as Record<string, unknown>
     const input = specPricing.input
     const output = specPricing.output
+    // Venice's model_spec.pricing returns prices per-million-tokens (e.g., { usd: 6 } = $6/1M).
+    // Normalize to per-token to match the OpenAI/OpenRouter convention used by formatPrice().
+    const inputUsd = typeof input === 'object' && input !== null ? (input as Record<string, unknown>).usd as number | undefined : undefined
+    const outputUsd = typeof output === 'object' && output !== null ? (output as Record<string, unknown>).usd as number | undefined : undefined
     pricing = {
-      prompt: typeof input === 'object' && input !== null ? (input as Record<string, unknown>).usd as number | undefined : undefined,
-      completion: typeof output === 'object' && output !== null ? (output as Record<string, unknown>).usd as number | undefined : undefined,
+      prompt: inputUsd !== undefined ? inputUsd / 1_000_000 : undefined,
+      completion: outputUsd !== undefined ? outputUsd / 1_000_000 : undefined,
     }
   }
 

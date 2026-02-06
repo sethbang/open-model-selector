@@ -68,7 +68,11 @@
   }
 }
 
-/* Also support explicit .dark class if parent uses it */
+/*
+ * Class-based dark mode override (e.g., Tailwind's `dark` class on <html>).
+ * Variables use the --oms- prefix to avoid collisions with host app variables.
+ * This selector is intentionally global so variables cascade to all OMS components.
+ */
 .dark {
     --oms-background: 222.2 84% 4.9%;
     --oms-foreground: 210 40% 98%;
@@ -154,13 +158,28 @@
     border: 1px solid hsl(var(--oms-border));
     background-color: hsl(var(--oms-popover));
     color: hsl(var(--oms-popover-foreground));
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    box-shadow: 0 8px 30px rgb(0 0 0 / 0.12), 0 4px 10px rgb(0 0 0 / 0.08);
     outline: none;
     overflow: hidden;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 14px;
+}
+.oms-popover-content * {
+    box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: dark) {
+    .oms-popover-content {
+        box-shadow: 0 8px 30px rgb(0 0 0 / 0.5), 0 4px 10px rgb(0 0 0 / 0.3);
+    }
+}
+.dark .oms-popover-content {
+    box-shadow: 0 8px 30px rgb(0 0 0 / 0.5), 0 4px 10px rgb(0 0 0 / 0.3);
 }
 
 /* Command (cmdk) */
-.oms-reset [cmdk-root] {
+.oms-popover-content [cmdk-root] {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -173,52 +192,57 @@
     padding: 0 12px;
 }
 
-.oms-reset [cmdk-input] {
+.oms-popover-content [cmdk-input] {
     display: flex;
     height: 36px;
     width: 100%;
     border-radius: 0;
     border: none;
     background: transparent;
-    padding: 12px 0;
+    padding: 8px 0;
     font-size: 12px;
-    outline: none;
+    outline: none !important;
+    box-shadow: none !important;
+    -webkit-appearance: none;
+    appearance: none;
     color: hsl(var(--oms-foreground));
 }
-.oms-reset [cmdk-input]::placeholder {
+.oms-popover-content [cmdk-input]::placeholder {
     color: hsl(var(--oms-muted-foreground));
 }
 
-.oms-reset [cmdk-list] {
+.oms-popover-content [cmdk-list] {
     max-height: 300px;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 4px;
+    padding: 8px;
 }
 
-.oms-reset [cmdk-group-heading] {
-    padding: 8px 8px 4px 8px;
+.oms-popover-content [cmdk-group-heading] {
+    padding: 8px 12px 4px 12px;
     font-size: 10px;
     font-weight: 600;
     color: hsl(var(--oms-muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
-.oms-reset [cmdk-item] {
+.oms-popover-content [cmdk-item] {
     display: flex;
     align-items: center;
     position: relative;
     cursor: pointer;
     user-select: none;
     border-radius: 4px; /* somewhat smaller than main radius */
-    padding: 6px 8px;
-    font-size: 12px;
+    padding: 8px 12px;
+    font-size: 11px;
     outline: none;
 }
-.oms-reset [cmdk-item][data-selected="true"] {
+.oms-popover-content [cmdk-item][data-selected="true"] {
     background-color: hsl(var(--oms-accent));
     color: hsl(var(--oms-accent-foreground));
 }
-.oms-reset [cmdk-item][data-disabled="true"] {
+.oms-popover-content [cmdk-item][data-disabled="true"] {
     opacity: 0.5;
     pointer-events: none;
 }
@@ -259,10 +283,10 @@
 }
 
 /* Separator */
-.oms-reset [cmdk-separator] {
+.oms-popover-content [cmdk-separator] {
     height: 1px;
     background-color: hsl(var(--oms-border));
-    margin: 4px -4px;
+    margin: 8px 0;
 }
 
 /* Hover Card */
@@ -314,7 +338,7 @@
     outline: 2px solid hsl(var(--oms-ring));
     outline-offset: 1px;
 }
-.oms-reset [data-selected="true"] .oms-star-btn:hover {
+.oms-popover-content [data-selected="true"] .oms-star-btn:hover {
     background-color: hsl(var(--oms-background)); /* Contrast against selected item */
 }
 .oms-star-filled {

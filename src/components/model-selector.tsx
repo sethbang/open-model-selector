@@ -10,6 +10,9 @@ import { Model, useOpenAIModels, UseOpenAIModelsProps } from "../hooks/use-opena
 /** Sentinel value representing system default model selection */
 export const SYSTEM_DEFAULT_VALUE = "system_default" as const
 
+/** @internal Stable no-op used as default onChange so we can detect missing handlers */
+const defaultOnChange: (modelId: string) => void = () => {}
+
 // --- Icons (Inline SVGs) ---
 const Icons = {
   Check: (props: React.SVGProps<SVGSVGElement>) => (
@@ -46,7 +49,10 @@ function cn(...classes: (string | undefined | null | false)[]) {
  * - **Controlled Mode**: Provide a static `models` array directly
  */
 export interface ModelSelectorProps {
-  /** Static list of models to display. If provided, API fetching is disabled. */
+  /**
+   * Static list of models to display. When a non-empty array is provided,
+   * the internal API fetch is disabled and only these models are shown.
+   */
   models?: Model[]
   
   /** Base URL for the OpenAI-compatible API endpoint (e.g., "https://api.venice.ai/api/v1") */
@@ -90,7 +96,10 @@ export interface ModelSelectorProps {
   /** Currently selected model ID (controlled component pattern) */
   value?: string
   
-  /** Callback fired when a model is selected. Receives the model ID. Optional - if not provided, selection changes are ignored. */
+  /**
+   * Callback fired when a model is selected. Receives the model ID.
+   * If omitted, selections are silently ignored (a dev-mode warning is logged).
+   */
   onChange?: (modelId: string) => void
   
   /** Callback fired when a model is favorited/unfavorited. Only relevant if favorites are controlled. */
@@ -123,6 +132,9 @@ export interface ModelSelectorProps {
    * ```
    */
   storageKey?: string
+
+  /** Whether to show the "Use System Default" option. @default true */
+  showSystemDefault?: boolean
 }
 
 export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps>(
@@ -135,7 +147,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
       responseExtractor,
       normalizer,
       value,
-      onChange = () => {},
+      onChange = defaultOnChange,
       onToggleFavorite,
       placeholder = "Select model...",
       sortOrder: controlledSortOrder,
@@ -143,12 +155,31 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
       side = "bottom",
       className,
       storageKey = "open-model-selector-favorites",
+      showSystemDefault = true,
     },
     ref
   ) {
   const [open, setOpen] = React.useState(false)
   const listboxId = React.useId() + '-listbox'
-  const { models: fetchedModels, loading, error } = useOpenAIModels({ baseUrl, apiKey, fetcher, responseExtractor, normalizer })
+
+  // When consumer provides models, disable the internal fetch by withholding baseUrl
+  const { models: fetchedModels, loading, error } = useOpenAIModels({
+    baseUrl: models.length > 0 ? undefined : baseUrl,
+    apiKey,
+    fetcher,
+    responseExtractor,
+    normalizer,
+  })
+
+  // Dev-mode warning when no onChange handler is provided
+  React.useEffect(() => {
+    if (process.env.NODE_ENV !== 'production' && onChange === defaultOnChange) {
+      console.warn(
+        '[ModelSelector] No `onChange` handler provided. Model selections will be silently ignored. ' +
+        'Pass an `onChange` prop to handle selection changes.'
+      )
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // --- Internal Sort State (Uncontrolled Fallback) ---
   const [internalSortOrder, setInternalSortOrder] = React.useState<"name" | "created">("name")
@@ -295,7 +326,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
                       
                       <DropdownMenuPrimitive.Root>
                         <DropdownMenuPrimitive.Trigger asChild>
-                          <button aria-label="Sort models" style={{ marginLeft: '4px', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px', padding: '4px' }}>
+                          <button aria-label="Sort models" style={{ marginLeft: '4px', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px', padding: '4px', color: 'hsl(var(--oms-muted-foreground))' }}>
                             <span className="oms-text-xxs" style={{ fontWeight: 700 }}>{sortOrder === "name" ? "AZ" : "New"}</span>
                             <Icons.ChevronDown className="oms-icon" style={{ width: '8px', height: '8px' }} />
                           </button>
@@ -340,6 +371,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
                         </CommandPrimitive.Empty>
                     )}
                     
+                    {showSystemDefault && (
                     <CommandPrimitive.Group>
                         <CommandPrimitive.Item
                           value={SYSTEM_DEFAULT_VALUE}
@@ -353,8 +385,9 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
                           </div>
                         </CommandPrimitive.Item>
                     </CommandPrimitive.Group>
-                    
-                    <CommandPrimitive.Separator />
+                    )}
+
+                    {showSystemDefault && <CommandPrimitive.Separator />}
         
                     {favorites.length > 0 && (
                       <CommandPrimitive.Group heading="Favorites">
@@ -418,7 +451,7 @@ const ModelItem = React.memo(function ModelItem({
             
             <HoverCardPrimitive.Root openDelay={200} closeDelay={100}>
                  <HoverCardPrimitive.Trigger asChild>
-                    <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', cursor: 'help', maxWidth: '180px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', cursor: 'help', maxWidth: '180px', gap: '2px', lineHeight: 1.3 }}>
                         <span className="oms-truncate" style={{ fontWeight: 500 }}>{model.name}</span>
                         <span className="oms-truncate oms-text-xxs oms-muted">{model.provider}</span>
                     </div>
@@ -433,7 +466,7 @@ const ModelItem = React.memo(function ModelItem({
                             <div className="oms-flex-row oms-gap-2" style={{ flexWrap: 'wrap' }}>
                                 {model.context_length > 0 && (
                                     <span className="oms-badge oms-badge-secondary">
-                                        {Math.round(model.context_length / 1000)}k Context
+                                        {formatContextLength(model.context_length)} Context
                                     </span>
                                 )}
                                 <span className="oms-badge oms-badge-outline">{model.provider}</span>
@@ -475,7 +508,7 @@ const ModelItem = React.memo(function ModelItem({
                     "oms-icon", 
                     model.is_favorite ? "oms-star-filled" : "oms-muted"
                 )}
-                style={{ opacity: model.is_favorite ? 1 : 0.2 }}
+                style={{ opacity: model.is_favorite ? 1 : 0.4 }}
             />
           </button>
       </div>
@@ -483,7 +516,15 @@ const ModelItem = React.memo(function ModelItem({
   )
 })
 
-function formatPrice(value: string | number | undefined): string {
+export function formatContextLength(tokens: number): string {
+    if (tokens >= 1_000_000) {
+        const millions = tokens / 1_000_000
+        return millions % 1 === 0 ? `${millions}M` : `${millions.toFixed(1)}M`
+    }
+    return `${Math.round(tokens / 1000)}k`
+}
+
+export function formatPrice(value: string | number | undefined): string {
     if (value === undefined || value === null || value === '') return "—"
     const num = typeof value === "string" ? parseFloat(value) : value
     if (isNaN(num)) return "—"

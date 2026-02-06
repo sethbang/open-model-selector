@@ -86,16 +86,32 @@ function MyComponent() {
 
 ### Controlled Mode
 
-Fetch data yourself and pass models directly:
+Provide your own models directly. When a non-empty `models` array is provided, API fetching is disabled:
 
 ```tsx
 import { useState } from "react";
 import "open-model-selector/styles.css";
-import { ModelSelector } from "open-model-selector";
+import { ModelSelector, Model } from "open-model-selector";
 
-const myModels = [
-  { id: "gpt-4", name: "GPT-4", created: 123456789, provider: "OpenAI" },
-  { id: "claude-3", name: "Claude 3", created: 123456790, provider: "Anthropic" }
+const myModels: Model[] = [
+  {
+    id: "gpt-4",
+    name: "GPT-4",
+    created: 1687882411,
+    provider: "OpenAI",
+    context_length: 128000,
+    pricing: { prompt: "0.00003", completion: "0.00006" },
+    is_favorite: false
+  },
+  {
+    id: "claude-3-sonnet",
+    name: "Claude 3 Sonnet",
+    created: 1709078400,
+    provider: "Anthropic",
+    context_length: 200000,
+    pricing: { prompt: "0.000003", completion: "0.000015" },
+    is_favorite: false
+  }
 ];
 
 function MyComponent() {
@@ -164,13 +180,13 @@ import { ErrorBoundary } from 'react-error-boundary';
 
 If your app uses CSP, ensure these directives allow:
 - `connect-src` for your API base URL (or `'self'` if using a proxy)
-- `style-src 'self'` (styles are bundled, no inline styles)
+- `style-src 'self' 'unsafe-inline'` (the component uses inline styles for dynamic layout)
 
 ## Props
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `models` | `Model[]` | `[]` | Static list of models to display. If provided, API fetching is disabled. |
+| `models` | `Model[]` | `[]` | Static list of models. When provided with items, API fetching is disabled. |
 | `baseUrl` | `string` | - | Base URL for the OpenAI-compatible API endpoint (e.g., `"https://api.venice.ai/api/v1"`) |
 | `apiKey` | `string` | - | API key for authentication. Only needed for providers that require it (e.g., OpenAI, OpenRouter). Not required for Venice.ai model discovery. Warning: Visible in browser DevTools. |
 | `fetcher` | `(url: string, init?: RequestInit) => Promise<Response>` | `fetch` | Custom fetch function for API calls. Memoization is handled internally. |
@@ -185,6 +201,7 @@ If your app uses CSP, ensure these directives allow:
 | `onSortChange` | `(order: "name" \| "created") => void` | - | Callback fired when sort order changes. Only relevant if `sortOrder` is controlled. |
 | `side` | `"top" \| "bottom" \| "left" \| "right"` | `"bottom"` | Popover placement relative to the trigger |
 | `className` | `string` | `undefined` | Additional CSS class name(s) to apply to the root element |
+| `showSystemDefault` | `boolean` | `true` | Whether to show the "Use System Default" option. Defaults to true. |
 
 ### SYSTEM_DEFAULT_VALUE
 

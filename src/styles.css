@@ -36,32 +36,31 @@
   /* Dark Mode Support via media query or .dark class */
 }
 
+/*
+ * Media-query-based dark mode — scoped to .oms-reset (inline component)
+ * and portal containers (.oms-popover-content, .oms-hover-content) so we
+ * never pollute :root or conflict with apps that manage their own theme.
+ */
 @media (prefers-color-scheme: dark) {
-  :root {
+  .oms-reset,
+  .oms-popover-content,
+  .oms-hover-content {
     --oms-background: 222.2 84% 4.9%;
     --oms-foreground: 210 40% 98%;
-
     --oms-card: 222.2 84% 4.9%;
     --oms-card-foreground: 210 40% 98%;
-
     --oms-popover: 222.2 84% 4.9%;
     --oms-popover-foreground: 210 40% 98%;
-
     --oms-primary: 210 40% 98%;
     --oms-primary-foreground: 222.2 47.4% 11.2%;
-
     --oms-secondary: 217.2 32.6% 17.5%;
     --oms-secondary-foreground: 210 40% 98%;
-
     --oms-muted: 217.2 32.6% 17.5%;
     --oms-muted-foreground: 215 20.2% 65.1%;
-
     --oms-accent: 217.2 32.6% 17.5%;
     --oms-accent-foreground: 210 40% 98%;
-
     --oms-destructive: 0 62.8% 30.6%;
     --oms-destructive-foreground: 210 40% 98%;
-
     --oms-border: 217.2 32.6% 17.5%;
     --oms-input: 217.2 32.6% 17.5%;
     --oms-ring: 212.7 26.8% 83.9%;
@@ -75,6 +74,34 @@
  */
 .dark .oms-reset,
 .oms-reset.dark {
+    --oms-background: 222.2 84% 4.9%;
+    --oms-foreground: 210 40% 98%;
+    --oms-card: 222.2 84% 4.9%;
+    --oms-card-foreground: 210 40% 98%;
+    --oms-popover: 222.2 84% 4.9%;
+    --oms-popover-foreground: 210 40% 98%;
+    --oms-primary: 210 40% 98%;
+    --oms-primary-foreground: 222.2 47.4% 11.2%;
+    --oms-secondary: 217.2 32.6% 17.5%;
+    --oms-secondary-foreground: 210 40% 98%;
+    --oms-muted: 217.2 32.6% 17.5%;
+    --oms-muted-foreground: 215 20.2% 65.1%;
+    --oms-accent: 217.2 32.6% 17.5%;
+    --oms-accent-foreground: 210 40% 98%;
+    --oms-destructive: 0 62.8% 30.6%;
+    --oms-destructive-foreground: 210 40% 98%;
+    --oms-border: 217.2 32.6% 17.5%;
+    --oms-input: 217.2 32.6% 17.5%;
+    --oms-ring: 212.7 26.8% 83.9%;
+}
+
+/*
+ * Class-based dark mode for portaled content that escapes .oms-reset.
+ * Popover and HoverCard portals render at document.body, outside the
+ * .oms-reset ancestor, so .dark .oms-reset won't reach them.
+ */
+.dark .oms-popover-content,
+.dark .oms-hover-content {
     --oms-background: 222.2 84% 4.9%;
     --oms-foreground: 210 40% 98%;
     --oms-card: 222.2 84% 4.9%;

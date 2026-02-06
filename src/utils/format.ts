@@ -26,6 +26,7 @@ export function formatPrice(value: string | number | undefined): string {
     if (value === undefined || value === null || value === '') return "—"
     const num = typeof value === "string" ? parseFloat(value) : value
     if (isNaN(num)) return "—"
+    if (num < 0) return "$0.00"
     const perMillion = num * 1000000
     if (perMillion < 0.01) return "$" + perMillion.toFixed(6)
     return "$" + perMillion.toFixed(2)
@@ -50,6 +51,7 @@ export function formatPrice(value: string | number | undefined): string {
  * @internal Not part of the public package API — may change without notice.
  */
 export function formatContextLength(tokens: number): string {
+    if (!tokens || tokens <= 0 || isNaN(tokens)) return 'N/A'
     if (tokens >= 1_000_000) {
         const millions = tokens / 1_000_000
         return millions % 1 === 0 ? `${millions}M` : `${millions.toFixed(1)}M`

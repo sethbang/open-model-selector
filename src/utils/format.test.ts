@@ -28,6 +28,14 @@ describe('formatPrice', () => {
     expect(formatPrice(0)).toBe('$0.000000')
   })
 
+  it('clamps negative price to $0.00', () => {
+    expect(formatPrice(-0.00003)).toBe('$0.00')
+  })
+
+  it('clamps negative string price to $0.00', () => {
+    expect(formatPrice('-0.00003')).toBe('$0.00')
+  })
+
   it('formats a normal per-token price (number)', () => {
     // 0.00003 per token → $30.00 per 1M
     expect(formatPrice(0.00003)).toBe('$30.00')
@@ -85,8 +93,16 @@ describe('formatContextLength', () => {
     expect(formatContextLength(2_000_000)).toBe('2M')
   })
 
-  it('formats zero', () => {
-    expect(formatContextLength(0)).toBe('0k')
+  it('returns N/A for zero', () => {
+    expect(formatContextLength(0)).toBe('N/A')
+  })
+
+  it('returns N/A for negative values', () => {
+    expect(formatContextLength(-1000)).toBe('N/A')
+  })
+
+  it('returns N/A for NaN', () => {
+    expect(formatContextLength(NaN)).toBe('N/A')
   })
 
   it('formats small values', () => {

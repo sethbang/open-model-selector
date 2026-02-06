@@ -11,7 +11,7 @@ import { formatPrice, formatContextLength } from "../utils/format"
 /** Sentinel value representing system default model selection */
 export const SYSTEM_DEFAULT_VALUE = "system_default" as const
 
-/** @internal Stable no-op used as default onChange so we can detect missing handlers */
+/** @internal Stable no-op used as default onChange for read-only / display-only usage */
 const defaultOnChange: (modelId: string) => void = () => {}
 
 // --- Icons (Inline SVGs) ---
@@ -99,7 +99,7 @@ export interface ModelSelectorProps {
   
   /**
    * Callback fired when a model is selected. Receives the model ID.
-   * If omitted, selections are silently ignored (a dev-mode warning is logged).
+   * If omitted, selections are silently ignored (read-only / display-only usage).
    */
   onChange?: (modelId: string) => void
   
@@ -172,16 +172,6 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
     normalizer,
   })
 
-  // Dev-mode warning when no onChange handler is provided
-  React.useEffect(() => {
-    if (process.env.NODE_ENV !== 'production' && onChange === defaultOnChange) {
-      console.warn(
-        '[ModelSelector] No `onChange` handler provided. Model selections will be silently ignored. ' +
-        'Pass an `onChange` prop to handle selection changes.'
-      )
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- Intentionally runs only on mount to warn once about missing onChange
-
   // --- Internal Sort State (Uncontrolled Fallback) ---
   const [internalSortOrder, setInternalSortOrder] = React.useState<"name" | "created">("name")
   
@@ -243,8 +233,9 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
     
     // Apply local favorites overlay if we're in uncontrolled mode
     if (!onToggleFavorite) {
+        const favoritesSet = new Set(localFavorites)
         map.forEach((m) => {
-            if (localFavorites.includes(m.id)) {
+            if (favoritesSet.has(m.id)) {
                 // Return a new object so we don't mutate the source
                 map.set(m.id, { ...m, is_favorite: true })
             }
@@ -440,7 +431,7 @@ const ModelItem = React.memo(function ModelItem({
 }) {
   return (
     <CommandPrimitive.Item
-      value={model.name + " " + model.provider + " " + model.id}
+      value={`${model.name} ${model.provider} ${model.id} ${model.description || ''}`}
       onSelect={() => onSelect(model.id)}
     >
       <div className="oms-item-content">

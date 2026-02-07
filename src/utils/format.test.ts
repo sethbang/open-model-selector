@@ -27,12 +27,12 @@ describe('formatPrice', () => {
     expect(formatPrice(0)).toBe('$0.000000')
   })
 
-  it('clamps negative price to $0.00', () => {
-    expect(formatPrice(-0.00003)).toBe('$0.00')
+  it('returns "—" for negative price', () => {
+    expect(formatPrice(-0.00003)).toBe('—')
   })
 
-  it('clamps negative string price to $0.00', () => {
-    expect(formatPrice('-0.00003')).toBe('$0.00')
+  it('returns "—" for negative string price', () => {
+    expect(formatPrice('-0.00003')).toBe('—')
   })
 
   it('formats a normal per-token price (number)', () => {
@@ -104,14 +104,16 @@ describe('formatContextLength', () => {
     expect(formatContextLength(NaN)).toBe('N/A')
   })
 
-  it('formats small values that round to 1k', () => {
-    expect(formatContextLength(500)).toBe('1k') // Math.round(0.5) = 1 → "1k" (rounds half up)
+  it('returns exact number for values under 1000', () => {
+    expect(formatContextLength(500)).toBe('500')
+    expect(formatContextLength(999)).toBe('999')
+    expect(formatContextLength(1)).toBe('1')
+    expect(formatContextLength(250)).toBe('250')
+    expect(formatContextLength(499)).toBe('499')
   })
 
-  it('returns "<1k" for values between 1 and 499', () => {
-    expect(formatContextLength(499)).toBe('<1k')
-    expect(formatContextLength(1)).toBe('<1k')
-    expect(formatContextLength(250)).toBe('<1k')
+  it('formats 1000 as 1k', () => {
+    expect(formatContextLength(1000)).toBe('1k')
   })
 
   it('formats 4096 tokens', () => {

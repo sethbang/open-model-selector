@@ -20,13 +20,12 @@
  * formatPrice(undefined)  // "—"
  * ```
  *
- * @internal Not part of the public package API — may change without notice.
  */
 export function formatPrice(value: string | number | undefined | null): string {
     if (value === undefined || value === null || value === '') return "—"
     const num = typeof value === "string" ? parseFloat(value) : value
     if (isNaN(num)) return "—"
-    if (num < 0) return "$0.00"
+    if (num < 0) return "—"
     const perMillion = num * 1000000
     if (perMillion < 0.01) return "$" + perMillion.toFixed(6)
     return "$" + perMillion.toFixed(2)
@@ -38,8 +37,9 @@ export function formatPrice(value: string | number | undefined | null): string {
  * @param tokens - Raw token count (e.g. `128000`, `1_000_000`).
  * @returns A compact string like `"128k"` or `"1M"`.
  *   - Values ≥ 1,000,000 are shown in millions (e.g. `"1M"`, `"1.5M"`).
- *   - Values < 1,000,000 are divided by 1,000 and rounded to the nearest
- *     integer (e.g. `8192` → `"8k"`, `500` → `"1k"`).
+ *   - Values < 1,000 are shown as exact numbers (e.g. `500` → `"500"`).
+ *   - Values ≥ 1,000 and < 1,000,000 are divided by 1,000 and rounded to the nearest
+ *     integer (e.g. `8192` → `"8k"`, `1000` → `"1k"`).
  *
  * @example
  * ```ts
@@ -48,15 +48,14 @@ export function formatPrice(value: string | number | undefined | null): string {
  * formatContextLength(1_500_000) // "1.5M"
  * ```
  *
- * @internal Not part of the public package API — may change without notice.
  */
 export function formatContextLength(tokens: number): string {
     if (!tokens || tokens <= 0 || isNaN(tokens)) return 'N/A'
+    if (tokens < 1000) return `${Math.round(tokens)}`
     if (tokens >= 1_000_000) {
         const millions = tokens / 1_000_000
         return millions % 1 === 0 ? `${millions}M` : `${millions.toFixed(1)}M`
     }
     const k = Math.round(tokens / 1000)
-    if (k === 0) return '<1k'
     return `${k}k`
 }

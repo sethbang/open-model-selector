@@ -235,10 +235,13 @@
     padding: 8px 0;
     font-size: 12px;
     outline: none !important;
-    box-shadow: none !important;
+    box-shadow: none;
     -webkit-appearance: none;
     appearance: none;
     color: hsl(var(--oms-foreground));
+}
+.oms-popover-content [cmdk-input]:focus-visible {
+    box-shadow: 0 0 0 2px hsl(var(--oms-primary) / 0.3) !important;
 }
 .oms-popover-content [cmdk-input]::placeholder {
     color: hsl(var(--oms-muted-foreground));

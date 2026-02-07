@@ -115,7 +115,7 @@ export function useOpenAIModels({
   normalizer,
 }: UseOpenAIModelsProps): UseOpenAIModelsResult {
   const [models, setModels] = useState<Model[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(!!baseUrl)
   const [error, setError] = useState<Error | null>(null)
 
   // Store callback props in refs to avoid infinite re-fetch loops when consumers
@@ -171,7 +171,9 @@ export function useOpenAIModels({
           .filter((item): item is Record<string, unknown> => item !== null && typeof item === 'object')
 
         if (rawList.length === 0 && !extractorRef.current) {
-          console.debug('[open-model-selector] No models extracted from API response. You may need a custom responseExtractor.')
+          if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+            console.debug('[open-model-selector] No models extracted from API response. You may need a custom responseExtractor.')
+          }
         }
 
         // Normalize each raw model into a Model, skipping entries that fail
@@ -181,7 +183,9 @@ export function useOpenAIModels({
             try {
               return normalize(raw)
             } catch (e) {
-              console.warn('[open-model-selector] Failed to normalize model:', raw.id ?? raw, e)
+              if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+                console.warn('[open-model-selector] Failed to normalize model:', raw.id ?? raw, e)
+              }
               return null
             }
           })

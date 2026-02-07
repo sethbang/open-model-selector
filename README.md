@@ -18,10 +18,32 @@ Ships with built-in search, favorites, sorting, hover-card details, dark mode, a
 - **Lightweight** — built on [Radix UI](https://www.radix-ui.com/) primitives and [cmdk](https://cmdk.paco.me/)
 - **TypeScript-first** — full type exports for all public APIs
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [API Reference](#api-reference)
+- [Utilities](#utilities)
+- [Types](#types)
+- [Theming](#theming)
+- [Security](#security)
+- [Advanced Usage](#advanced-usage)
+- [Compatibility](#compatibility)
+- [Browser Support](#browser-support)
+- [Development](#development)
+- [License](#license)
+
 ## Installation
 
 ```bash
+# npm
 npm install open-model-selector
+
+# yarn
+yarn add open-model-selector
+
+# pnpm
+pnpm add open-model-selector
 ```
 
 ### Peer Dependencies
@@ -266,6 +288,64 @@ normalizer={(raw) => ({
 })}
 ```
 
+## Utilities
+
+The package exports a `./utils` sub-path for use outside of React components — including React Server Components, server-side logic, or custom UIs.
+
+> 💡 This sub-path has no `"use client"` directive and is **RSC-safe**.
+
+```ts
+import {
+  formatPrice,
+  formatContextLength,
+  defaultModelNormalizer,
+  defaultResponseExtractor,
+} from "open-model-selector/utils";
+
+import type {
+  Model,
+  ModelPricing,
+  ModelNormalizer,
+  ResponseExtractor,
+} from "open-model-selector/utils";
+```
+
+### Exported Functions
+
+| Function | Description |
+|---|---|
+| `formatPrice(value)` | Formats a per-token price into a human-readable per-million-tokens string (e.g., `0.00003` → `"$30.00"`). Returns `"—"` for missing or invalid input. |
+| `formatContextLength(tokens)` | Formats a token count into a compact string (e.g., `128000` → `"128k"`, `1_000_000` → `"1M"`). |
+| `defaultModelNormalizer(raw)` | Transforms a raw model object into a normalized [`Model`](#model). See [above](#defaultmodelnormalizer) for details. |
+| `defaultResponseExtractor(body)` | Extracts the raw model array from an API response body. See [above](#defaultresponseextractor) for details. |
+
+### Exported Types
+
+| Type | Description |
+|---|---|
+| [`Model`](#model) | Normalized model object. |
+| [`ModelPricing`](#modelpricing) | Pricing information for a model. |
+| [`ModelNormalizer`](#modelnormalizer) | Function signature for model normalizers. |
+| [`ResponseExtractor`](#responseextractor) | Function signature for response extractors. |
+
+### Example: Server-side formatting
+
+```ts
+import { formatPrice, formatContextLength } from "open-model-selector/utils";
+
+// In a server component or API route
+function ModelCard({ model }) {
+  return (
+    <div>
+      <h3>{model.name}</h3>
+      <p>Context: {formatContextLength(model.context_length)}</p>
+      <p>Input: {formatPrice(model.pricing.prompt)}/M tokens</p>
+      <p>Output: {formatPrice(model.pricing.completion)}/M tokens</p>
+    </div>
+  );
+}
+```
+
 ## Types
 
 ### `Model`
@@ -309,10 +389,28 @@ type ModelNormalizer = (raw: Record<string, unknown>) => Model;
 
 ## Theming
 
-The component uses CSS custom properties prefixed with `--oms-` to avoid collisions with your app's styles. Override them to match your design system:
+The component uses CSS custom properties prefixed with `--oms-` to avoid collisions with your app's styles. The component's CSS scopes defaults to `.oms-reset, .oms-popover-content, .oms-hover-content`. You can override variables globally on `:root` (which cascades into the component) or scope them more precisely:
 
 ```css
+/* Global override (cascades into component) */
 :root {
+  --oms-primary: 220 90% 56%;
+}
+
+/* Scoped override (more precise) */
+.oms-reset,
+.oms-popover-content,
+.oms-hover-content {
+  --oms-primary: 220 90% 56%;
+}
+```
+
+The full set of available custom properties:
+
+```css
+.oms-reset,
+.oms-popover-content,
+.oms-hover-content {
   --oms-background: 0 0% 100%;
   --oms-foreground: 222.2 84% 4.9%;
   --oms-popover: 0 0% 100%;
@@ -345,6 +443,31 @@ Dark mode activates automatically via `prefers-color-scheme: dark`, or you can t
   <!-- Component will use dark theme -->
 </html>
 ```
+
+> ⚠️ **Portal scoping:** The `.dark` class must be on `<html>` or `<body>` (not a deeply nested wrapper) for portaled content — popovers and hover cards — to receive dark mode styling. This is because Radix UI portals render outside the component tree, so a `.dark` class on a nested container won't reach them.
+
+## Security
+
+The component's managed mode makes client-side `fetch` calls to the configured `baseUrl`. Keep the following in mind:
+
+1. **Client-side API key exposure** — The `apiKey` prop is sent as a `Bearer` token in the `Authorization` header. This is visible in browser DevTools (Network tab) and should **never** contain a secret key in production.
+
+2. **Use a backend proxy for production** — Pass a custom [`fetcher`](#custom-fetcher-proxy--ssr) that routes requests through your own backend, where the real API key is stored server-side:
+
+   ```tsx
+   <ModelSelector
+     baseUrl="/api/proxy/v1"
+     fetcher={(url, init) =>
+       fetch(url, { ...init, credentials: "include" })
+     }
+     value={model}
+     onChange={setModel}
+   />
+   ```
+
+3. **Venice.ai requires no API key** — Venice.ai's `/v1/models` endpoint is publicly accessible for model discovery, making it the safest default for client-side usage.
+
+4. **Keep `baseUrl` developer-controlled** — The `baseUrl` prop determines where network requests are sent. Do not source it from end-user input, as this could be used to exfiltrate the API key to an attacker-controlled server.
 
 ## Advanced Usage
 

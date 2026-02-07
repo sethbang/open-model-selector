@@ -2,16 +2,17 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor, cleanup } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ModelSelector, SYSTEM_DEFAULT_VALUE } from './model-selector'
-import type { Model } from '../hooks/use-openai-models'
+import type { TextModel } from '../types'
 
 // --- Test Fixtures ---
 
-const mockModels: Model[] = [
+const mockModels: TextModel[] = [
   {
     id: 'gpt-4',
     name: 'GPT-4',
     provider: 'openai',
     created: 1700000000,
+    type: 'text',
     description: 'Most capable model',
     context_length: 8192,
     pricing: { prompt: 0.00003, completion: 0.00006 },
@@ -22,6 +23,7 @@ const mockModels: Model[] = [
     name: 'Claude 3 Opus',
     provider: 'anthropic',
     created: 1710000000,
+    type: 'text',
     description: 'Anthropic flagship',
     context_length: 200000,
     pricing: { prompt: 0.000015, completion: 0.000075 },
@@ -32,13 +34,14 @@ const mockModels: Model[] = [
     name: 'Llama 3 70B',
     provider: 'meta',
     created: 1705000000,
+    type: 'text',
     context_length: 8192,
     pricing: {},
     is_favorite: false,
   },
 ]
 
-const mockModelsWithFavorite: Model[] = [
+const mockModelsWithFavorite: TextModel[] = [
   { ...mockModels[0], is_favorite: true },
   mockModels[1],
   mockModels[2],
@@ -46,7 +49,7 @@ const mockModelsWithFavorite: Model[] = [
 
 // --- Helpers ---
 
-function createFetchMock(models: Model[], delay = 0) {
+function createFetchMock(models: TextModel[], delay = 0) {
   return vi.fn(async (_url: string, init?: RequestInit) => {
     if (delay > 0) await new Promise((r) => setTimeout(r, delay))
     if (init?.signal?.aborted) throw new DOMException('Aborted', 'AbortError')
@@ -198,10 +201,10 @@ describe('ModelSelector', () => {
         />
       )
 
-      // Wait for fetch to complete
+      // Wait for fetch to complete (useModels appends ?type=all by default)
       await waitFor(() => {
         expect(fetcher).toHaveBeenCalledWith(
-          'https://api.example.com/v1/models',
+          'https://api.example.com/v1/models?type=all',
           expect.objectContaining({
             headers: {},
             signal: expect.any(AbortSignal),

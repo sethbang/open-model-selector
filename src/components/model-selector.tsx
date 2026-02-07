@@ -1,8 +1,12 @@
+"use client"
+
 import * as React from "react"
 import { Command as CommandPrimitive } from "cmdk"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
-import { Model, useOpenAIModels, UseOpenAIModelsProps } from "../hooks/use-openai-models"
-import { formatPrice, formatContextLength } from "../utils/format"
+import type { AnyModel, ModelType } from "../types"
+import { useModels, type UseModelsProps } from "../hooks/use-models"
+import { cn } from "../utils/helpers"
+import { ModelItem } from "./model-item"
 
 /** Sentinel value representing system default model selection */
 export const SYSTEM_DEFAULT_VALUE = "system_default" as const
@@ -27,9 +31,6 @@ const defaultOnChange: (modelId: string) => void = (() => {
 
 // --- Icons (Inline SVGs) ---
 const Icons = {
-  Check: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polyline points="20 6 9 17 4 12"/></svg>
-  ),
   ChevronsUpDown: (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
   ),
@@ -42,14 +43,6 @@ const Icons = {
   Loader2: (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
   ),
-  Star: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-  )
-}
-
-// --- Utils ---
-function cn(...classes: (string | undefined | null | false)[]) {
-  return classes.filter(Boolean).join(" ")
 }
 
 // --- Types ---
@@ -65,7 +58,7 @@ export interface ModelSelectorProps {
    * Static list of models to display. When a non-empty array is provided,
    * the internal API fetch is disabled and only these models are shown.
    */
-  models?: Model[]
+  models?: AnyModel[]
   
   /** Base URL for the OpenAI-compatible API endpoint (e.g., "https://api.venice.ai/api/v1") */
   baseUrl?: string
@@ -73,37 +66,32 @@ export interface ModelSelectorProps {
   /** API key for authentication. Warning: This is visible in browser DevTools. Consider using a backend proxy. */
   apiKey?: string
   
+  /** Filter results to a specific model type. If omitted, returns all types. */
+  type?: ModelType
+
+  /**
+   * Query parameters for the /models endpoint.
+   * @default { type: 'all' }
+   */
+  queryParams?: Record<string, string>
+
   /**
    * Custom fetch function for SSR, testing, or proxy scenarios.
    * If not provided, uses global fetch.
-   *
-   * @remarks
-   * This function is stored in a ref internally, so you don't need to memoize it
-   * with `useCallback`. Inline functions or changing the fetcher will be picked up
-   * on the next fetch cycle without triggering infinite re-renders.
-   *
-   * @example
-   * ```tsx
-   * // Inline function works fine - no memoization needed
-   * <ModelSelector
-   *   fetcher={(url, init) => fetch(url, { ...init, credentials: 'include' })}
-   *   ...
-   * />
-   * ```
    */
-  fetcher?: UseOpenAIModelsProps['fetcher']
+  fetcher?: UseModelsProps['fetcher']
   
   /**
    * Custom function to extract the raw model array from the API response body.
-   * @see UseOpenAIModelsProps.responseExtractor
+   * @see UseModelsProps.responseExtractor
    */
-  responseExtractor?: UseOpenAIModelsProps['responseExtractor']
+  responseExtractor?: UseModelsProps['responseExtractor']
   
   /**
-   * Custom function to normalize each raw model object into a Model.
-   * @see UseOpenAIModelsProps.normalizer
+   * Custom function to normalize each raw model object into an AnyModel.
+   * @see UseModelsProps.normalizer
    */
-  normalizer?: UseOpenAIModelsProps['normalizer']
+  normalizer?: UseModelsProps['normalizer']
   
   /** Currently selected model ID (controlled component pattern) */
   value?: string
@@ -134,19 +122,19 @@ export interface ModelSelectorProps {
   
   /**
    * Custom localStorage key for persisting favorites in uncontrolled mode.
-   * Use this to avoid namespace collisions when multiple ModelSelector instances
-   * exist in the same application or across microfrontends sharing localStorage.
-   *
    * @default "open-model-selector-favorites"
-   * @example
-   * ```tsx
-   * <ModelSelector storageKey="my-app-model-favorites" />
-   * ```
    */
   storageKey?: string
 
   /** Whether to show the "Use System Default" option. @default true */
   showSystemDefault?: boolean
+
+  /**
+   * Whether to show deprecated models. Default: true.
+   * When false, models with deprecation.date in the past are hidden.
+   * Models with future deprecation dates are always shown with a warning.
+   */
+  showDeprecated?: boolean
 }
 
 export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps>(
@@ -155,6 +143,8 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
       models = [],
       baseUrl,
       apiKey,
+      type,
+      queryParams,
       fetcher,
       responseExtractor,
       normalizer,
@@ -168,6 +158,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
       className,
       storageKey = "open-model-selector-favorites",
       showSystemDefault = true,
+      showDeprecated = true,
     },
     ref
   ) {
@@ -175,9 +166,12 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
   const listboxId = React.useId() + '-listbox'
 
   // When consumer provides models, disable the internal fetch by withholding baseUrl
-  const { models: fetchedModels, loading, error } = useOpenAIModels({
-    baseUrl: models.length > 0 ? undefined : baseUrl,
+  const effectiveBaseUrl = models.length > 0 ? undefined : baseUrl
+  const { models: fetchedModels, loading, error } = useModels({
+    baseUrl: effectiveBaseUrl,
     apiKey,
+    type,
+    queryParams,
     fetcher,
     responseExtractor,
     normalizer,
@@ -205,13 +199,12 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
             const stored = localStorage.getItem(storageKey)
             if (stored) {
                 const parsed: unknown = JSON.parse(stored)
-                // Type guard: only set favorites if parsed value is a valid string array
                 if (Array.isArray(parsed) && parsed.every(item => typeof item === 'string')) {
                     setLocalFavorites(parsed)
                 }
             }
         } catch {
-            // Silent failure for localStorage favorites - acceptable for non-critical feature
+            // Silent failure for localStorage favorites
         }
     }
   }, [onToggleFavorite, storageKey])
@@ -220,14 +213,13 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
     if (onToggleFavorite) {
         onToggleFavorite(modelId)
     } else {
-        // Uncontrolled mode: toggle locally and persist
         setLocalFavorites(prev => {
             const isFav = prev.includes(modelId)
             const next = isFav ? prev.filter(id => id !== modelId) : [...prev, modelId]
             try {
                 localStorage.setItem(storageKey, JSON.stringify(next))
             } catch {
-                // Silent failure for localStorage write - acceptable for non-critical feature
+                // Silent failure for localStorage write
             }
             return next
         })
@@ -235,10 +227,9 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
   }, [onToggleFavorite, storageKey])
 
   const allModels = React.useMemo(() => {
-    const map = new Map<string, Model>()
+    const map = new Map<string, AnyModel>()
     
     // Merge provided models and fetched models, dedupe by ID
-    // User provided models take precedence if IDs conflict
     fetchedModels.forEach(m => map.set(m.id, m))
     models.forEach(m => map.set(m.id, m))
     
@@ -247,23 +238,43 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
         const favoritesSet = new Set(localFavorites)
         map.forEach((m) => {
             if (favoritesSet.has(m.id)) {
-                // Return a new object so we don't mutate the source
                 map.set(m.id, { ...m, is_favorite: true })
             }
         })
     }
 
+    let list = Array.from(map.values())
+
+    const now = new Date()
+
+    // Filter out deprecated models (past date) when showDeprecated is false
+    if (!showDeprecated) {
+      list = list.filter(m => {
+        if (!m.deprecation) return true
+        return new Date(m.deprecation.date) >= now
+      })
+    }
+
     // Sort
-    const list = Array.from(map.values())
-    
     if (sortOrder === "created") {
         list.sort((a, b) => b.created - a.created)
     } else {
         list.sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id))
     }
 
-    return list
-  }, [models, fetchedModels, sortOrder, localFavorites, onToggleFavorite])
+    // Move deprecated models (past date) to the end
+    const nonDeprecated: AnyModel[] = []
+    const deprecated: AnyModel[] = []
+    for (const m of list) {
+      if (m.deprecation && new Date(m.deprecation.date) < now) {
+        deprecated.push(m)
+      } else {
+        nonDeprecated.push(m)
+      }
+    }
+
+    return [...nonDeprecated, ...deprecated]
+  }, [models, fetchedModels, sortOrder, localFavorites, onToggleFavorite, showDeprecated])
 
   const selectedModel = React.useMemo(
     () => allModels.find((model) => model.id === value),
@@ -364,7 +375,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
                         >
                           <div className="oms-item-content">
                               <div className="oms-item-left">
-                                  <Icons.Check className="oms-icon" style={{ opacity: value === SYSTEM_DEFAULT_VALUE ? 1 : 0 }} />
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="oms-icon" style={{ opacity: value === SYSTEM_DEFAULT_VALUE ? 1 : 0 }}><polyline points="20 6 9 17 4 12"/></svg>
                                   <span>Use System Default</span>
                               </div>
                           </div>
@@ -410,154 +421,3 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
 )
 
 ModelSelector.displayName = "ModelSelector"
-
-// --- Custom Tooltip (replaces @radix-ui/react-hover-card) ---
-function ModelTooltip({ model }: { model: Model }) {
-  const [visible, setVisible] = React.useState(false)
-  const openTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined)
-  const closeTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined)
-  const triggerRef = React.useRef<HTMLDivElement>(null)
-  const contentRef = React.useRef<HTMLDivElement>(null)
-
-  const show = React.useCallback(() => {
-    clearTimeout(closeTimer.current)
-    openTimer.current = setTimeout(() => setVisible(true), 200)
-  }, [])
-
-  const hide = React.useCallback(() => {
-    clearTimeout(openTimer.current)
-    closeTimer.current = setTimeout(() => setVisible(false), 100)
-  }, [])
-
-  // Position the tooltip to the right of the trigger
-  React.useEffect(() => {
-    if (visible && triggerRef.current && contentRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect()
-      const content = contentRef.current
-      content.style.position = 'fixed'
-      content.style.left = `${rect.right + 5}px`
-      content.style.top = `${rect.top}px`
-
-      // If it overflows the viewport right edge, flip to left side
-      const contentRect = content.getBoundingClientRect()
-      if (contentRect.right > window.innerWidth) {
-        content.style.left = `${rect.left - contentRect.width - 5}px`
-      }
-      // If it overflows the viewport bottom, shift up
-      if (contentRect.bottom > window.innerHeight) {
-        content.style.top = `${window.innerHeight - contentRect.height - 8}px`
-      }
-    }
-  }, [visible])
-
-  // Cleanup timers on unmount
-  React.useEffect(() => {
-    return () => {
-      clearTimeout(openTimer.current)
-      clearTimeout(closeTimer.current)
-    }
-  }, [])
-
-  return (
-    <>
-      <div
-        ref={triggerRef}
-        onPointerEnter={show}
-        onPointerLeave={hide}
-        style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', cursor: 'help', maxWidth: '180px', gap: '2px', lineHeight: 1.3 }}
-      >
-        <span className="oms-truncate" style={{ fontWeight: 500 }}>{model.name}</span>
-        <span className="oms-truncate oms-text-xxs oms-muted">{model.provider}</span>
-      </div>
-      {visible && (
-        <div
-          ref={contentRef}
-          className="oms-hover-content"
-          onPointerEnter={show}
-          onPointerLeave={hide}
-        >
-          <div className="oms-flex-col oms-gap-2">
-            <h4 style={{ fontSize: '14px', fontWeight: 600 }}>{model.name}</h4>
-            {model.description && (
-              <p className="oms-text-xs oms-muted">{model.description}</p>
-            )}
-            <div className="oms-flex-row oms-gap-2" style={{ flexWrap: 'wrap' }}>
-              {model.context_length > 0 && (
-                <span className="oms-badge oms-badge-secondary">
-                  {formatContextLength(model.context_length)} Context
-                </span>
-              )}
-              <span className="oms-badge oms-badge-outline">{model.provider}</span>
-            </div>
-            {model.pricing && (
-              <div className="oms-grid-2 oms-text-xxs oms-border-t oms-pt-2">
-                <div>
-                  <span className="oms-muted">Input:</span> <br/>
-                  <span className="oms-mono">{formatPrice(model.pricing.prompt)} / 1M</span>
-                </div>
-                <div>
-                  <span className="oms-muted">Output:</span> <br/>
-                  <span className="oms-mono">{formatPrice(model.pricing.completion)} / 1M</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </>
-  )
-}
-
-const ModelItem = React.memo(function ModelItem({
-  model,
-  isSelected,
-  onSelect,
-  onToggleFavorite,
-}: {
-  model: Model
-  isSelected: boolean
-  onSelect: (value: string) => void
-  onToggleFavorite: (id: string) => void
-}) {
-  return (
-    <CommandPrimitive.Item
-      value={`${model.name} ${model.provider} ${model.id} ${model.description || ''}`}
-      onSelect={() => onSelect(model.id)}
-    >
-      <div className="oms-item-content">
-          <div className="oms-item-left">
-            <Icons.Check 
-                className="oms-icon" 
-                style={{ opacity: isSelected ? 1 : 0 }} 
-            />
-            
-            <ModelTooltip model={model} />
-          </div>
-          
-          <button
-            type="button"
-            aria-label={model.is_favorite ? "Remove from favorites" : "Add to favorites"}
-            className="oms-star-btn"
-            onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.stopPropagation()
-                }
-            }}
-            onClick={(e) => {
-                e.stopPropagation()
-                onToggleFavorite(model.id)
-            }}
-          >
-            <Icons.Star 
-                className={cn(
-                    "oms-icon", 
-                    model.is_favorite ? "oms-star-filled" : "oms-muted"
-                )}
-                style={{ opacity: model.is_favorite ? 1 : 0.4 }}
-            />
-          </button>
-      </div>
-    </CommandPrimitive.Item>
-  )
-})
-

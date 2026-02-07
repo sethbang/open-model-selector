@@ -1,6 +1,39 @@
 // Pure utility functions — no "use client" directive
 // Import from "open-model-selector/utils" for RSC-safe usage
 
-export { defaultModelNormalizer, defaultResponseExtractor } from './normalizers'
-export type { ModelNormalizer, ResponseExtractor, Model, ModelPricing } from './normalizers'
-export { formatPrice, formatContextLength } from './format'
+// Re-export normalizer utilities
+export {
+  defaultModelNormalizer,
+  defaultResponseExtractor,
+  inferTypeFromId,
+  MODEL_ID_TYPE_PATTERNS,
+  normalizeTextModel,
+  normalizeImageModel,
+  normalizeVideoModel,
+  normalizeInpaintModel,
+  normalizeEmbeddingModel,
+  normalizeTtsModel,
+  normalizeAsrModel,
+  normalizeUpscaleModel,
+  toNum,
+  extractBaseFields,
+} from './normalizers/index'
+
+export type {
+  ModelNormalizer,
+  ResponseExtractor,
+} from './normalizers/index'
+
+// Re-export helper utilities
+export { cn, isDeprecated } from './helpers'
+
+// Re-export format utilities
+export {
+  formatPrice,
+  formatContextLength,
+  formatFlatPrice,
+  formatAudioPrice,
+  formatDuration,
+  formatResolutions,
+  formatAspectRatios,
+} from './format'

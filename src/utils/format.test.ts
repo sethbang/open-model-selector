@@ -128,3 +128,135 @@ describe('formatContextLength', () => {
     expect(formatContextLength(200000)).toBe('200k')
   })
 })
+
+// ═══════════════════════════════════════════════════════════════════════════
+// New format functions — Phase 10A
+// ═══════════════════════════════════════════════════════════════════════════
+
+import { formatFlatPrice, formatAudioPrice, formatDuration, formatResolutions, formatAspectRatios } from './format'
+
+describe('formatFlatPrice', () => {
+  it('returns "—" for undefined', () => {
+    expect(formatFlatPrice(undefined)).toBe('—')
+  })
+
+  it('returns "—" for null', () => {
+    expect(formatFlatPrice(null)).toBe('—')
+  })
+
+  it('returns "—" for NaN', () => {
+    expect(formatFlatPrice(NaN)).toBe('—')
+  })
+
+  it('formats zero', () => {
+    expect(formatFlatPrice(0)).toBe('$0.00')
+  })
+
+  it('formats small price', () => {
+    expect(formatFlatPrice(0.04)).toBe('$0.04')
+  })
+
+  it('formats medium price', () => {
+    expect(formatFlatPrice(0.18)).toBe('$0.18')
+  })
+
+  it('formats price with rounding', () => {
+    expect(formatFlatPrice(1.5)).toBe('$1.50')
+  })
+})
+
+describe('formatAudioPrice', () => {
+  it('returns "—" for undefined', () => {
+    expect(formatAudioPrice(undefined)).toBe('—')
+  })
+
+  it('returns "—" for null', () => {
+    expect(formatAudioPrice(null)).toBe('—')
+  })
+
+  it('returns "—" for NaN', () => {
+    expect(formatAudioPrice(NaN)).toBe('—')
+  })
+
+  it('formats normal per-second price', () => {
+    expect(formatAudioPrice(0.01)).toBe('$0.01 / sec')
+  })
+
+  it('formats small per-second price with 4 decimals', () => {
+    expect(formatAudioPrice(0.006)).toBe('$0.0060 / sec')
+  })
+})
+
+describe('formatDuration', () => {
+  it('returns "—" for undefined', () => {
+    expect(formatDuration(undefined)).toBe('—')
+  })
+
+  it('returns "—" for null', () => {
+    expect(formatDuration(null)).toBe('—')
+  })
+
+  it('returns "—" for empty array', () => {
+    expect(formatDuration([])).toBe('—')
+  })
+
+  it('formats single duration', () => {
+    expect(formatDuration(['5'])).toBe('5s')
+  })
+
+  it('formats range', () => {
+    expect(formatDuration(['5', '10', '30'])).toBe('5s – 30s')
+  })
+
+  it('sorts values', () => {
+    expect(formatDuration(['10', '5'])).toBe('5s – 10s')
+  })
+
+  it('returns "—" for non-numeric', () => {
+    expect(formatDuration(['abc'])).toBe('—')
+  })
+})
+
+describe('formatResolutions', () => {
+  it('returns "—" for undefined', () => {
+    expect(formatResolutions(undefined)).toBe('—')
+  })
+
+  it('returns "—" for null', () => {
+    expect(formatResolutions(null)).toBe('—')
+  })
+
+  it('returns "—" for empty array', () => {
+    expect(formatResolutions([])).toBe('—')
+  })
+
+  it('formats multiple resolutions', () => {
+    expect(formatResolutions(['720p', '1080p', '4K'])).toBe('720p, 1080p, 4K')
+  })
+
+  it('formats single resolution', () => {
+    expect(formatResolutions(['1080p'])).toBe('1080p')
+  })
+})
+
+describe('formatAspectRatios', () => {
+  it('returns "—" for undefined', () => {
+    expect(formatAspectRatios(undefined)).toBe('—')
+  })
+
+  it('returns "—" for null', () => {
+    expect(formatAspectRatios(null)).toBe('—')
+  })
+
+  it('returns "—" for empty array', () => {
+    expect(formatAspectRatios([])).toBe('—')
+  })
+
+  it('formats multiple ratios', () => {
+    expect(formatAspectRatios(['16:9', '9:16', '1:1'])).toBe('16:9, 9:16, 1:1')
+  })
+
+  it('formats single ratio', () => {
+    expect(formatAspectRatios(['1:1'])).toBe('1:1')
+  })
+})

@@ -381,3 +381,123 @@
     color: rgb(234 179 8); /* yellow-500 */
     fill: rgb(250 204 21); /* yellow-400 */
 }
+
+/* === Multi-type model support === */
+
+/* Type badge (shown inline in model item for non-text types) */
+.oms-badge-type {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: hsl(var(--oms-muted));
+  color: hsl(var(--oms-muted-foreground));
+}
+
+/* Capability pills */
+.oms-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 9999px;
+  background: hsl(var(--oms-accent));
+  color: hsl(var(--oms-accent-foreground));
+  white-space: nowrap;
+}
+
+.oms-pill-vision { background: rgba(59, 130, 246, 0.15); color: rgb(59, 130, 246); }
+.oms-pill-reasoning { background: rgba(168, 85, 247, 0.15); color: rgb(168, 85, 247); }
+.oms-pill-code { background: rgba(34, 197, 94, 0.15); color: rgb(34, 197, 94); }
+.oms-pill-functions { background: rgba(249, 115, 22, 0.15); color: rgb(249, 115, 22); }
+.oms-pill-private { background: rgba(34, 197, 94, 0.15); color: rgb(34, 197, 94); }
+.oms-pill-anonymized { background: rgba(234, 179, 8, 0.15); color: rgb(234, 179, 8); }
+.oms-pill-beta { background: rgba(234, 179, 8, 0.15); color: rgb(234, 179, 8); }
+.oms-pill-audio { background: rgba(236, 72, 153, 0.15); color: rgb(236, 72, 153); }
+.oms-pill-web-search { background: rgba(6, 182, 212, 0.15); color: rgb(6, 182, 212); }
+
+/* Deprecated model styling */
+.oms-deprecated .oms-item-name {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.oms-deprecating .oms-item-name {
+  opacity: 0.8;
+}
+
+.oms-deprecation-badge {
+  font-size: 10px;
+  color: hsl(var(--oms-destructive));
+}
+
+/* Tooltip sections */
+.oms-tooltip-section {
+  padding-top: 6px;
+  margin-top: 6px;
+  border-top: 1px solid hsl(var(--oms-border));
+}
+
+.oms-tooltip-section:first-child {
+  padding-top: 0;
+  margin-top: 0;
+  border-top: none;
+}
+
+.oms-tooltip-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.oms-tooltip-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 8px;
+  font-size: 11px;
+}
+
+.oms-tooltip-grid-label {
+  color: hsl(var(--oms-muted-foreground));
+}
+
+.oms-tooltip-grid-value {
+  text-align: right;
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+}
+
+/* Offline indicator */
+.oms-offline-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: hsl(var(--oms-destructive));
+}
+
+/* Item name container */
+.oms-item-name {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Metadata row in list item */
+.oms-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: hsl(var(--oms-muted-foreground));
+}
+
+.oms-item-meta-separator::before {
+  content: '•';
+  margin: 0 1px;
+}

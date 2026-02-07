@@ -7,102 +7,104 @@ import type { Model } from "../hooks/use-openai-models";
 
 const MOCK_MODELS: Model[] = [
   {
-    id: "gpt-4o",
-    name: "GPT-4o",
-    provider: "OpenAI",
-    created: 1715000000,
-    context_length: 128000,
-    is_favorite: false,
-    description: "Most capable multimodal model with vision, audio, and text capabilities.",
-    pricing: { prompt: "0.0000025", completion: "0.00001" },
-  },
-  {
-    id: "gpt-4o-mini",
-    name: "GPT-4o Mini",
-    provider: "OpenAI",
-    created: 1720000000,
-    context_length: 128000,
-    is_favorite: false,
-    description: "Small, fast, and affordable model for lightweight tasks.",
-    pricing: { prompt: "0.00000015", completion: "0.0000006" },
-  },
-  {
-    id: "anthropic/claude-3.5-sonnet",
-    name: "Claude 3.5 Sonnet",
-    provider: "anthropic",
-    created: 1718000000,
-    context_length: 200000,
+    id: "zai-org-glm-4.7",
+    name: "GLM 4.7",
+    provider: "venice.ai",
+    created: 1766534400,
+    context_length: 198000,
     is_favorite: true,
-    description: "Anthropic's most intelligent model with excellent reasoning.",
-    pricing: { prompt: "0.000003", completion: "0.000015" },
+    description: "Strong reasoning capabilities with the largest context window for detailed analysis.",
+    pricing: { prompt: "0.00000055", completion: "0.00000265" },
   },
   {
-    id: "anthropic/claude-3-haiku",
-    name: "Claude 3 Haiku",
-    provider: "anthropic",
-    created: 1710000000,
-    context_length: 200000,
-    is_favorite: false,
-    description: "Ultra-fast, compact model for near-instant responsiveness.",
-    pricing: { prompt: "0.00000025", completion: "0.00000125" },
-  },
-  {
-    id: "meta-llama/llama-3.1-405b-instruct",
-    name: "Llama 3.1 405B Instruct",
-    provider: "meta-llama",
-    created: 1690000000,
-    context_length: 131072,
-    is_favorite: false,
-    description: "Meta's flagship open-source model with 405 billion parameters.",
-    pricing: { prompt: "0.000003", completion: "0.000003" },
-  },
-  {
-    id: "meta-llama/llama-3.1-70b-instruct",
-    name: "Llama 3.1 70B Instruct",
-    provider: "meta-llama",
-    created: 1690000000,
-    context_length: 131072,
-    is_favorite: false,
-    pricing: { prompt: "0.0000006", completion: "0.0000006" },
-  },
-  {
-    id: "google/gemini-2.0-flash",
-    name: "Gemini 2.0 Flash",
-    provider: "google",
-    created: 1725000000,
-    context_length: 1048576,
-    is_favorite: false,
-    description: "Google's fast multimodal model with 1M token context window.",
-    pricing: { prompt: "0.0000001", completion: "0.0000004" },
-  },
-  {
-    id: "mistralai/mistral-large",
-    name: "Mistral Large",
-    provider: "mistralai",
-    created: 1708000000,
+    id: "qwen3-235b-a22b-thinking-2507",
+    name: "Qwen 3 235B A22B Thinking 2507",
+    provider: "venice.ai",
+    created: 1745903059,
     context_length: 128000,
+    is_favorite: false,
+    description: "Built for in-depth research and handling long, complex documents.",
+    pricing: { prompt: "0.00000045", completion: "0.0000035" },
+  },
+  {
+    id: "qwen3-coder-480b-a35b-instruct",
+    name: "Qwen 3 Coder 480B",
+    provider: "venice.ai",
+    created: 1745903059,
+    context_length: 256000,
     is_favorite: true,
-    description: "Mistral's flagship model for complex reasoning and multilingual tasks.",
-    pricing: { prompt: "0.000002", completion: "0.000006" },
+    description: "Optimized for code generation and software engineering.",
+    pricing: { prompt: "0.00000075", completion: "0.000003" },
   },
   {
-    id: "deepseek/deepseek-r1",
-    name: "DeepSeek R1",
-    provider: "deepseek",
-    created: 1730000000,
-    context_length: 64000,
+    id: "qwen3-vl-235b-a22b",
+    name: "Qwen3 VL 235B",
+    provider: "venice.ai",
+    created: 1768521600,
+    context_length: 256000,
     is_favorite: false,
-    description: "Advanced reasoning model with chain-of-thought capabilities.",
-    pricing: { prompt: "0.00000055", completion: "0.0000022" },
+    description: "The most powerful VL model with superior visual perception, OCR, and multimodal reasoning.",
+    pricing: { prompt: "0.00000025", completion: "0.0000015" },
   },
   {
-    id: "qwen/qwen-2.5-72b-instruct",
-    name: "Qwen 2.5 72B Instruct",
-    provider: "qwen",
-    created: 1722000000,
-    context_length: 131072,
+    id: "mistral-31-24b",
+    name: "Venice Medium",
+    provider: "venice.ai",
+    created: 1742262554,
+    context_length: 128000,
     is_favorite: false,
-    pricing: { prompt: "0.0000006", completion: "0.0000006" },
+    description: "Balanced blend of speed and capability. Handles most everyday tasks with reliability.",
+    pricing: { prompt: "0.0000005", completion: "0.000002" },
+  },
+  {
+    id: "qwen3-4b",
+    name: "Venice Small",
+    provider: "venice.ai",
+    created: 1745903059,
+    context_length: 32000,
+    is_favorite: false,
+    description: "Optimized for speed and efficiency. Best for quick answers and lightweight tasks.",
+    pricing: { prompt: "0.00000005", completion: "0.00000015" },
+  },
+  {
+    id: "venice-uncensored",
+    name: "Venice Uncensored 1.1",
+    provider: "venice.ai",
+    created: 1742262554,
+    context_length: 32000,
+    is_favorite: false,
+    description: "Designed for maximum creative freedom and authentic interaction.",
+    pricing: { prompt: "0.0000002", completion: "0.0000009" },
+  },
+  {
+    id: "claude-opus-45",
+    name: "Claude Opus 4.5",
+    provider: "venice.ai",
+    created: 1764979200,
+    context_length: 198000,
+    is_favorite: false,
+    description: "Anthropic's frontier reasoning model optimized for complex software engineering.",
+    pricing: { prompt: "0.000006", completion: "0.00003" },
+  },
+  {
+    id: "openai-gpt-52",
+    name: "GPT-5.2",
+    provider: "venice.ai",
+    created: 1765584000,
+    context_length: 256000,
+    is_favorite: false,
+    description: "OpenAI's latest frontier-grade model with adaptive reasoning.",
+    pricing: { prompt: "0.00000219", completion: "0.0000175" },
+  },
+  {
+    id: "deepseek-v3.2",
+    name: "DeepSeek V3.2",
+    provider: "venice.ai",
+    created: 1764806400,
+    context_length: 160000,
+    is_favorite: false,
+    description: "Efficient model with strong reasoning and tool-use skills.",
+    pricing: { prompt: "0.0000004", completion: "0.000001" },
   },
 ];
 
@@ -150,7 +152,7 @@ export const Default: Story = {
 /** Pre-selected model on mount. */
 export const WithPreselectedModel: Story = {
   render: () => {
-    const [value, setValue] = useState("gpt-4o");
+    const [value, setValue] = useState("zai-org-glm-4.7");
     return <ModelSelector models={MOCK_MODELS} value={value} onChange={setValue} />;
   },
 };
@@ -205,7 +207,7 @@ export const ControlledFavorites: Story = {
   render: () => {
     const [value, setValue] = useState("");
     const [favorites, setFavorites] = useState<Set<string>>(
-      new Set(["gpt-4o", "anthropic/claude-3.5-sonnet"])
+      new Set(["zai-org-glm-4.7", "qwen3-coder-480b-a35b-instruct"])
     );
 
     const modelsWithFavs = MOCK_MODELS.map((m) => ({
@@ -321,7 +323,7 @@ export const DarkMode: Story = {
     ),
   ],
   render: () => {
-    const [value, setValue] = useState("anthropic/claude-3.5-sonnet");
+    const [value, setValue] = useState("qwen3-coder-480b-a35b-instruct");
     return <ModelSelector models={MOCK_MODELS} value={value} onChange={setValue} />;
   },
 };

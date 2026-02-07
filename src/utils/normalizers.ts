@@ -20,11 +20,11 @@ export interface ModelPricing {
  * Represents a model available from the API.
  */
 export interface Model {
-  /** Unique model identifier (e.g., "gpt-4" or "zai-org-glm-4.7") */
+  /** Unique model identifier (e.g., "zai-org-glm-4.7", "gpt-4") */
   id: string
   /** Display name for the model */
   name: string
-  /** Provider extracted from model ID or response metadata (e.g., "openai", "venice.ai") */
+  /** Provider extracted from model ID or response metadata (e.g., "venice.ai", "openai") */
   provider: string
   /** Unix timestamp when the model was created */
   created: number
@@ -97,8 +97,8 @@ function toNum(v: unknown): number | undefined {
 
 /**
  * Default model normalizer. Handles response shapes from:
+ * - Venice.ai (`model_spec.name`, `model_spec.availableContextTokens`, `model_spec.pricing`, `model_spec.description`)
  * - OpenAI standard (`id`, `name`, `context_length`, `pricing`)
- * - Venice.ai (`model_spec.name`, `model_spec.availableContextTokens`, `model_spec.pricing`)
  * - OpenRouter (`id` with provider prefix, `context_length`, `pricing`)
  * - Other OpenAI-compatible APIs with common field variations
  */

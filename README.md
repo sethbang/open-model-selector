@@ -1,12 +1,13 @@
 # open-model-selector
 
-A generic, OpenAI-compatible model selector component for React. Drop it into any app to let users browse, search, favorite, and select AI models from any OpenAI-compatible API — or from a static list you provide.
+A generic, OpenAI-compatible model selector component for React — with **native support for the [Venice.ai](https://venice.ai) model list spec**. Drop it into any app to let users browse, search, favorite, and select AI models from Venice.ai, OpenAI, OpenRouter, or any OpenAI-compatible API — or from a static list you provide.
 
 Built with [cmdk](https://cmdk.paco.me/) and [Radix Popover](https://www.radix-ui.com/primitives/docs/components/popover). Zero global styles. Dark mode out of the box.
 
 ## Features
 
-- **OpenAI-compatible** — works with OpenAI, Venice.ai, OpenRouter, and any `/v1/models` endpoint
+- **Venice.ai native** — first-class support for the Venice.ai model spec including `model_spec` fields, context tokens, per-million pricing, and rich metadata
+- **OpenAI-compatible** — works with Venice.ai, OpenAI, OpenRouter, and any `/v1/models` endpoint
 - **Two modes** — fetch models from an API (_managed_), or pass a static array (_controlled_)
 - **Search** — fuzzy search by name, provider, ID, or description (powered by cmdk)
 - **Favorites** — star models to pin them to the top; persists to `localStorage` or controlled externally
@@ -19,6 +20,50 @@ Built with [cmdk](https://cmdk.paco.me/) and [Radix Popover](https://www.radix-u
 - **Custom normalizers** — plug in your own response extractor or model normalizer for exotic APIs
 - **Custom fetcher** — inject a fetch function for SSR, proxies, or testing (no memoization needed)
 - **Lightweight** — peer deps only; no bundled UI framework
+
+## Venice.ai Model Showcase
+
+Out of the box, the component understands the Venice.ai model list format — including `model_spec.name`, `model_spec.availableContextTokens`, `model_spec.pricing`, `model_spec.description`, and `model_spec.capabilities`. Just point `baseUrl` at Venice.ai and you're done:
+
+```tsx
+<ModelSelector
+  baseUrl="https://api.venice.ai/api/v1"
+  value={modelId}
+  onChange={setModelId}
+/>
+```
+
+No API key required for model discovery. Venice.ai offers a wide array of state-of-the-art models across text, image, video, and more:
+
+### Text Models — State of the Art
+
+| Model | ID | Context | Capabilities | Pricing (per 1M tokens) |
+| --- | --- | --- | --- | --- |
+| **GLM 4.7** | `zai-org-glm-4.7` | 198K | Reasoning, Function Calling, Web Search | $0.55 in / $2.65 out |
+| **Qwen 3 235B Thinking** | `qwen3-235b-a22b-thinking-2507` | 128K | Reasoning, Function Calling, Web Search | $0.45 in / $3.50 out |
+| **Qwen 3 Coder 480B** | `qwen3-coder-480b-a35b-instruct` | 256K | Code-optimized, Function Calling | $0.75 in / $3.00 out |
+| **Qwen3 VL 235B** | `qwen3-vl-235b-a22b` | 256K | Vision, Function Calling, Web Search | $0.25 in / $1.50 out |
+| **Venice Medium** | `mistral-31-24b` | 128K | Vision, Function Calling, Web Search | $0.50 in / $2.00 out |
+| **Venice Small** | `qwen3-4b` | 32K | Fastest, Reasoning, Function Calling | $0.05 in / $0.15 out |
+| **Venice Uncensored 1.1** | `venice-uncensored` | 32K | Uncensored, Web Search | $0.20 in / $0.90 out |
+
+### Frontier Models via Venice.ai
+
+Venice.ai also provides access to frontier proprietary models through a unified API:
+
+| Model | ID | Context | Pricing (per 1M tokens) |
+| --- | --- | --- | --- |
+| **Claude Opus 4.6** | `claude-opus-4-6` | 1M | $6.00 in / $30.00 out |
+| **Claude Opus 4.5** | `claude-opus-45` | 198K | $6.00 in / $30.00 out |
+| **GPT-5.2** | `openai-gpt-52` | 256K | $2.19 in / $17.50 out |
+| **Gemini 3 Pro Preview** | `gemini-3-pro-preview` | 198K | $2.50 in / $15.00 out |
+| **Gemini 3 Flash Preview** | `gemini-3-flash-preview` | 256K | $0.70 in / $3.75 out |
+| **Grok 4.1 Fast** | `grok-41-fast` | 256K | $0.50 in / $1.25 out |
+| **Kimi K2 Thinking** | `kimi-k2-thinking` | 256K | $0.75 in / $3.20 out |
+| **DeepSeek V3.2** | `deepseek-v3.2` | 160K | $0.40 in / $1.00 out |
+| **MiniMax M2.1** | `minimax-m21` | 198K | $0.40 in / $1.60 out |
+
+> All Venice.ai models are automatically normalized by the built-in `defaultModelNormalizer` — including context length from `model_spec.availableContextTokens`, display name from `model_spec.name`, description from `model_spec.description`, and per-token pricing converted from Venice.ai's per-million format.
 
 ## Installation
 
@@ -70,8 +115,8 @@ If the API requires authentication:
 
 ```tsx
 <ModelSelector
-  baseUrl="https://api.openai.com/v1"
-  apiKey="sk-..."
+  baseUrl="https://api.venice.ai/api/v1"
+  apiKey="your-venice-api-key"
   value={modelId}
   onChange={setModelId}
 />
@@ -90,21 +135,33 @@ import "open-model-selector/styles.css"
 
 const models: Model[] = [
   {
-    id: "gpt-4o",
-    name: "GPT-4o",
-    provider: "OpenAI",
-    created: 1715000000,
-    context_length: 128000,
-    pricing: { prompt: "0.0000025", completion: "0.00001" },
+    id: "zai-org-glm-4.7",
+    name: "GLM 4.7",
+    provider: "venice.ai",
+    created: 1766534400,
+    context_length: 198000,
+    description: "Strong reasoning capabilities with the largest context window for detailed analysis.",
+    pricing: { prompt: "0.00000055", completion: "0.00000265" },
     is_favorite: false,
   },
   {
-    id: "anthropic/claude-3.5-sonnet",
-    name: "Claude 3.5 Sonnet",
-    provider: "anthropic",
-    created: 1718000000,
-    context_length: 200000,
-    pricing: { prompt: "0.000003", completion: "0.000015" },
+    id: "qwen3-235b-a22b-thinking-2507",
+    name: "Qwen 3 235B A22B Thinking 2507",
+    provider: "venice.ai",
+    created: 1745903059,
+    context_length: 128000,
+    description: "Built for in-depth research and high-precision tasks.",
+    pricing: { prompt: "0.00000045", completion: "0.0000035" },
+    is_favorite: false,
+  },
+  {
+    id: "qwen3-coder-480b-a35b-instruct",
+    name: "Qwen 3 Coder 480B",
+    provider: "venice.ai",
+    created: 1745903059,
+    context_length: 256000,
+    description: "Optimized for code generation and software engineering.",
+    pricing: { prompt: "0.00000075", completion: "0.000003" },
     is_favorite: false,
   },
 ]
@@ -186,7 +243,7 @@ const { models, loading, error } = useOpenAIModels({
 
 ```ts
 interface Model {
-  id: string            // Unique model identifier (e.g. "gpt-4", "anthropic/claude-3.5-sonnet")
+  id: string            // Unique model identifier (e.g. "zai-org-glm-4.7", "openai-gpt-52", "anthropic/claude-opus-4-6")
   name: string          // Display name
   provider: string      // Provider (extracted from ID prefix, owned_by, or "Unknown")
   created: number       // Unix timestamp
@@ -219,16 +276,18 @@ import {
 #### `defaultResponseExtractor(body)`
 
 Extracts the model array from common API response shapes:
-- `body.data` — OpenAI standard
+- `body.data` — OpenAI standard (also used by Venice.ai)
 - `body.models` — alternative shape
 - `body` itself — if the response is already an array
 
 #### `defaultModelNormalizer(raw)`
 
 Normalizes a raw model object from any of these formats:
+- **Venice.ai** — `model_spec.name`, `model_spec.availableContextTokens`, `model_spec.pricing`, `model_spec.description`, `model_spec.capabilities`
 - **OpenAI** — `id`, `name`, `owned_by`, `context_length`, `pricing`
-- **Venice.ai** — `model_spec.name`, `model_spec.availableContextTokens`, `model_spec.pricing`
 - **OpenRouter** — slash-separated `id` (`"anthropic/claude-3-opus"`), `context_length`, `pricing`
+
+Venice.ai's `model_spec.pricing` uses per-million-tokens format (e.g., `{ input: { usd: 0.55 } }` = $0.55/1M tokens). The normalizer automatically converts this to per-token pricing for consistent display via `formatPrice()`.
 
 #### `formatPrice(value)`
 
@@ -291,7 +350,7 @@ Inject credentials, headers, or use a backend proxy:
 
 ```tsx
 <ModelSelector
-  baseUrl="https://my-api.com/v1"
+  baseUrl="https://api.venice.ai/api/v1"
   fetcher={(url, init) => fetch(url, { ...init, credentials: "include" })}
   value={value}
   onChange={setValue}
@@ -305,7 +364,7 @@ Inject credentials, headers, or use a backend proxy:
 Manage favorites externally (e.g. in a database):
 
 ```tsx
-const [favorites, setFavorites] = useState(new Set(["gpt-4o"]))
+const [favorites, setFavorites] = useState(new Set(["zai-org-glm-4.7"]))
 
 const modelsWithFavs = models.map((m) => ({
   ...m,

@@ -241,7 +241,7 @@
     color: hsl(var(--oms-foreground));
 }
 .oms-popover-content [cmdk-input]:focus-visible {
-    box-shadow: 0 0 0 2px hsl(var(--oms-primary) / 0.3) !important;
+    box-shadow: none !important;
 }
 .oms-popover-content [cmdk-input]::placeholder {
     color: hsl(var(--oms-muted-foreground));

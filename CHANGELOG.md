@@ -2,27 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+This project adheres to [Semantic Versioning](https://semver.org/).
 
-## [0.1.0] - 2026-02-05
+## [0.1.0] — 2026-02-06
+
+Initial release of `open-model-selector`.
 
 ### Added
 
-- Initial release of Open Model Selector
-- `ModelSelector` component for selecting models from OpenAI-compatible APIs
-- `useOpenAIModels` hook for fetching models programmatically
-- Support for managed mode (component fetches models) and controlled mode (pass models directly)
-- Auto-sorting by name with optional controlled sort order
-- Persistent favorites via `localStorage` in uncontrolled mode
-- `storageKey` prop for customizing the `localStorage` namespace
-- Dark mode support via CSS media queries and `.dark` class
-- Full keyboard navigation and accessibility support
-- TypeScript types exported for all public APIs
-- CSS custom properties for theming (`--oms-*` prefix)
-- `SYSTEM_DEFAULT_VALUE` constant for "Use System Default" option
-- Optional `onChange` prop with dev-mode warning when omitted
-- Built-in `fetcher` stability — no `useCallback` memoization required for custom fetchers
-- Stable internal callback refs to prevent unnecessary re-renders
+- **`<ModelSelector>` component** — accessible combobox for selecting AI models, built with cmdk and Radix Popover
+  - Managed mode: fetches models from any OpenAI-compatible `/v1/models` endpoint
+  - Controlled mode: accepts a static `models` array
+  - Fuzzy search by name, provider, ID, and description
+  - Favorites with localStorage persistence (uncontrolled) or external state (controlled via `onToggleFavorite`)
+  - Sorting by name (A-Z) or newest, controllable or uncontrolled
+  - "Use System Default" sentinel option (`SYSTEM_DEFAULT_VALUE`)
+  - Popover placement (`side` prop: top, bottom, left, right)
+  - Custom `placeholder` text
+  - `className` and `ref` forwarding
+  - Configurable `storageKey` for localStorage namespace isolation
+  - `showSystemDefault` toggle
+- **`useOpenAIModels` hook** — fetches and normalizes models from an OpenAI-compatible API
+  - `baseUrl` and `apiKey` props for endpoint configuration
+  - Custom `fetcher` prop for SSR, proxies, and testing (ref-stored — no memoization needed)
+  - Custom `responseExtractor` for non-standard response shapes
+  - Custom `normalizer` for non-standard model shapes
+  - AbortController cleanup on unmount
+  - Re-fetches on `baseUrl` or `apiKey` change
+- **`defaultModelNormalizer`** — handles OpenAI, Venice.ai, and OpenRouter response shapes
+  - Extracts provider from slash-separated IDs or `owned_by`
+  - Resolves `context_length`, `context_window`, and Venice `model_spec.availableContextTokens`
+  - Normalizes pricing from `pricing`, `metadata.pricing`, `cost`, and Venice `model_spec.pricing` formats
+  - Falls back to `model_id` when `id` is missing
+- **`defaultResponseExtractor`** — handles `{ data: [...] }`, `{ models: [...] }`, and top-level array responses
+- **`formatPrice`** — formats per-token prices into per-million-tokens dollar strings with adaptive precision
+- **`formatContextLength`** — formats token counts into compact strings (e.g. `128k`, `1M`, `1.5M`)
+- **Separate `open-model-selector/utils` entry point** — pure utility functions without `"use client"` directive, safe for React Server Components
+- **Scoped CSS** — all variables use `--oms-` prefix; never pollutes `:root` or host app styles
+  - Light theme defaults
+  - Dark mode via `@media (prefers-color-scheme: dark)` and `.dark` class ancestor
+  - Portal-safe dark mode for popover and tooltip content
+- **Model tooltip** — hover over a model name to see description, context length, provider badge, and input/output pricing
+- **Comprehensive test suite** — unit, component (jsdom), and Storybook (Playwright) test projects
+- **Storybook stories** — Default, PreselectedModel, SystemDefault, CustomPlaceholder, SortByNewest, ControlledFavorites, EmptyState, LoadingState, ErrorState, PopoverTop, WideContainer, DarkMode, MinimalModels, and VeniceLive
+- **GitHub Actions CI** — automated npm publish on GitHub release creation
+- **TypeScript** — full type exports for `Model`, `ModelPricing`, `ModelSelectorProps`, `UseOpenAIModelsProps`, `UseOpenAIModelsResult`, `ModelNormalizer`, and `ResponseExtractor`
+- **Dual CJS/ESM output** — built with tsup, sourcemaps and `.d.ts` included
 
 [0.1.0]: https://github.com/sethbang/open-model-selector/releases/tag/v0.1.0

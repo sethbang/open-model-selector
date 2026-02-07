@@ -1,11 +1,22 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { ModelSelector, SYSTEM_DEFAULT_VALUE } from "./model-selector";
+import { TextModelSelector } from "./text-model-selector";
 import { ImageModelSelector } from "./image-model-selector";
 import { VideoModelSelector } from "./video-model-selector";
-import type { TextModel, ImageModel, VideoModel, AnyModel } from "../types";
+import type {
+  TextModel,
+  ImageModel,
+  VideoModel,
+  InpaintModel,
+  EmbeddingModel,
+  TtsModel,
+  AsrModel,
+  UpscaleModel,
+  AnyModel,
+} from "../types";
 
-// --- Mock Data ---
+// ─── Mock Data ───────────────────────────────────────────────────────────────
 
 const MOCK_MODELS: TextModel[] = [
   {
@@ -18,6 +29,7 @@ const MOCK_MODELS: TextModel[] = [
     is_favorite: true,
     description: "Strong reasoning capabilities with the largest context window for detailed analysis.",
     pricing: { prompt: 0.00000055, completion: 0.00000265 },
+    capabilities: { supportsVision: true, supportsReasoning: true },
   },
   {
     id: "qwen3-235b-a22b-thinking-2507",
@@ -29,6 +41,7 @@ const MOCK_MODELS: TextModel[] = [
     is_favorite: false,
     description: "Built for in-depth research and handling long, complex documents.",
     pricing: { prompt: 0.00000045, completion: 0.0000035 },
+    capabilities: { supportsReasoning: true, supportsFunctionCalling: true },
   },
   {
     id: "qwen3-coder-480b-a35b-instruct",
@@ -40,6 +53,7 @@ const MOCK_MODELS: TextModel[] = [
     is_favorite: true,
     description: "Optimized for code generation and software engineering.",
     pricing: { prompt: 0.00000075, completion: 0.000003 },
+    capabilities: { optimizedForCode: true, supportsFunctionCalling: true },
   },
   {
     id: "qwen3-vl-235b-a22b",
@@ -51,6 +65,7 @@ const MOCK_MODELS: TextModel[] = [
     is_favorite: false,
     description: "The most powerful VL model with superior visual perception, OCR, and multimodal reasoning.",
     pricing: { prompt: 0.00000025, completion: 0.0000015 },
+    capabilities: { supportsVision: true },
   },
   {
     id: "mistral-31-24b",
@@ -94,7 +109,8 @@ const MOCK_MODELS: TextModel[] = [
     context_length: 198000,
     is_favorite: false,
     description: "Anthropic's frontier reasoning model optimized for complex software engineering.",
-    pricing: { prompt: 0.000006, completion: 0.00003 },
+    pricing: { prompt: 0.000006, completion: 0.00003, cache_input: 0.000003, cache_write: 0.0000075 },
+    capabilities: { supportsReasoning: true, optimizedForCode: true, supportsFunctionCalling: true },
   },
   {
     id: "openai-gpt-52",
@@ -106,6 +122,7 @@ const MOCK_MODELS: TextModel[] = [
     is_favorite: false,
     description: "OpenAI's latest frontier-grade model with adaptive reasoning.",
     pricing: { prompt: 0.00000219, completion: 0.0000175 },
+    capabilities: { supportsVision: true, supportsReasoning: true, supportsFunctionCalling: true, supportsWebSearch: true },
   },
   {
     id: "deepseek-v3.2",
@@ -117,6 +134,7 @@ const MOCK_MODELS: TextModel[] = [
     is_favorite: false,
     description: "Efficient model with strong reasoning and tool-use skills.",
     pricing: { prompt: 0.0000004, completion: 0.000001 },
+    capabilities: { supportsFunctionCalling: true },
   },
 ];
 
@@ -183,7 +201,7 @@ const MOCK_IMAGE_MODELS: ImageModel[] = [
   },
 ];
 
-// --- Mock Video Models (no pricing!) ---
+// --- Mock Video Models ---
 
 const MOCK_VIDEO_MODELS: VideoModel[] = [
   {
@@ -250,10 +268,217 @@ const MOCK_VIDEO_MODELS: VideoModel[] = [
   },
 ];
 
+// --- Mock Inpaint Models ---
+
+const MOCK_INPAINT_MODELS: InpaintModel[] = [
+  {
+    id: "inpaint-flux-1",
+    name: "FLUX Inpaint",
+    provider: "venice.ai",
+    created: 1700000000,
+    type: "inpaint",
+    is_favorite: false,
+    pricing: { generation: 0.05 },
+    constraints: {
+      aspectRatios: ["1:1", "16:9", "9:16"],
+      combineImages: true,
+    },
+  },
+  {
+    id: "inpaint-sd-xl",
+    name: "Stable Diffusion XL Inpaint",
+    provider: "venice.ai",
+    created: 1700100000,
+    type: "inpaint",
+    is_favorite: false,
+    pricing: { generation: 0.03 },
+    constraints: {
+      aspectRatios: ["1:1", "4:3", "3:4"],
+    },
+  },
+];
+
+// --- Mock Embedding Models ---
+
+const MOCK_EMBEDDING_MODELS: EmbeddingModel[] = [
+  {
+    id: "text-embedding-3-large",
+    name: "Text Embedding 3 Large",
+    provider: "venice.ai",
+    created: 1700000000,
+    type: "embedding",
+    is_favorite: false,
+    description: "High-dimensional embeddings for semantic search and clustering.",
+    pricing: { input: 0.00000013, output: 0.00000013 },
+  },
+  {
+    id: "text-embedding-3-small",
+    name: "Text Embedding 3 Small",
+    provider: "venice.ai",
+    created: 1700100000,
+    type: "embedding",
+    is_favorite: false,
+    description: "Cost-efficient embeddings for lightweight retrieval.",
+    pricing: { input: 0.00000002 },
+  },
+];
+
+// --- Mock TTS Models ---
+
+const MOCK_TTS_MODELS: TtsModel[] = [
+  {
+    id: "tts-hd",
+    name: "TTS HD",
+    provider: "venice.ai",
+    created: 1700000000,
+    type: "tts",
+    is_favorite: false,
+    description: "High-fidelity text-to-speech with natural intonation.",
+    pricing: { input: 0.000015 },
+    voices: ["alloy", "echo", "fable", "onyx", "nova", "shimmer"],
+  },
+  {
+    id: "tts-standard",
+    name: "TTS Standard",
+    provider: "venice.ai",
+    created: 1700100000,
+    type: "tts",
+    is_favorite: false,
+    description: "Efficient speech synthesis for production workloads.",
+    pricing: { input: 0.000004 },
+    voices: ["alloy", "echo", "nova"],
+  },
+];
+
+// --- Mock ASR Models ---
+
+const MOCK_ASR_MODELS: AsrModel[] = [
+  {
+    id: "whisper-large-v3",
+    name: "Whisper Large V3",
+    provider: "venice.ai",
+    created: 1700000000,
+    type: "asr",
+    is_favorite: false,
+    description: "State-of-the-art speech recognition with multi-language support.",
+    pricing: { per_audio_second: 0.0001 },
+  },
+];
+
+// --- Mock Upscale Models ---
+
+const MOCK_UPSCALE_MODELS: UpscaleModel[] = [
+  {
+    id: "upscale-fast",
+    name: "Upscale Fast",
+    provider: "venice.ai",
+    created: 1700000000,
+    type: "upscale",
+    is_favorite: false,
+    description: "Quick 2x upscale with AI enhancement.",
+    pricing: { generation: 0.04 },
+  },
+  {
+    id: "upscale-ultra",
+    name: "Upscale Ultra",
+    provider: "venice.ai",
+    created: 1700100000,
+    type: "upscale",
+    is_favorite: false,
+    description: "Premium 4x upscale with detail reconstruction.",
+    pricing: { generation: 0.12 },
+  },
+];
+
+// --- Models with special badges (privacy, beta, offline) ---
+
+const MOCK_MODELS_WITH_BADGES: TextModel[] = [
+  {
+    id: "private-model",
+    name: "Private Reasoning Model",
+    provider: "venice.ai",
+    created: 1766534400,
+    type: "text",
+    context_length: 128000,
+    is_favorite: false,
+    description: "End-to-end encrypted inference with zero data retention.",
+    pricing: { prompt: 0.000002, completion: 0.000008 },
+    privacy: "private",
+    capabilities: { supportsReasoning: true },
+  },
+  {
+    id: "anon-model",
+    name: "Anonymized Chat Model",
+    provider: "venice.ai",
+    created: 1765584000,
+    type: "text",
+    context_length: 64000,
+    is_favorite: false,
+    description: "Anonymized request routing — no PII stored.",
+    pricing: { prompt: 0.0000005, completion: 0.000002 },
+    privacy: "anonymized",
+  },
+  {
+    id: "beta-vision-model",
+    name: "Vision Beta 2.0",
+    provider: "venice.ai",
+    created: 1768521600,
+    type: "text",
+    context_length: 198000,
+    is_favorite: true,
+    description: "Experimental multimodal model with video understanding.",
+    pricing: { prompt: 0.000001, completion: 0.000004 },
+    betaModel: true,
+    capabilities: { supportsVision: true, supportsReasoning: true },
+  },
+  {
+    id: "offline-model",
+    name: "Legacy LLM (Offline)",
+    provider: "venice.ai",
+    created: 1700000000,
+    type: "text",
+    context_length: 32000,
+    is_favorite: false,
+    description: "This model is currently unavailable.",
+    pricing: { prompt: 0.0000001, completion: 0.0000005 },
+    offline: true,
+  },
+];
+
+// --- Models with deprecation ---
+
+const MOCK_DEPRECATED_TEXT_MODELS: TextModel[] = [
+  ...MOCK_MODELS.slice(0, 3),
+  {
+    id: "old-model-deprecated",
+    name: "Legacy GPT-4o (Deprecated)",
+    provider: "venice.ai",
+    created: 1700000000,
+    type: "text",
+    context_length: 128000,
+    is_favorite: false,
+    description: "This model has been deprecated and will be removed.",
+    pricing: { prompt: 0.000005, completion: 0.000015 },
+    deprecation: { date: "2025-12-01T00:00:00.000Z" },
+  },
+  {
+    id: "sunsetting-model",
+    name: "Sunsetting Model (Feb 2026)",
+    provider: "venice.ai",
+    created: 1742262554,
+    type: "text",
+    context_length: 64000,
+    is_favorite: false,
+    description: "Scheduled for deprecation — migrate to a newer model.",
+    pricing: { prompt: 0.0000003, completion: 0.000001 },
+    deprecation: { date: "2026-02-28T00:00:00.000Z" },
+  },
+];
+
 // --- Venice Live Story Base URL ---
 const VENICE_BASE_URL = "https://api.venice.ai/api/v1";
 
-// --- Meta ---
+// ─── Meta ────────────────────────────────────────────────────────────────────
 
 const meta: Meta<typeof ModelSelector> = {
   title: "Components/ModelSelector",
@@ -274,7 +499,7 @@ export default meta;
 
 type Story = StoryObj<typeof ModelSelector>;
 
-// --- Stories ---
+// ─── Core Stories ────────────────────────────────────────────────────────────
 
 /** Default state with static mock models and controlled selection. */
 export const Default: Story = {
@@ -304,6 +529,21 @@ export const SystemDefault: Story = {
   render: () => {
     const [value, setValue] = useState<string>(SYSTEM_DEFAULT_VALUE);
     return <ModelSelector models={MOCK_MODELS} value={value} onChange={setValue} />;
+  },
+};
+
+/** Hide the "Use System Default" option. */
+export const HideSystemDefault: Story = {
+  render: () => {
+    const [value, setValue] = useState("");
+    return (
+      <ModelSelector
+        models={MOCK_MODELS}
+        value={value}
+        onChange={setValue}
+        showSystemDefault={false}
+      />
+    );
   },
 };
 
@@ -415,6 +655,8 @@ export const ErrorState: Story = {
   },
 };
 
+// ─── Layout Variants ─────────────────────────────────────────────────────────
+
 /** Popover opens upward. */
 export const PopoverTop: Story = {
   render: () => {
@@ -500,16 +742,97 @@ export const MinimalModels: Story = {
   },
 };
 
-/** Live Venice.ai API — fetches real models from the Venice endpoint. No API key needed for model discovery. */
-export const VeniceLive: Story = {
+// ─── Capabilities & Badges ───────────────────────────────────────────────────
+
+/** Text models with capability badges (vision, reasoning, code, functions). */
+export const WithCapabilities: Story = {
+  render: () => {
+    const [value, setValue] = useState("");
+    return (
+      <>
+        <ModelSelector models={MOCK_MODELS} value={value} onChange={setValue} />
+        <p style={{ marginTop: 8, fontSize: 11, color: "#888" }}>
+          Hover over models to see capability badges in the tooltip.
+        </p>
+      </>
+    );
+  },
+};
+
+/** Models with privacy, beta, and offline badges. */
+export const WithBadges: Story = {
   render: () => {
     const [value, setValue] = useState("");
     return (
       <>
         <ModelSelector
-          baseUrl={VENICE_BASE_URL}
+          models={MOCK_MODELS_WITH_BADGES}
           value={value}
           onChange={setValue}
+          placeholder="Select badged model..."
+        />
+        <p style={{ marginTop: 8, fontSize: 11, color: "#888" }}>
+          Hover for 🔒 Private, 👁 Anonymized, ⚡ Beta, 🔴 Offline badges.
+        </p>
+      </>
+    );
+  },
+};
+
+// ─── Deprecation ─────────────────────────────────────────────────────────────
+
+/** Text models with past and future deprecation dates. */
+export const DeprecatedTextModels: Story = {
+  render: () => {
+    const [value, setValue] = useState("");
+    return (
+      <>
+        <ModelSelector
+          models={MOCK_DEPRECATED_TEXT_MODELS}
+          value={value}
+          onChange={setValue}
+        />
+        <p style={{ marginTop: 8, fontSize: 11, color: "#888" }}>
+          ⚠️ badges visible on deprecated/deprecating models.
+        </p>
+      </>
+    );
+  },
+};
+
+/** showDeprecated=false filters out past-deprecated models entirely. */
+export const HideDeprecated: Story = {
+  render: () => {
+    const [value, setValue] = useState("");
+    return (
+      <>
+        <ModelSelector
+          models={MOCK_DEPRECATED_TEXT_MODELS}
+          value={value}
+          onChange={setValue}
+          showDeprecated={false}
+        />
+        <p style={{ marginTop: 8, fontSize: 11, color: "#888" }}>
+          Past-deprecated models are hidden. Future-deprecating models remain.
+        </p>
+      </>
+    );
+  },
+};
+
+// ─── Typed Selectors ─────────────────────────────────────────────────────────
+
+/** TextModelSelector — pre-filtered to type="text". */
+export const TextModels: Story = {
+  render: () => {
+    const [value, setValue] = useState("");
+    return (
+      <>
+        <TextModelSelector
+          models={MOCK_MODELS}
+          value={value}
+          onChange={setValue}
+          placeholder="Select text model..."
         />
         <p style={{ marginTop: 16, fontSize: 12, color: "#888" }}>
           Selected: <code>{value || "none"}</code>
@@ -518,8 +841,6 @@ export const VeniceLive: Story = {
     );
   },
 };
-
-// ─── Image Model Stories ─────────────────────────────────────────────────────
 
 /** ImageModelSelector with mock image models. */
 export const ImageModels: Story = {
@@ -540,8 +861,6 @@ export const ImageModels: Story = {
     );
   },
 };
-
-// ─── Video Model Stories ─────────────────────────────────────────────────────
 
 /** VideoModelSelector with mock video models. */
 export const VideoModels: Story = {
@@ -579,9 +898,111 @@ export const WithDeprecatedModels: Story = {
   },
 };
 
+// ─── Additional Model Types ──────────────────────────────────────────────────
+
+/** Inpaint models with pricing and constraint details. */
+export const InpaintModels: Story = {
+  render: () => {
+    const [value, setValue] = useState("");
+    return (
+      <>
+        <ModelSelector
+          models={MOCK_INPAINT_MODELS}
+          value={value}
+          onChange={setValue}
+          placeholder="Select inpaint model..."
+        />
+        <p style={{ marginTop: 16, fontSize: 12, color: "#888" }}>
+          Selected: <code>{value || "none"}</code>
+        </p>
+      </>
+    );
+  },
+};
+
+/** Embedding models with per-token pricing. */
+export const EmbeddingModels: Story = {
+  render: () => {
+    const [value, setValue] = useState("");
+    return (
+      <>
+        <ModelSelector
+          models={MOCK_EMBEDDING_MODELS}
+          value={value}
+          onChange={setValue}
+          placeholder="Select embedding model..."
+        />
+        <p style={{ marginTop: 16, fontSize: 12, color: "#888" }}>
+          Selected: <code>{value || "none"}</code>
+        </p>
+      </>
+    );
+  },
+};
+
+/** TTS models with voice counts. */
+export const TtsModels: Story = {
+  render: () => {
+    const [value, setValue] = useState("");
+    return (
+      <>
+        <ModelSelector
+          models={MOCK_TTS_MODELS}
+          value={value}
+          onChange={setValue}
+          placeholder="Select TTS model..."
+        />
+        <p style={{ marginTop: 16, fontSize: 12, color: "#888" }}>
+          Selected: <code>{value || "none"}</code>
+        </p>
+      </>
+    );
+  },
+};
+
+/** ASR (speech recognition) models with per-second pricing. */
+export const AsrModels: Story = {
+  render: () => {
+    const [value, setValue] = useState("");
+    return (
+      <>
+        <ModelSelector
+          models={MOCK_ASR_MODELS}
+          value={value}
+          onChange={setValue}
+          placeholder="Select ASR model..."
+        />
+        <p style={{ marginTop: 16, fontSize: 12, color: "#888" }}>
+          Selected: <code>{value || "none"}</code>
+        </p>
+      </>
+    );
+  },
+};
+
+/** Upscale models with flat pricing. */
+export const UpscaleModels: Story = {
+  render: () => {
+    const [value, setValue] = useState("");
+    return (
+      <>
+        <ModelSelector
+          models={MOCK_UPSCALE_MODELS}
+          value={value}
+          onChange={setValue}
+          placeholder="Select upscale model..."
+        />
+        <p style={{ marginTop: 16, fontSize: 12, color: "#888" }}>
+          Selected: <code>{value || "none"}</code>
+        </p>
+      </>
+    );
+  },
+};
+
 // ─── All Types Mixed ─────────────────────────────────────────────────────────
 
-/** ModelSelector with all model types (text + image + video) mixed together. */
+/** ModelSelector with ALL 8 model types mixed together. */
 export const AllTypes: Story = {
   render: () => {
     const [value, setValue] = useState("");
@@ -589,6 +1010,11 @@ export const AllTypes: Story = {
       ...MOCK_MODELS,
       ...MOCK_IMAGE_MODELS,
       ...MOCK_VIDEO_MODELS,
+      ...MOCK_INPAINT_MODELS,
+      ...MOCK_EMBEDDING_MODELS,
+      ...MOCK_TTS_MODELS,
+      ...MOCK_ASR_MODELS,
+      ...MOCK_UPSCALE_MODELS,
     ];
     return (
       <>
@@ -600,13 +1026,34 @@ export const AllTypes: Story = {
         />
         <p style={{ marginTop: 16, fontSize: 12, color: "#888" }}>
           Selected: <code>{value || "none"}</code>
+          <br />
+          Total models: <code>{allModels.length}</code>
         </p>
       </>
     );
   },
 };
 
-// ─── Venice Live Per-Type ────────────────────────────────────────────────────
+// ─── Venice Live ─────────────────────────────────────────────────────────────
+
+/** Live Venice.ai API — fetches real models from the Venice endpoint. No API key needed for model discovery. */
+export const VeniceLive: Story = {
+  render: () => {
+    const [value, setValue] = useState("");
+    return (
+      <>
+        <ModelSelector
+          baseUrl={VENICE_BASE_URL}
+          value={value}
+          onChange={setValue}
+        />
+        <p style={{ marginTop: 16, fontSize: 12, color: "#888" }}>
+          Selected: <code>{value || "none"}</code>
+        </p>
+      </>
+    );
+  },
+};
 
 /** Venice Live — all model types (no type filter). */
 export const VeniceLiveAllTypes: Story = {
@@ -619,6 +1066,26 @@ export const VeniceLiveAllTypes: Story = {
           value={value}
           onChange={setValue}
           placeholder="Select any model (Venice Live)..."
+        />
+        <p style={{ marginTop: 16, fontSize: 12, color: "#888" }}>
+          Selected: <code>{value || "none"}</code>
+        </p>
+      </>
+    );
+  },
+};
+
+/** Venice Live — text models only. */
+export const VeniceLiveTextModels: Story = {
+  render: () => {
+    const [value, setValue] = useState("");
+    return (
+      <>
+        <TextModelSelector
+          baseUrl={VENICE_BASE_URL}
+          value={value}
+          onChange={setValue}
+          placeholder="Select text model (Venice Live)..."
         />
         <p style={{ marginTop: 16, fontSize: 12, color: "#888" }}>
           Selected: <code>{value || "none"}</code>

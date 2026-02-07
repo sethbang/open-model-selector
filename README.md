@@ -1,77 +1,49 @@
 # open-model-selector
 
-A generic, OpenAI-compatible model selector component for React — with **native support for the [Venice.ai](https://venice.ai) model list spec**. Drop it into any app to let users browse, search, favorite, and select AI models from Venice.ai, OpenAI, OpenRouter, or any OpenAI-compatible API — or from a static list you provide.
+[![npm version](https://img.shields.io/npm/v/open-model-selector)](https://www.npmjs.com/package/open-model-selector) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 
-Built with [cmdk](https://cmdk.paco.me/) and [Radix Popover](https://www.radix-ui.com/primitives/docs/components/popover). Zero global styles. Dark mode out of the box.
+An accessible, themeable model selector combobox for React that works with any OpenAI-compatible API. Built with first-class [Venice.ai](https://venice.ai) support — drop it into your app to let users search, filter, and pick from Venice's frontier model catalog (GPT-5.2, Claude Opus 4.6, Gemini 3 Pro, GLM 4.7, Qwen 3 Coder 480B, and more) or any other `/v1/models` endpoint.
 
 ## Features
 
-- **Venice.ai native** — first-class support for the Venice.ai model spec including `model_spec` fields, context tokens, per-million pricing, and rich metadata
-- **OpenAI-compatible** — works with Venice.ai, OpenAI, OpenRouter, and any `/v1/models` endpoint
-- **Two modes** — fetch models from an API (_managed_), or pass a static array (_controlled_)
-- **Search** — fuzzy search by name, provider, ID, or description (powered by cmdk)
-- **Favorites** — star models to pin them to the top; persists to `localStorage` or controlled externally
-- **Sorting** — toggle between alphabetical (A-Z) and newest-first
-- **System Default** — optional "Use System Default" sentinel option
-- **Dark mode** — supports `prefers-color-scheme` and class-based (`.dark`) dark mode
-- **Scoped styles** — all CSS variables use `--oms-` prefix; never pollutes `:root`
-- **RSC-safe utils** — import normalizers and formatters from `open-model-selector/utils` in Server Components
-- **Accessible** — ARIA combobox pattern, screen reader labels, keyboard navigation
-- **Custom normalizers** — plug in your own response extractor or model normalizer for exotic APIs
-- **Custom fetcher** — inject a fetch function for SSR, proxies, or testing (no memoization needed)
-- **Lightweight** — peer deps only; no bundled UI framework
+- **First-class [Venice.ai](https://venice.ai) support** — full normalizer for Venice's rich `model_spec` format including capabilities, privacy levels, traits, and per-type pricing across 60+ models
+- **Any OpenAI-compatible endpoint** — also works out of the box with OpenAI, OpenRouter, and more
+- **Accessible combobox** built on [cmdk](https://cmdk.paco.me/) + [Radix Popover](https://www.radix-ui.com/primitives/docs/components/popover)
+- **Managed or controlled mode** — auto-fetch models from an API, or pass them in directly
+- **Fuzzy search** by name, provider, ID, and description
+- **Favorites** with `localStorage` persistence or external state control
+- **Sorting** by name (A–Z) or newest
+- **"Use System Default"** sentinel option for fallback behavior
+- **8 model types**: text, image, video, inpaint, embedding, TTS, ASR, upscale
+- **Specialized selectors**: `<TextModelSelector>`, `<ImageModelSelector>`, `<VideoModelSelector>`
+- **Built-in normalizers** for Venice.ai, OpenAI, and OpenRouter response shapes
+- **Scoped CSS** with `--oms-` custom property prefix — never pollutes host styles
+- **Dark mode** via `prefers-color-scheme` and `.dark` class
+- **Full TypeScript types** exported
+- **Dual CJS/ESM output** with sourcemaps
+- **React 18 and 19** support
 
-## Venice.ai Model Showcase
-
-Out of the box, the component understands the Venice.ai model list format — including `model_spec.name`, `model_spec.availableContextTokens`, `model_spec.pricing`, `model_spec.description`, and `model_spec.capabilities`. Just point `baseUrl` at Venice.ai and you're done:
-
-```tsx
-<ModelSelector
-  baseUrl="https://api.venice.ai/api/v1"
-  value={modelId}
-  onChange={setModelId}
-/>
-```
-
-No API key required for model discovery. Venice.ai offers a wide array of state-of-the-art models across text, image, video, and more:
-
-### Text Models — State of the Art
-
-| Model | ID | Context | Capabilities | Pricing (per 1M tokens) |
-| --- | --- | --- | --- | --- |
-| **GLM 4.7** | `zai-org-glm-4.7` | 198K | Reasoning, Function Calling, Web Search | $0.55 in / $2.65 out |
-| **Qwen 3 235B Thinking** | `qwen3-235b-a22b-thinking-2507` | 128K | Reasoning, Function Calling, Web Search | $0.45 in / $3.50 out |
-| **Qwen 3 Coder 480B** | `qwen3-coder-480b-a35b-instruct` | 256K | Code-optimized, Function Calling | $0.75 in / $3.00 out |
-| **Qwen3 VL 235B** | `qwen3-vl-235b-a22b` | 256K | Vision, Function Calling, Web Search | $0.25 in / $1.50 out |
-| **Venice Medium** | `mistral-31-24b` | 128K | Vision, Function Calling, Web Search | $0.50 in / $2.00 out |
-| **Venice Small** | `qwen3-4b` | 32K | Fastest, Reasoning, Function Calling | $0.05 in / $0.15 out |
-| **Venice Uncensored 1.1** | `venice-uncensored` | 32K | Uncensored, Web Search | $0.20 in / $0.90 out |
-
-### Frontier Models via Venice.ai
-
-Venice.ai also provides access to frontier proprietary models through a unified API:
-
-| Model | ID | Context | Pricing (per 1M tokens) |
-| --- | --- | --- | --- |
-| **Claude Opus 4.6** | `claude-opus-4-6` | 1M | $6.00 in / $30.00 out |
-| **Claude Opus 4.5** | `claude-opus-45` | 198K | $6.00 in / $30.00 out |
-| **GPT-5.2** | `openai-gpt-52` | 256K | $2.19 in / $17.50 out |
-| **Gemini 3 Pro Preview** | `gemini-3-pro-preview` | 198K | $2.50 in / $15.00 out |
-| **Gemini 3 Flash Preview** | `gemini-3-flash-preview` | 256K | $0.70 in / $3.75 out |
-| **Grok 4.1 Fast** | `grok-41-fast` | 256K | $0.50 in / $1.25 out |
-| **Kimi K2 Thinking** | `kimi-k2-thinking` | 256K | $0.75 in / $3.20 out |
-| **DeepSeek V3.2** | `deepseek-v3.2` | 160K | $0.40 in / $1.00 out |
-| **MiniMax M2.1** | `minimax-m21` | 198K | $0.40 in / $1.60 out |
-
-> All Venice.ai models are automatically normalized by the built-in `defaultModelNormalizer` — including context length from `model_spec.availableContextTokens`, display name from `model_spec.name`, description from `model_spec.description`, and per-token pricing converted from Venice.ai's per-million format.
+---
 
 ## Installation
 
+### Install the package
+
 ```bash
-npm install open-model-selector @radix-ui/react-popover cmdk
+npm install open-model-selector
 ```
 
-### Peer Dependencies
+```bash
+yarn add open-model-selector
+```
+
+```bash
+pnpm add open-model-selector
+```
+
+### Peer dependencies
+
+The following peer dependencies are required and must be installed separately:
 
 | Package | Version |
 | --- | --- |
@@ -80,18 +52,33 @@ npm install open-model-selector @radix-ui/react-popover cmdk
 | `@radix-ui/react-popover` | `^1.0.0` |
 | `cmdk` | `^1.0.0` |
 
-## Quick Start
+Install the non-React peer dependencies (React and React DOM are typically already in your project):
 
-Import the component and the stylesheet:
-
-```tsx
-import { ModelSelector } from "open-model-selector"
-import "open-model-selector/styles.css"
+```bash
+npm install @radix-ui/react-popover cmdk
 ```
 
-### Managed Mode — Fetch from an API
+### CSS import
 
-Point `baseUrl` at any OpenAI-compatible endpoint. The component fetches `/models`, normalizes the response, and renders the selector:
+You must import the stylesheet for the component to render correctly:
+
+```tsx
+import "open-model-selector/styles.css";
+```
+
+> Import this once in your app's entry point or layout component.
+
+### Node.js requirement
+
+Node.js **>=18.0.0** is required.
+
+---
+
+## Quick Start
+
+### Managed Mode (API Fetch)
+
+The simplest way to use the component — point it at [Venice.ai](https://venice.ai) (or any OpenAI-compatible endpoint) and it handles the rest:
 
 ```tsx
 import { useState } from "react"
@@ -99,395 +86,427 @@ import { ModelSelector } from "open-model-selector"
 import "open-model-selector/styles.css"
 
 function App() {
-  const [modelId, setModelId] = useState("")
+  const [model, setModel] = useState<string>("")
 
   return (
     <ModelSelector
       baseUrl="https://api.venice.ai/api/v1"
-      value={modelId}
-      onChange={setModelId}
+      apiKey="your-api-key"
+      value={model}
+      onChange={setModel}
     />
   )
 }
 ```
 
-If the API requires authentication:
+> The component fetches from `{baseUrl}/models` and normalizes responses automatically. Venice.ai's rich `model_spec` format is fully supported — capabilities, privacy levels, traits, pricing, and deprecation info are all extracted out of the box.
+
+### Controlled Mode (Static Models)
+
+Pass models directly when you already have them or need full control over the list. Here's an example using Venice.ai's frontier models:
 
 ```tsx
-<ModelSelector
-  baseUrl="https://api.venice.ai/api/v1"
-  apiKey="your-venice-api-key"
-  value={modelId}
-  onChange={setModelId}
-/>
-```
-
-> **Warning:** `apiKey` is visible in browser DevTools. For production, use a backend proxy and the `fetcher` prop instead.
-
-### Controlled Mode — Static Models
-
-Pass a `models` array directly. The internal fetch is disabled:
-
-```tsx
+import { useState } from "react"
 import { ModelSelector } from "open-model-selector"
-import type { Model } from "open-model-selector"
+import type { TextModel } from "open-model-selector"
 import "open-model-selector/styles.css"
 
-const models: Model[] = [
+const models: TextModel[] = [
   {
     id: "zai-org-glm-4.7",
     name: "GLM 4.7",
     provider: "venice.ai",
+    type: "text",
     created: 1766534400,
+    is_favorite: false,
     context_length: 198000,
-    description: "Strong reasoning capabilities with the largest context window for detailed analysis.",
-    pricing: { prompt: "0.00000055", completion: "0.00000265" },
-    is_favorite: false,
-  },
-  {
-    id: "qwen3-235b-a22b-thinking-2507",
-    name: "Qwen 3 235B A22B Thinking 2507",
-    provider: "venice.ai",
-    created: 1745903059,
-    context_length: 128000,
-    description: "Built for in-depth research and high-precision tasks.",
-    pricing: { prompt: "0.00000045", completion: "0.0000035" },
-    is_favorite: false,
+    capabilities: {
+      supportsFunctionCalling: true,
+      supportsReasoning: true,
+      supportsWebSearch: true,
+    },
+    pricing: { prompt: 0.00000055, completion: 0.00000265 },
   },
   {
     id: "qwen3-coder-480b-a35b-instruct",
     name: "Qwen 3 Coder 480B",
     provider: "venice.ai",
+    type: "text",
     created: 1745903059,
-    context_length: 256000,
-    description: "Optimized for code generation and software engineering.",
-    pricing: { prompt: "0.00000075", completion: "0.000003" },
     is_favorite: false,
+    context_length: 256000,
+    capabilities: {
+      optimizedForCode: true,
+      supportsFunctionCalling: true,
+      supportsWebSearch: true,
+    },
+    pricing: { prompt: 0.00000075, completion: 0.000003 },
+  },
+  {
+    id: "claude-opus-4-6",
+    name: "Claude Opus 4.6",
+    provider: "venice.ai",
+    type: "text",
+    created: 1770249600,
+    is_favorite: false,
+    context_length: 1000000,
+    capabilities: {
+      optimizedForCode: true,
+      supportsFunctionCalling: true,
+      supportsReasoning: true,
+      supportsVision: true,
+    },
+    pricing: { prompt: 0.000006, completion: 0.00003 },
   },
 ]
 
 function App() {
-  const [modelId, setModelId] = useState("")
-  return <ModelSelector models={models} value={modelId} onChange={setModelId} />
+  const [model, setModel] = useState<string>("zai-org-glm-4.7")
+
+  return (
+    <ModelSelector
+      models={models}
+      value={model}
+      onChange={setModel}
+      placeholder="Choose a model..."
+    />
+  )
 }
 ```
+
+> When a non-empty `models` array is provided, the internal API fetch is disabled. Venice.ai offers 60+ models across text, image, video, embedding, TTS, ASR, and more — all accessible via a single API key at [venice.ai](https://venice.ai).
+
+### Specialized Selectors
+
+Type-filtered convenience components for common model categories:
+
+```tsx
+import { TextModelSelector, ImageModelSelector, VideoModelSelector } from "open-model-selector"
+
+// These are pre-filtered wrappers around <ModelSelector type="...">
+<TextModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={setModel} />
+<ImageModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={setModel} />
+<VideoModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={setModel} />
+```
+
+> These are convenience wrappers that pass `type="text"`, `type="image"`, or `type="video"` respectively.
+
+---
 
 ## API Reference
 
 ### `<ModelSelector>`
 
-A fully accessible combobox for selecting an AI model. Supports `React.forwardRef`.
+The primary component. Renders an accessible combobox popover for searching and selecting models.
+
+The component forwards `ref` to the root `<div>`.
 
 | Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `models` | `Model[]` | `[]` | Static list of models. Disables API fetch when non-empty. |
-| `baseUrl` | `string` | — | Base URL for the OpenAI-compatible API (e.g. `"https://api.venice.ai/api/v1"`). |
-| `apiKey` | `string` | — | Bearer token for API authentication. |
-| `fetcher` | `(url: string, init?: RequestInit) => Promise<Response>` | `fetch` | Custom fetch function. Stored in a ref — no memoization needed. |
-| `responseExtractor` | `ResponseExtractor` | `defaultResponseExtractor` | Extracts the raw model array from the API response body. |
-| `normalizer` | `ModelNormalizer` | `defaultModelNormalizer` | Transforms each raw model object into a `Model`. |
+|------|------|---------|-------------|
+| `models` | `AnyModel[]` | `[]` | Static list of models. When non-empty, disables internal API fetch. |
+| `baseUrl` | `string` | — | Base URL for the OpenAI-compatible API (e.g., `"https://api.venice.ai/api/v1"`). |
+| `apiKey` | `string` | — | API key for authentication. ⚠️ Visible in browser DevTools — use a backend proxy in production. |
+| `type` | `ModelType` | — | Filter to a specific model type (`"text"`, `"image"`, `"video"`, etc.). |
+| `queryParams` | `Record<string, string>` | `{ type: "all" }` | Query parameters for the `/models` endpoint. |
+| `fetcher` | `(url: string, init?: RequestInit) => Promise<Response>` | `fetch` | Custom fetch function for SSR, proxies, or testing. |
+| `responseExtractor` | `ResponseExtractor` | `defaultResponseExtractor` | Custom function to extract the model array from the API response. |
+| `normalizer` | `ModelNormalizer` | `defaultModelNormalizer` | Custom function to normalize each raw model object into an `AnyModel`. |
 | `value` | `string` | — | Currently selected model ID (controlled). |
-| `onChange` | `(modelId: string) => void` | — | Fired when a model is selected. Omit for read-only display. |
-| `onToggleFavorite` | `(modelId: string) => void` | — | Controlled favorites handler. Without this, favorites persist to `localStorage`. |
+| `onChange` | `(modelId: string) => void` | — | Callback when a model is selected. If omitted, a dev-mode warning is logged. |
+| `onToggleFavorite` | `(modelId: string) => void` | — | Callback for favorite toggle. If omitted, favorites use localStorage. |
 | `placeholder` | `string` | `"Select model..."` | Placeholder text when no model is selected. |
-| `sortOrder` | `"name" \| "created"` | — | Controlled sort order. Without this, sort is managed internally. |
-| `onSortChange` | `(order: "name" \| "created") => void` | — | Fired when sort order changes (controlled mode). |
+| `sortOrder` | `"name" \| "created"` | — | Controlled sort order. If omitted, internal state is used. |
+| `onSortChange` | `(order: "name" \| "created") => void` | — | Callback when sort changes. |
 | `side` | `"top" \| "bottom" \| "left" \| "right"` | `"bottom"` | Popover placement relative to the trigger. |
 | `className` | `string` | — | Additional CSS class(es) for the root element. |
-| `storageKey` | `string` | `"open-model-selector-favorites"` | `localStorage` key for uncontrolled favorites. |
+| `storageKey` | `string` | `"open-model-selector-favorites"` | localStorage key for persisting favorites (uncontrolled mode). |
 | `showSystemDefault` | `boolean` | `true` | Whether to show the "Use System Default" option. |
+| `showDeprecated` | `boolean` | `true` | Whether to show deprecated models. When `false`, past-date deprecated models are hidden. |
 
-### `SYSTEM_DEFAULT_VALUE`
+The library exports a sentinel constant for the system default option:
 
-Sentinel string constant (`"system_default"`) representing the system default selection. Use this to check whether the user selected "Use System Default":
-
-```tsx
+```ts
 import { SYSTEM_DEFAULT_VALUE } from "open-model-selector"
-
-if (value === SYSTEM_DEFAULT_VALUE) {
-  // user chose system default
-}
+// SYSTEM_DEFAULT_VALUE === "system_default"
 ```
 
-### `useOpenAIModels(props)`
+### `useModels` Hook
 
-React hook that fetches and normalizes models from an OpenAI-compatible API.
+Fetches and normalizes models from an OpenAI-compatible API endpoint. Used internally by `<ModelSelector>` but available for building custom UIs on top of Venice.ai or any other provider.
 
 ```tsx
-import { useOpenAIModels } from "open-model-selector"
+import { useModels } from "open-model-selector"
 
-const { models, loading, error } = useOpenAIModels({
+const { models, loading, error } = useModels({
   baseUrl: "https://api.venice.ai/api/v1",
+  apiKey: "your-key",
+  type: "text",
 })
 ```
 
-#### Props (`UseOpenAIModelsProps`)
+#### Props (`UseModelsProps`)
 
 | Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `baseUrl` | `string` | — | API base URL. When falsy, returns empty models. |
+|------|------|---------|-------------|
+| `baseUrl` | `string` | — | Base URL for the API. If omitted, no fetch occurs. |
 | `apiKey` | `string` | — | Bearer token for authentication. |
-| `fetcher` | `(url, init?) => Promise<Response>` | `fetch` | Custom fetch function (ref-stored, no memo needed). |
-| `responseExtractor` | `ResponseExtractor` | `defaultResponseExtractor` | Extracts raw model array from API response. |
-| `normalizer` | `ModelNormalizer` | `defaultModelNormalizer` | Normalizes each raw model into a `Model`. |
+| `type` | `ModelType` | — | Client-side filter by model type. |
+| `queryParams` | `Record<string, string>` | `{ type: "all" }` | Query parameters appended to the `/models` URL. |
+| `fetcher` | `(url: string, init?: RequestInit) => Promise<Response>` | `fetch` | Custom fetch function. |
+| `responseExtractor` | `ResponseExtractor` | `defaultResponseExtractor` | Extracts model array from response JSON. |
+| `normalizer` | `ModelNormalizer` | `defaultModelNormalizer` | Normalizes each raw model into `AnyModel`. |
 
-#### Returns (`UseOpenAIModelsResult`)
+#### Return Value (`UseModelsResult`)
 
 | Field | Type | Description |
-| --- | --- | --- |
-| `models` | `Model[]` | Normalized model array. |
+|-------|------|-------------|
+| `models` | `AnyModel[]` | Normalized model array. |
 | `loading` | `boolean` | `true` while fetching. |
-| `error` | `Error \| null` | Error object if the fetch failed. |
+| `error` | `Error \| null` | Fetch or normalization error, if any. |
 
-### `Model` Interface
+> **Notes:**
+> - Automatically cleans up with `AbortController` on unmount
+> - Re-fetches when `baseUrl`, `apiKey`, or `queryParams` change
+> - `fetcher`, `responseExtractor`, and `normalizer` are stored in refs (no memoization needed)
 
-```ts
-interface Model {
-  id: string            // Unique model identifier (e.g. "zai-org-glm-4.7", "openai-gpt-52", "anthropic/claude-opus-4-6")
-  name: string          // Display name
-  provider: string      // Provider (extracted from ID prefix, owned_by, or "Unknown")
-  created: number       // Unix timestamp
-  description?: string  // Optional model description
-  context_length: number // Max context window in tokens
-  pricing: ModelPricing // Per-token pricing info
-  is_favorite: boolean  // Whether the model is favorited
-}
+### Model Types
 
-interface ModelPricing {
-  prompt?: string | number      // Price per input token
-  completion?: string | number  // Price per output token
-  [key: string]: unknown        // Extensible for other pricing fields
-}
+The library supports 8 model types, each with its own TypeScript interface extending `BaseModel`:
+
+| Type | Interface | Key Fields |
+|------|-----------|------------|
+| `"text"` | `TextModel` | `pricing.prompt`, `pricing.completion`, `context_length`, `capabilities` |
+| `"image"` | `ImageModel` | `pricing.generation`, `pricing.resolutions`, `constraints.aspectRatios`, `constraints.resolutions` |
+| `"video"` | `VideoModel` | `constraints.resolutions`, `constraints.durations`, `constraints.aspect_ratios`, `model_sets` |
+| `"inpaint"` | `InpaintModel` | `pricing.generation`, `constraints.aspectRatios`, `constraints.combineImages` |
+| `"embedding"` | `EmbeddingModel` | `pricing.input`, `pricing.output` |
+| `"tts"` | `TtsModel` | `pricing.input`, `voices` |
+| `"asr"` | `AsrModel` | `pricing.per_audio_second` |
+| `"upscale"` | `UpscaleModel` | `pricing.generation` |
+
+The union type `AnyModel` represents any of the above.
+
+The `BaseModel` interface includes these fields shared by all types:
+
+- `id: string`
+- `name: string`
+- `provider: string`
+- `created: number` (Unix timestamp)
+- `type: ModelType`
+- `description?: string`
+- `privacy?: "private" | "anonymized"`
+- `is_favorite: boolean`
+- `offline?: boolean`
+- `betaModel?: boolean`
+- `modelSource?: string`
+- `traits?: string[]`
+- `deprecation?: { date: string }`
+
+```tsx
+import type { TextModel, ImageModel, AnyModel, ModelType } from "open-model-selector"
 ```
 
-### Utility Functions
-
-Import from `open-model-selector/utils` for RSC-safe usage (no `"use client"` directive):
-
-```ts
-import {
-  defaultModelNormalizer,
-  defaultResponseExtractor,
-  formatPrice,
-  formatContextLength,
-} from "open-model-selector/utils"
-```
-
-#### `defaultResponseExtractor(body)`
-
-Extracts the model array from common API response shapes:
-- `body.data` — OpenAI standard (also used by Venice.ai)
-- `body.models` — alternative shape
-- `body` itself — if the response is already an array
-
-#### `defaultModelNormalizer(raw)`
-
-Normalizes a raw model object from any of these formats:
-- **Venice.ai** — `model_spec.name`, `model_spec.availableContextTokens`, `model_spec.pricing`, `model_spec.description`, `model_spec.capabilities`
-- **OpenAI** — `id`, `name`, `owned_by`, `context_length`, `pricing`
-- **OpenRouter** — slash-separated `id` (`"anthropic/claude-3-opus"`), `context_length`, `pricing`
-
-Venice.ai's `model_spec.pricing` uses per-million-tokens format (e.g., `{ input: { usd: 0.55 } }` = $0.55/1M tokens). The normalizer automatically converts this to per-token pricing for consistent display via `formatPrice()`.
-
-#### `formatPrice(value)`
-
-Formats a per-token price into a per-million-tokens dollar string:
-
-```ts
-formatPrice(0.00003)    // "$30.00"
-formatPrice("0.000015") // "$15.00"
-formatPrice(1e-12)      // "$0.000001"
-formatPrice(undefined)  // "—"
-```
-
-#### `formatContextLength(tokens)`
-
-Formats a token count into a compact string:
-
-```ts
-formatContextLength(128000)    // "128k"
-formatContextLength(1_000_000) // "1M"
-formatContextLength(1_500_000) // "1.5M"
-formatContextLength(500)       // "500"
-```
+---
 
 ## Customization
 
 ### Custom Normalizer
 
-Override model normalization for APIs with non-standard shapes:
+The built-in `defaultModelNormalizer` handles Venice.ai, OpenAI, and OpenRouter response shapes automatically — including Venice's nested `model_spec` format with capabilities, privacy, traits, and deprecation info. If your API returns a different shape, provide a custom normalizer:
 
 ```tsx
-import { ModelSelector, defaultModelNormalizer } from "open-model-selector"
+import { ModelSelector } from "open-model-selector"
+import type { ModelNormalizer, AnyModel } from "open-model-selector"
+
+const myNormalizer: ModelNormalizer = (raw): AnyModel => ({
+  id: raw.model_id as string,
+  name: raw.display_name as string,
+  provider: raw.org as string,
+  type: "text",
+  created: Date.now() / 1000,
+  is_favorite: false,
+  pricing: {
+    prompt: Number(raw.cost_per_input_token),
+    completion: Number(raw.cost_per_output_token),
+  },
+})
 
 <ModelSelector
   baseUrl="https://my-api.com/v1"
-  normalizer={(raw) => ({
-    ...defaultModelNormalizer(raw),
-    provider: (raw.vendor as string) ?? "custom",
-  })}
-  value={value}
-  onChange={setValue}
+  normalizer={myNormalizer}
+  value={model}
+  onChange={setModel}
 />
 ```
+
+> You can also compose with the built-in `extractBaseFields` helper for shared fields. The normalizer is stored in a ref — no `useCallback` wrapper needed.
 
 ### Custom Response Extractor
 
-Handle APIs whose response body doesn't follow `{ data: [...] }`:
+The built-in `defaultResponseExtractor` handles `{ data: [...] }`, `{ models: [...] }`, and top-level arrays. For non-standard response shapes, provide a custom extractor:
 
 ```tsx
+import type { ResponseExtractor } from "open-model-selector"
+
+const myExtractor: ResponseExtractor = (body) => {
+  // Your API returns { results: { items: [...] } }
+  const results = (body as any).results
+  return results?.items ?? []
+}
+
 <ModelSelector
   baseUrl="https://my-api.com/v1"
-  responseExtractor={(body) => (body as any).results.items}
-  value={value}
-  onChange={setValue}
+  responseExtractor={myExtractor}
+  value={model}
+  onChange={setModel}
 />
 ```
 
-### Custom Fetcher
+### Styling and Theming
 
-Inject credentials, headers, or use a backend proxy:
+All CSS variables are scoped under `.oms-reset` and use the `--oms-` prefix — they never pollute `:root` or the host app.
 
-```tsx
-<ModelSelector
-  baseUrl="https://api.venice.ai/api/v1"
-  fetcher={(url, init) => fetch(url, { ...init, credentials: "include" })}
-  value={value}
-  onChange={setValue}
-/>
-```
-
-> **Note:** `fetcher`, `responseExtractor`, and `normalizer` are stored in refs internally. You can pass inline functions — no `useCallback` required.
-
-### Controlled Favorites
-
-Manage favorites externally (e.g. in a database):
-
-```tsx
-const [favorites, setFavorites] = useState(new Set(["zai-org-glm-4.7"]))
-
-const modelsWithFavs = models.map((m) => ({
-  ...m,
-  is_favorite: favorites.has(m.id),
-}))
-
-<ModelSelector
-  models={modelsWithFavs}
-  value={value}
-  onChange={setValue}
-  onToggleFavorite={(id) =>
-    setFavorites((prev) => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      return next
-    })
-  }
-/>
-```
-
-### Theming
-
-All CSS variables use the `--oms-` prefix and are scoped to `.oms-reset` (inline) and portal containers (`.oms-popover-content`, `.oms-hover-content`). Override them to match your design system:
+**Overriding variables:**
 
 ```css
-.oms-reset,
-.oms-popover-content,
-.oms-hover-content {
-  --oms-background: 0 0% 100%;
-  --oms-foreground: 222.2 84% 4.9%;
-  --oms-popover: 0 0% 100%;
-  --oms-popover-foreground: 222.2 84% 4.9%;
-  --oms-primary: 222.2 47.4% 11.2%;
-  --oms-border: 214.3 31.8% 91.4%;
-  --oms-accent: 210 40% 96.1%;
-  --oms-muted-foreground: 215.4 16.3% 46.9%;
-  --oms-ring: 222.2 84% 4.9%;
-  --oms-radius: 0.5rem;
-  --oms-popover-width: 300px;
+.oms-reset {
+  --oms-primary: 210 100% 50%;
+  --oms-radius: 0.75rem;
+  --oms-popover-width: 400px;
 }
 ```
 
-Dark mode activates automatically via `@media (prefers-color-scheme: dark)`, or when a `.dark` class exists on an ancestor element.
+**Key CSS variables:**
+
+| Variable | Default (Light) | Purpose |
+|----------|----------------|---------|
+| `--oms-background` | `0 0% 100%` | Background color |
+| `--oms-foreground` | `222.2 84% 4.9%` | Text color |
+| `--oms-primary` | `222.2 47.4% 11.2%` | Primary/action color |
+| `--oms-accent` | `210 40% 96.1%` | Hover/selection highlight |
+| `--oms-muted-foreground` | `215.4 16.3% 46.9%` | Subdued text |
+| `--oms-border` | `214.3 31.8% 91.4%` | Border color |
+| `--oms-destructive` | `0 84.2% 60.2%` | Error/destructive color |
+| `--oms-radius` | `0.5rem` | Border radius |
+| `--oms-popover-width` | `300px` | Popover width |
+
+> Values are HSL triplets (without the `hsl()` wrapper), following the Shadcn/ui convention. This allows alpha composition: `hsl(var(--oms-accent) / 0.5)`.
+
+**Dark mode:**
+
+The component supports two dark mode strategies:
+
+1. **Automatic** — `@media (prefers-color-scheme: dark)` works out of the box with no configuration.
+2. **Class-based** — Add a `.dark` class to any ancestor element. Compatible with Tailwind's `darkMode: "class"`.
+
+```html
+<!-- Automatic: just works with OS dark mode -->
+<ModelSelector ... />
+
+<!-- Manual: add .dark class to any ancestor -->
+<div class="dark">
+  <ModelSelector ... />
+</div>
+```
+
+> Portal-safe — the dark theme is also applied to popover and tooltip content that renders outside the component tree via Radix portals.
+
+### Format Utilities
+
+The `open-model-selector/utils` entry point exports format utilities without the `"use client"` directive, making them safe for React Server Components:
+
+```tsx
+import {
+  formatPrice,
+  formatContextLength,
+  formatFlatPrice,
+  formatAudioPrice,
+  formatDuration,
+  formatResolutions,
+  formatAspectRatios,
+} from "open-model-selector/utils"
+```
+
+Usage examples:
+
+```ts
+formatPrice("0.000003")       // "$3.00"  (per million tokens)
+formatContextLength(128000)    // "128k"
+formatFlatPrice(0.04)          // "$0.04"
+formatDuration(["5", "10"])    // "5s – 10s"
+```
+
+---
 
 ## Development
 
+### Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run build` | Build with tsup (CJS + ESM + types + sourcemaps). Cleans `dist/` first via `prebuild`. |
+| `npm run dev` | Build in watch mode for development. |
+| `npm run typecheck` | Run TypeScript type checking (`tsc`). |
+| `npm test` | Run tests with Vitest. |
+| `npm run test:watch` | Run tests in watch mode. |
+| `npm run storybook` | Start Storybook dev server on port 6006. |
+| `npm run build-storybook` | Build static Storybook site. |
+
+> `npm run prepublishOnly` runs typecheck → test → build automatically before publishing.
+
+### Testing
+
+The project uses a layered testing strategy:
+
+- **Unit tests**: Vitest with jsdom environment
+- **Component tests**: `@testing-library/react` + `@testing-library/user-event`
+- **Browser tests**: Storybook + Playwright via `@storybook/addon-vitest` and `@vitest/browser-playwright`
+
+Test files:
+
+- [`src/components/model-selector.test.tsx`](src/components/model-selector.test.tsx) — Component tests
+- [`src/hooks/use-models.test.tsx`](src/hooks/use-models.test.tsx) — Hook tests
+- [`src/utils/format.test.ts`](src/utils/format.test.ts) — Format utility tests
+- [`src/utils/normalizers/normalizers.test.ts`](src/utils/normalizers/normalizers.test.ts) — Normalizer tests
+
 ```bash
-# Install dependencies
-npm install
-
-# Start Storybook (dev server on port 6006)
-npm run storybook
-
-# Run all tests (unit + component + storybook)
+# Run all tests
 npm test
 
-# Watch mode
+# Run tests in watch mode
 npm run test:watch
-
-# Type-check
-npm run typecheck
-
-# Build for production
-npm run build
-
-# Dev build with watch
-npm run dev
 ```
 
-### Project Structure
+### Storybook
 
-```
-src/
-├── index.ts                          # Main entry point (component + hook exports)
-├── styles.css                        # Scoped CSS with --oms- variables
-├── components/
-│   ├── model-selector.tsx            # ModelSelector component
-│   ├── model-selector.test.tsx       # Component tests (jsdom)
-│   └── model-selector.stories.tsx    # Storybook stories
-├── hooks/
-│   ├── use-openai-models.ts          # useOpenAIModels hook
-│   ├── use-openai-models.test.ts     # Unit tests (normalizers, extractor)
-│   └── use-openai-models.hook.test.tsx # Hook integration tests
-└── utils/
-    ├── index.ts                      # Utils entry point (RSC-safe)
-    ├── normalizers.ts                # Model/response normalization
-    ├── format.ts                     # formatPrice, formatContextLength
-    └── format.test.ts               # Format utility tests
+The project includes comprehensive Storybook stories covering multiple scenarios: Default, PreselectedModel, SystemDefault, CustomPlaceholder, SortByNewest, ControlledFavorites, EmptyState, LoadingState, ErrorState, PopoverTop, WideContainer, DarkMode, MinimalModels, and VeniceLive.
+
+```bash
+npm run storybook
+# Opens at http://localhost:6006
 ```
 
-### Test Architecture
+### Contributing
 
-Tests run in three Vitest projects:
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/my-feature`)
+3. Make your changes
+4. Run `npm run typecheck && npm test` to verify
+5. Commit and push
+6. Open a Pull Request
 
-| Project | Environment | Scope |
-| --- | --- | --- |
-| `unit` | Node | Pure functions (normalizers, formatters) |
-| `component` | jsdom | React component + hook integration tests |
-| `storybook` | Playwright (Chromium) | Storybook story tests with a11y checks |
-
-### Build Output
-
-Built with [tsup](https://tsup.egoist.dev/) into dual CJS/ESM bundles with TypeScript declarations and sourcemaps:
-
-| Entry | Description | `"use client"` |
-| --- | --- | --- |
-| `open-model-selector` | React component + hook | ✅ Yes |
-| `open-model-selector/utils` | Pure normalizers + formatters | ❌ No (RSC-safe) |
-| `open-model-selector/styles.css` | Stylesheet | — |
-
-### Publishing
-
-Automated via GitHub Actions on release creation:
-
-1. Create a GitHub release (tag the version)
-2. CI runs typecheck → build → `npm publish --access public`
-3. Requires `NPM_TOKEN` secret in repo settings
-
-## Requirements
-
-- Node.js ≥ 18.0.0
-- React 18 or 19
+---
 
 ## License
 
-[MIT](LICENSE) © [Seth Bang](https://github.com/sethbang)
+MIT — see [LICENSE](LICENSE) for details.
+
+---
+
+## Links
+
+- [npm](https://www.npmjs.com/package/open-model-selector)
+- [GitHub](https://github.com/sethbang/open-model-selector)
+- [Changelog](CHANGELOG.md)
+- [Issues](https://github.com/sethbang/open-model-selector/issues)
+- [Venice.ai](https://venice.ai) — recommended OpenAI-compatible API provider, offering both frontier models and open source models.

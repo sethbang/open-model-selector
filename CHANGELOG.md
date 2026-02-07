@@ -22,7 +22,7 @@ Initial release of `open-model-selector`.
   - `className` and `ref` forwarding
   - Configurable `storageKey` for localStorage namespace isolation
   - `showSystemDefault` toggle
-- **`useOpenAIModels` hook** — fetches and normalizes models from an OpenAI-compatible API
+- **`useModels` hook** — fetches and normalizes models from an OpenAI-compatible API
   - `baseUrl` and `apiKey` props for endpoint configuration
   - Custom `fetcher` prop for SSR, proxies, and testing (ref-stored — no memoization needed)
   - Custom `responseExtractor` for non-standard response shapes
@@ -46,7 +46,7 @@ Initial release of `open-model-selector`.
 - **Comprehensive test suite** — unit, component (jsdom), and Storybook (Playwright) test projects
 - **Storybook stories** — Default, PreselectedModel, SystemDefault, CustomPlaceholder, SortByNewest, ControlledFavorites, EmptyState, LoadingState, ErrorState, PopoverTop, WideContainer, DarkMode, MinimalModels, and VeniceLive
 - **GitHub Actions CI** — automated npm publish on GitHub release creation
-- **TypeScript** — full type exports for `Model`, `ModelPricing`, `ModelSelectorProps`, `UseOpenAIModelsProps`, `UseOpenAIModelsResult`, `ModelNormalizer`, and `ResponseExtractor`
+- **TypeScript** — full type exports for `AnyModel`, `BaseModel`, `TextModel`, `ImageModel`, `VideoModel`, `ModelSelectorProps`, `UseModelsProps`, `UseModelsResult`, `ModelNormalizer`, and `ResponseExtractor`
 - **Dual CJS/ESM output** — built with tsup, sourcemaps and `.d.ts` included
 
 [0.1.0]: https://github.com/sethbang/open-model-selector/releases/tag/v0.1.0

@@ -1,5 +1,3 @@
-"use client"
-
 import * as React from "react"
 import { Command as CommandPrimitive } from "cmdk"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
@@ -11,8 +9,23 @@ import { formatPrice, formatContextLength } from "../utils/format"
 /** Sentinel value representing system default model selection */
 export const SYSTEM_DEFAULT_VALUE = "system_default" as const
 
-/** @internal Stable no-op used as default onChange for read-only / display-only usage */
-const defaultOnChange: (modelId: string) => void = () => {}
+/** @internal Dev-mode warning when onChange is omitted */
+const defaultOnChange: (modelId: string) => void = (() => {
+  if (process.env.NODE_ENV !== 'production') {
+    let warned = false
+    return (_modelId: string) => {
+      if (!warned) {
+        warned = true
+        console.warn(
+          '[open-model-selector] ModelSelector: no `onChange` prop was provided. ' +
+          'Selections will be silently ignored. If this is intentional (read-only / display-only usage), ' +
+          'you can safely ignore this warning.'
+        )
+      }
+    }
+  }
+  return () => {}
+})()
 
 // --- Icons (Inline SVGs) ---
 const Icons = {

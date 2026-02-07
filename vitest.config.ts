@@ -36,8 +36,17 @@ export default defineConfig({
         extends: true,
         test: {
           name: 'unit',
-          include: ['src/**/*.test.{ts,tsx}'],
+          include: ['src/**/*.test.ts'],
           environment: 'node',
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'component',
+          include: ['src/**/*.test.tsx'],
+          environment: 'jsdom',
+          setupFiles: ['./vitest.component-setup.ts'],
         },
       },
     ],

@@ -7,8 +7,7 @@ describe('formatPrice', () => {
   })
 
   it('returns "—" for null', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect(formatPrice(null as any)).toBe('—')
+    expect(formatPrice(null)).toBe('—')
   })
 
   it('returns "—" for empty string', () => {
@@ -105,8 +104,14 @@ describe('formatContextLength', () => {
     expect(formatContextLength(NaN)).toBe('N/A')
   })
 
-  it('formats small values', () => {
+  it('formats small values that round to 1k', () => {
     expect(formatContextLength(500)).toBe('1k') // Math.round(0.5) = 1 → "1k" (rounds half up)
+  })
+
+  it('returns "<1k" for values between 1 and 499', () => {
+    expect(formatContextLength(499)).toBe('<1k')
+    expect(formatContextLength(1)).toBe('<1k')
+    expect(formatContextLength(250)).toBe('<1k')
   })
 
   it('formats 4096 tokens', () => {

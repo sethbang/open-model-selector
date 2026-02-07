@@ -22,7 +22,7 @@
  *
  * @internal Not part of the public package API — may change without notice.
  */
-export function formatPrice(value: string | number | undefined): string {
+export function formatPrice(value: string | number | undefined | null): string {
     if (value === undefined || value === null || value === '') return "—"
     const num = typeof value === "string" ? parseFloat(value) : value
     if (isNaN(num)) return "—"
@@ -56,5 +56,7 @@ export function formatContextLength(tokens: number): string {
         const millions = tokens / 1_000_000
         return millions % 1 === 0 ? `${millions}M` : `${millions.toFixed(1)}M`
     }
-    return `${Math.round(tokens / 1000)}k`
+    const k = Math.round(tokens / 1000)
+    if (k === 0) return '<1k'
+    return `${k}k`
 }

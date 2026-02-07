@@ -1,6 +1,13 @@
 /* Open Model Selector Styles */
 
-:root {
+/*
+ * Light-theme defaults — scoped to .oms-reset (inline component) and
+ * portal containers (.oms-popover-content, .oms-hover-content) so we
+ * never pollute :root or conflict with apps that manage their own theme.
+ */
+.oms-reset,
+.oms-popover-content,
+.oms-hover-content {
   /* Default Shadcn/Tailwind Slate Theme - Scoped to oms components */
   --oms-background: 0 0% 100%;
   --oms-foreground: 222.2 84% 4.9%;
@@ -32,8 +39,6 @@
   
   --oms-radius: 0.5rem;
   --oms-popover-width: 300px;
-  
-  /* Dark Mode Support via media query or .dark class */
 }
 
 /*

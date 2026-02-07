@@ -1,8 +1,6 @@
 import * as React from "react"
 import { Command as CommandPrimitive } from "cmdk"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
-import * as HoverCardPrimitive from "@radix-ui/react-hover-card"
-import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
 import { Model, useOpenAIModels, UseOpenAIModelsProps } from "../hooks/use-openai-models"
 import { formatPrice, formatContextLength } from "../utils/format"
 
@@ -329,32 +327,14 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
                           autoFocus
                       />
                       
-                      <DropdownMenuPrimitive.Root>
-                        <DropdownMenuPrimitive.Trigger asChild>
-                          <button aria-label="Sort models" style={{ marginLeft: '4px', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px', padding: '4px', color: 'hsl(var(--oms-muted-foreground))' }}>
-                            <span className="oms-text-xxs" style={{ fontWeight: 700 }}>{sortOrder === "name" ? "AZ" : "New"}</span>
-                            <Icons.ChevronDown className="oms-icon" style={{ width: '8px', height: '8px' }} />
-                          </button>
-                        </DropdownMenuPrimitive.Trigger>
-                        <DropdownMenuPrimitive.Portal>
-                           <DropdownMenuPrimitive.Content className="oms-popover-content" align="end" sideOffset={5} style={{ width: '120px' }}>
-                                <DropdownMenuPrimitive.Item 
-                                    className="oms-item-content"
-                                    style={{ padding: '8px', cursor: 'pointer', fontSize: '12px' }}
-                                    onSelect={() => handleSortChange("name")}
-                                >
-                                    Name (A-Z)
-                                </DropdownMenuPrimitive.Item>
-                                <DropdownMenuPrimitive.Item 
-                                    className="oms-item-content"
-                                    style={{ padding: '8px', cursor: 'pointer', fontSize: '12px' }}
-                                    onSelect={() => handleSortChange("created")}
-                                >
-                                    Newest
-                                </DropdownMenuPrimitive.Item>
-                           </DropdownMenuPrimitive.Content>
-                        </DropdownMenuPrimitive.Portal>
-                      </DropdownMenuPrimitive.Root>
+                       <button
+                         aria-label={`Sort models by ${sortOrder === "name" ? "newest" : "name"}`}
+                         onClick={() => handleSortChange(sortOrder === "name" ? "created" : "name")}
+                         style={{ marginLeft: '4px', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px', padding: '4px', color: 'hsl(var(--oms-muted-foreground))' }}
+                       >
+                         <span className="oms-text-xxs" style={{ fontWeight: 700 }}>{sortOrder === "name" ? "AZ" : "New"}</span>
+                         <Icons.ChevronDown className="oms-icon" style={{ width: '8px', height: '8px' }} />
+                       </button>
                    </div>
         
                   <CommandPrimitive.List>
@@ -431,6 +411,103 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
 
 ModelSelector.displayName = "ModelSelector"
 
+// --- Custom Tooltip (replaces @radix-ui/react-hover-card) ---
+function ModelTooltip({ model }: { model: Model }) {
+  const [visible, setVisible] = React.useState(false)
+  const openTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined)
+  const closeTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined)
+  const triggerRef = React.useRef<HTMLDivElement>(null)
+  const contentRef = React.useRef<HTMLDivElement>(null)
+
+  const show = React.useCallback(() => {
+    clearTimeout(closeTimer.current)
+    openTimer.current = setTimeout(() => setVisible(true), 200)
+  }, [])
+
+  const hide = React.useCallback(() => {
+    clearTimeout(openTimer.current)
+    closeTimer.current = setTimeout(() => setVisible(false), 100)
+  }, [])
+
+  // Position the tooltip to the right of the trigger
+  React.useEffect(() => {
+    if (visible && triggerRef.current && contentRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect()
+      const content = contentRef.current
+      content.style.position = 'fixed'
+      content.style.left = `${rect.right + 5}px`
+      content.style.top = `${rect.top}px`
+
+      // If it overflows the viewport right edge, flip to left side
+      const contentRect = content.getBoundingClientRect()
+      if (contentRect.right > window.innerWidth) {
+        content.style.left = `${rect.left - contentRect.width - 5}px`
+      }
+      // If it overflows the viewport bottom, shift up
+      if (contentRect.bottom > window.innerHeight) {
+        content.style.top = `${window.innerHeight - contentRect.height - 8}px`
+      }
+    }
+  }, [visible])
+
+  // Cleanup timers on unmount
+  React.useEffect(() => {
+    return () => {
+      clearTimeout(openTimer.current)
+      clearTimeout(closeTimer.current)
+    }
+  }, [])
+
+  return (
+    <>
+      <div
+        ref={triggerRef}
+        onPointerEnter={show}
+        onPointerLeave={hide}
+        style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', cursor: 'help', maxWidth: '180px', gap: '2px', lineHeight: 1.3 }}
+      >
+        <span className="oms-truncate" style={{ fontWeight: 500 }}>{model.name}</span>
+        <span className="oms-truncate oms-text-xxs oms-muted">{model.provider}</span>
+      </div>
+      {visible && (
+        <div
+          ref={contentRef}
+          className="oms-hover-content"
+          onPointerEnter={show}
+          onPointerLeave={hide}
+        >
+          <div className="oms-flex-col oms-gap-2">
+            <h4 style={{ fontSize: '14px', fontWeight: 600 }}>{model.name}</h4>
+            {model.description && (
+              <p className="oms-text-xs oms-muted">{model.description}</p>
+            )}
+            <div className="oms-flex-row oms-gap-2" style={{ flexWrap: 'wrap' }}>
+              {model.context_length > 0 && (
+                <span className="oms-badge oms-badge-secondary">
+                  {formatContextLength(model.context_length)} Context
+                </span>
+              )}
+              <span className="oms-badge oms-badge-outline">{model.provider}</span>
+            </div>
+            {model.pricing && (
+              <div className="oms-grid-2 oms-text-xxs oms-border-t oms-pt-2">
+                <div>
+                  <span className="oms-muted">Input:</span> <br/>
+                  <span className="oms-mono">{formatPrice(model.pricing.prompt)} / 1M</span>
+                </div>
+                <div>
+                  <span className="oms-muted">Output:</span> <br/>
+                  <span className="oms-mono">{formatPrice(model.pricing.completion)} / 1M</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
 const ModelItem = React.memo(function ModelItem({
   model,
   isSelected,
@@ -454,44 +531,7 @@ const ModelItem = React.memo(function ModelItem({
                 style={{ opacity: isSelected ? 1 : 0 }} 
             />
             
-            <HoverCardPrimitive.Root openDelay={200} closeDelay={100}>
-                 <HoverCardPrimitive.Trigger asChild>
-                    <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', cursor: 'help', maxWidth: '180px', gap: '2px', lineHeight: 1.3 }}>
-                        <span className="oms-truncate" style={{ fontWeight: 500 }}>{model.name}</span>
-                        <span className="oms-truncate oms-text-xxs oms-muted">{model.provider}</span>
-                    </div>
-                 </HoverCardPrimitive.Trigger>
-                 <HoverCardPrimitive.Portal>
-                     <HoverCardPrimitive.Content className="oms-hover-content" side="right" align="start" sideOffset={5}>
-                        <div className="oms-flex-col oms-gap-2">
-                            <h4 style={{ fontSize: '14px', fontWeight: 600 }}>{model.name}</h4>
-                            {model.description && (
-                                <p className="oms-text-xs oms-muted">{model.description}</p>
-                            )}
-                            <div className="oms-flex-row oms-gap-2" style={{ flexWrap: 'wrap' }}>
-                                {model.context_length > 0 && (
-                                    <span className="oms-badge oms-badge-secondary">
-                                        {formatContextLength(model.context_length)} Context
-                                    </span>
-                                )}
-                                <span className="oms-badge oms-badge-outline">{model.provider}</span>
-                            </div>
-                            {model.pricing && (
-                                <div className="oms-grid-2 oms-text-xxs oms-border-t oms-pt-2">
-                                     <div>
-                                        <span className="oms-muted">Input:</span> <br/>
-                                        <span className="oms-mono">{formatPrice(model.pricing.prompt)} / 1M</span>
-                                     </div>
-                                     <div>
-                                        <span className="oms-muted">Output:</span> <br/>
-                                        <span className="oms-mono">{formatPrice(model.pricing.completion)} / 1M</span>
-                                     </div>
-                                </div>
-                            )}
-                        </div>
-                     </HoverCardPrimitive.Content>
-                 </HoverCardPrimitive.Portal>
-            </HoverCardPrimitive.Root>
+            <ModelTooltip model={model} />
           </div>
           
           <button

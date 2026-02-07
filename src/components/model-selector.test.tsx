@@ -47,7 +47,7 @@ const mockModelsWithFavorite: Model[] = [
 // --- Helpers ---
 
 function createFetchMock(models: Model[], delay = 0) {
-  return vi.fn(async (url: string, init?: RequestInit) => {
+  return vi.fn(async (_url: string, init?: RequestInit) => {
     if (delay > 0) await new Promise((r) => setTimeout(r, delay))
     if (init?.signal?.aborted) throw new DOMException('Aborted', 'AbortError')
     return new Response(JSON.stringify({ data: models }), {
@@ -377,12 +377,9 @@ describe('ModelSelector', () => {
 
       await user.click(screen.getByRole('combobox'))
 
-      // Click the sort button
-      const sortButton = screen.getByLabelText('Sort models')
+      // Click the sort toggle button — it cycles from "name" to "created"
+      const sortButton = screen.getByLabelText('Sort models by newest')
       await user.click(sortButton)
-
-      // Click "Newest"
-      await user.click(screen.getByText('Newest'))
 
       expect(onSortChange).toHaveBeenCalledWith('created')
     })

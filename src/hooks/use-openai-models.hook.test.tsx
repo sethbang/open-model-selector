@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { renderHook, waitFor, act } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react'
 import { useOpenAIModels } from './use-openai-models'
-import type { Model } from './use-openai-models'
 
 // --- Test Fixtures ---
 
@@ -221,7 +220,7 @@ describe('useOpenAIModels', () => {
     })
 
     // Remove baseUrl — error should be cleared
-    rerender({ baseUrl: undefined, fetcher: successFetcher })
+    rerender({ baseUrl: undefined, fetcher: successFetcher as typeof failFetcher })
 
     await waitFor(() => {
       expect(result.current.error).toBeNull()

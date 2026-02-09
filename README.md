@@ -467,6 +467,43 @@ formatDuration(["5", "10"])    // "5s – 10s"
 
 ---
 
+## Framework Integration
+
+### `"use client"` & React Server Components
+
+All component and hook modules include a `"use client"` directive — they are safe to import in Next.js App Router, Remix, and other RSC-aware frameworks without extra wrappers.
+
+The **`open-model-selector/utils`** sub-path does **not** include `"use client"` and is safe to import directly in Server Components:
+
+```tsx
+// ✅ Server Component — works fine
+import { formatPrice, formatContextLength } from "open-model-selector/utils"
+
+// ✅ Server Component — type-only imports are always safe
+import type { TextModel, AnyModel } from "open-model-selector"
+```
+
+If you need the components or `useModels` hook, import them in a Client Component (any file with `"use client"` at the top, or rendered inside one).
+
+### SSR Compatibility
+
+The library is SSR-safe:
+
+- An isomorphic `useLayoutEffect` pattern is used internally, so there are no React warnings during server-side rendering.
+- Works with **Next.js** (App Router and Pages Router), **Remix**, **Gatsby**, and any other SSR framework.
+- Tooltips render via a `createPortal` call — they require a DOM environment, but this is handled automatically since the portal only mounts after hydration.
+
+### Security
+
+- **API keys** are sent as an `Authorization: Bearer` header, never as URL query parameters.
+- **Error messages** from failed requests are constructed from `response.status` and `response.statusText` only — user-supplied content is not interpolated into the DOM.
+- **Client-side key exposure:** Any `apiKey` passed as a prop is visible in browser DevTools. For production apps, use one of:
+  - A server-side proxy that injects the key (pass a relative `baseUrl` and a custom `fetcher`)
+  - Environment variables scoped to the server (e.g., `VENICE_API_KEY`) with a thin API route
+  - A scoped/read-only API key with minimal permissions
+
+---
+
 ## Development
 
 ### Scripts

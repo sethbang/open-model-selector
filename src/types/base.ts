@@ -20,7 +20,7 @@ export interface BaseModel {
    *  It is a UI-layer concern managed via localStorage in the ModelSelector component.
    *  Normalizers MUST default this to `false`; the component hydrates the real value
    *  from localStorage at render time. */
-  is_favorite: boolean
+  is_favorite?: boolean
   modelSource?: string
   traits?: string[]
   /** Deprecation info if this model is scheduled for or has been deprecated. */

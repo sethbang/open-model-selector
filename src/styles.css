@@ -133,6 +133,7 @@
   box-sizing: border-box;
   font-family: inherit;
   font-size: 14px;
+  isolation: isolate;
 }
 
 .oms-reset * {
@@ -225,7 +226,7 @@
     padding: 0 12px;
 }
 
-.oms-popover-content [cmdk-input] {
+.oms-popover-content [cmdk-input][cmdk-input] {
     display: flex;
     height: 36px;
     width: 100%;
@@ -234,14 +235,14 @@
     background: transparent;
     padding: 8px 0;
     font-size: 12px;
-    outline: none !important;
+    outline: none;
     box-shadow: none;
     -webkit-appearance: none;
     appearance: none;
     color: hsl(var(--oms-foreground));
 }
-.oms-popover-content [cmdk-input]:focus-visible {
-    box-shadow: none !important;
+.oms-popover-content [cmdk-input][cmdk-input]:focus-visible {
+    box-shadow: none;
 }
 .oms-popover-content [cmdk-input]::placeholder {
     color: hsl(var(--oms-muted-foreground));

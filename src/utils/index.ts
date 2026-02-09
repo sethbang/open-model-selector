@@ -15,8 +15,6 @@ export {
   normalizeTtsModel,
   normalizeAsrModel,
   normalizeUpscaleModel,
-  toNum,
-  extractBaseFields,
 } from './normalizers/index'
 
 export type {

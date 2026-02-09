@@ -12,9 +12,8 @@ import {
   normalizeUpscaleModel,
   inferTypeFromId,
   MODEL_ID_TYPE_PATTERNS,
-  toNum,
-  extractBaseFields,
 } from './index'
+import { toNum, extractBaseFields } from './base'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 

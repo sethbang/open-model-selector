@@ -1,6 +1,8 @@
 "use client"
 
 import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react'
+
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 import { createPortal } from 'react-dom'
 import type { AnyModel } from '../types'
 import {
@@ -357,7 +359,7 @@ export function ModelTooltip({ model, children }: ModelTooltipProps) {
   }, [])
 
   // Position the tooltip to the right of the trigger
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (visible && triggerRef.current && contentRef.current) {
       const rect = triggerRef.current.getBoundingClientRect()
       const content = contentRef.current

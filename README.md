@@ -325,6 +325,7 @@ const myNormalizer: ModelNormalizer = (raw): AnyModel => ({
   type: "text",
   created: Date.now() / 1000,
   is_favorite: false,
+  context_length: Number(raw.max_tokens) || 128000,
   pricing: {
     prompt: Number(raw.cost_per_input_token),
     completion: Number(raw.cost_per_output_token),

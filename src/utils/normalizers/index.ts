@@ -71,7 +71,6 @@ export function defaultModelNormalizer(raw: Record<string, unknown>): AnyModel {
 
 // ---- Re-exports ----
 
-export { extractBaseFields, toNum } from './base'
 export { inferTypeFromId, MODEL_ID_TYPE_PATTERNS } from './type-inference'
 export { normalizeTextModel } from './text'
 export { normalizeImageModel } from './image'

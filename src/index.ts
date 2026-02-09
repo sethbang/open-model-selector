@@ -9,7 +9,7 @@ export { VideoModelSelector } from "./components/video-model-selector";
 
 // Hook exports
 export { useModels } from "./hooks/use-models";
-export type { UseModelsProps, UseModelsResult } from "./hooks/use-models";
+export type { UseModelsProps, UseModelsResult, FetchFn } from "./hooks/use-models";
 
 // Type exports
 export type {
@@ -38,8 +38,6 @@ export {
   normalizeTtsModel,
   normalizeAsrModel,
   normalizeUpscaleModel,
-  toNum,
-  extractBaseFields,
 } from "./utils/normalizers/index";
 
 export type {

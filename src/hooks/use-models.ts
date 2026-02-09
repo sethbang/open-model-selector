@@ -116,8 +116,15 @@ export function useModels(props: UseModelsProps): UseModelsResult {
             if (model && model.id) {
               normalized.push(model)
             }
-          } catch {
+          } catch (error) {
             // Skip models that fail normalization
+            if (process.env.NODE_ENV !== 'production') {
+              const modelId = raw.id ?? raw.model_id ?? 'unknown'
+              console.warn(
+                `[open-model-selector] Failed to normalize model "${modelId}":`,
+                error
+              )
+            }
           }
         }
 

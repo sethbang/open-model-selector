@@ -772,7 +772,7 @@ export const WithBadges: Story = {
           placeholder="Select badged model..."
         />
         <p style={{ marginTop: 8, fontSize: 11, color: "#888" }}>
-          Hover for 🔒 Private, 👁 Anonymized, ⚡ Beta, 🔴 Offline badges.
+          Hover for Private, Anonymized, Beta, Offline badges.
         </p>
       </>
     );
@@ -793,7 +793,7 @@ export const DeprecatedTextModels: Story = {
           onChange={setValue}
         />
         <p style={{ marginTop: 8, fontSize: 11, color: "#888" }}>
-          ⚠️ badges visible on deprecated/deprecating models.
+          Warning badges visible on deprecated/deprecating models.
         </p>
       </>
     );

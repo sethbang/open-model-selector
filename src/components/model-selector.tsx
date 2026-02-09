@@ -7,6 +7,7 @@ import type { AnyModel, ModelType } from "../types"
 import { useModels, type UseModelsProps } from "../hooks/use-models"
 import { cn } from "../utils/helpers"
 import { ModelItem } from "./model-item"
+import { Check, ChevronsUpDown, ChevronDown, Search, Loader2 } from "./icons"
 
 /** Sentinel value representing system default model selection */
 export const SYSTEM_DEFAULT_VALUE = "system_default" as const
@@ -28,22 +29,6 @@ const defaultOnChange: (modelId: string) => void = (() => {
   }
   return () => {}
 })()
-
-// --- Icons (Inline SVGs) ---
-const Icons = {
-  ChevronsUpDown: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
-  ),
-  ChevronDown: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m6 9 6 6 6-6"/></svg>
-  ),
-  Search: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-  ),
-  Loader2: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-  ),
-}
 
 // --- Types ---
 /**
@@ -320,9 +305,9 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
               <span className="oms-muted">{placeholder}</span>
             )}
             {loading ? (
-                <Icons.Loader2 className="oms-icon oms-spin oms-muted" style={{ opacity: 0.5, marginLeft: 'auto' }} />
+                <Loader2 className="oms-icon oms-spin oms-muted" style={{ opacity: 0.5, marginLeft: 'auto' }} />
             ) : (
-                <Icons.ChevronsUpDown className="oms-icon oms-muted" style={{ opacity: 0.5, marginLeft: 'auto' }} />
+                <ChevronsUpDown className="oms-icon oms-muted" style={{ opacity: 0.5, marginLeft: 'auto' }} />
             )}
           </button>
         </PopoverPrimitive.Trigger>
@@ -331,7 +316,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
             <PopoverPrimitive.Content id={listboxId} className="oms-popover-content" align="start" side={side} sideOffset={4}>
                 <CommandPrimitive className="oms-command">
                    <div className="oms-search-container">
-                      <Icons.Search className="oms-icon oms-muted" style={{ marginRight: '8px', opacity: 0.5 }} />
+                       <Search className="oms-icon oms-muted" style={{ marginRight: '8px', opacity: 0.5 }} />
                       <CommandPrimitive.Input
                           placeholder="Search models..."
                           aria-label="Search models"
@@ -344,14 +329,14 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
                          style={{ marginLeft: '4px', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px', padding: '4px', color: 'hsl(var(--oms-muted-foreground))' }}
                        >
                          <span className="oms-text-xxs" style={{ fontWeight: 700 }}>{sortOrder === "name" ? "AZ" : "New"}</span>
-                         <Icons.ChevronDown className="oms-icon" style={{ width: '8px', height: '8px' }} />
+                          <ChevronDown className="oms-icon" style={{ width: '8px', height: '8px' }} />
                        </button>
                    </div>
         
                   <CommandPrimitive.List>
                     {loading && (
                         <div role="status" aria-live="polite" style={{ padding: '24px', textAlign: 'center', color: 'var(--oms-muted-foreground)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                            <Icons.Loader2 className="oms-icon oms-spin" /> Loading...
+                            <Loader2 className="oms-icon oms-spin" /> Loading...
                         </div>
                     )}
                     
@@ -375,7 +360,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
                         >
                           <div className="oms-item-content">
                               <div className="oms-item-left">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="oms-icon" style={{ opacity: value === SYSTEM_DEFAULT_VALUE ? 1 : 0 }}><polyline points="20 6 9 17 4 12"/></svg>
+                                   <Check className="oms-icon" style={{ opacity: value === SYSTEM_DEFAULT_VALUE ? 1 : 0 }} />
                                   <span>Use System Default</span>
                               </div>
                           </div>

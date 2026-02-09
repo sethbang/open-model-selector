@@ -6,15 +6,7 @@ import type { AnyModel } from '../types'
 import { formatContextLength, formatFlatPrice, formatAudioPrice, formatDuration } from '../utils/format'
 import { cn, isDeprecated } from '../utils/helpers'
 import { ModelTooltip } from './model-tooltip'
-
-// --- Inline SVG Icons ---
-const Check = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polyline points="20 6 9 17 4 12"/></svg>
-)
-
-const Star = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-)
+import { Check, Star, Eye, Brain, Code, Volume2, AlertTriangle } from './icons'
 
 interface ModelItemProps {
   model: AnyModel
@@ -35,9 +27,9 @@ function renderInlineMeta(model: AnyModel): React.ReactNode {
       parts.push(<span key="ctx">{formatContextLength(model.context_length)}</span>)
     }
     const caps = model.capabilities
-    if (caps?.supportsVision) parts.push(<span key="vis" className="oms-pill oms-pill-vision">🔍</span>)
-    if (caps?.supportsReasoning) parts.push(<span key="reas" className="oms-pill oms-pill-reasoning">🧠</span>)
-    if (caps?.optimizedForCode) parts.push(<span key="code" className="oms-pill oms-pill-code">💻</span>)
+    if (caps?.supportsVision) parts.push(<span key="vis" className="oms-pill oms-pill-vision"><Eye className="oms-icon" /></span>)
+    if (caps?.supportsReasoning) parts.push(<span key="reas" className="oms-pill oms-pill-reasoning"><Brain className="oms-icon" /></span>)
+    if (caps?.optimizedForCode) parts.push(<span key="code" className="oms-pill oms-pill-code"><Code className="oms-icon" /></span>)
   } else if (model.type === 'image') {
     if (model.pricing.generation != null) {
       parts.push(<span key="sep-price" className="oms-item-meta-separator" />)
@@ -49,7 +41,7 @@ function renderInlineMeta(model: AnyModel): React.ReactNode {
       parts.push(<span key="dur">{formatDuration(model.constraints.durations)}</span>)
     }
     if (model.constraints?.audio) {
-      parts.push(<span key="aud" className="oms-pill oms-pill-audio">🔊</span>)
+      parts.push(<span key="aud" className="oms-pill oms-pill-audio"><Volume2 className="oms-icon" /></span>)
     }
   } else if (model.type === 'inpaint') {
     if (model.pricing.generation != null) {
@@ -110,7 +102,7 @@ export const ModelItem = React.memo(function ModelItem({
                 <span className="oms-badge-type">{model.type}</span>
               )}
               {model.deprecation && (
-                <span className="oms-deprecation-badge">⚠️</span>
+                <span className="oms-deprecation-badge"><AlertTriangle className="oms-icon" /></span>
               )}
             </span>
             {renderInlineMeta(model)}

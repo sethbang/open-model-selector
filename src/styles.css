@@ -327,7 +327,7 @@
 
 /* Hover Card */
 .oms-hover-content {
-    z-index: 50;
+    z-index: 100;
     width: 320px;
     border-radius: var(--oms-radius);
     border: 1px solid hsl(var(--oms-border));

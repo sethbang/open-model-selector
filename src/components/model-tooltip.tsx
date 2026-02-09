@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react'
+import { createPortal } from 'react-dom'
 import type { AnyModel } from '../types'
 import {
   formatPrice,
@@ -12,6 +13,7 @@ import {
   formatAspectRatios,
 } from '../utils/format'
 import { isDeprecated } from '../utils/helpers'
+import { AlertTriangle, Lock, EyeOff, Zap, CircleX, Eye, Brain, Code, Wrench, Search, Volume2 } from './icons'
 
 interface ModelTooltipProps {
   model: AnyModel
@@ -23,7 +25,7 @@ function renderDeprecationWarning(model: AnyModel) {
   const past = isDeprecated(model.deprecation.date)
   return (
     <div className="oms-deprecation-badge" style={{ marginBottom: 4 }}>
-      ⚠️ {past ? 'Deprecated' : 'Deprecating'} {model.deprecation.date}
+      <AlertTriangle className="oms-icon" /> {past ? 'Deprecated' : 'Deprecating'} {model.deprecation.date}
     </div>
   )
 }
@@ -31,15 +33,15 @@ function renderDeprecationWarning(model: AnyModel) {
 function renderSharedBadges(model: AnyModel) {
   const pills: React.ReactNode[] = []
   if (model.privacy === 'private') {
-    pills.push(<span key="priv" className="oms-pill oms-pill-private">🔒 Private</span>)
+    pills.push(<span key="priv" className="oms-pill oms-pill-private"><Lock className="oms-icon" /> Private</span>)
   } else if (model.privacy === 'anonymized') {
-    pills.push(<span key="anon" className="oms-pill oms-pill-anonymized">👁 Anonymized</span>)
+    pills.push(<span key="anon" className="oms-pill oms-pill-anonymized"><EyeOff className="oms-icon" /> Anonymized</span>)
   }
   if (model.betaModel) {
-    pills.push(<span key="beta" className="oms-pill oms-pill-beta">⚡ Beta</span>)
+    pills.push(<span key="beta" className="oms-pill oms-pill-beta"><Zap className="oms-icon" /> Beta</span>)
   }
   if (model.offline) {
-    pills.push(<span key="offline" className="oms-offline-indicator">🔴 Offline</span>)
+    pills.push(<span key="offline" className="oms-offline-indicator"><CircleX className="oms-icon" /> Offline</span>)
   }
   return pills.length > 0 ? pills : null
 }
@@ -48,10 +50,10 @@ function renderTextContent(model: AnyModel) {
   if (model.type !== 'text') return null
   const caps = model.capabilities
   const capPills: React.ReactNode[] = []
-  if (caps?.supportsVision) capPills.push(<span key="vis" className="oms-pill oms-pill-vision">🔍 Vision</span>)
-  if (caps?.supportsReasoning) capPills.push(<span key="reas" className="oms-pill oms-pill-reasoning">🧠 Reasoning</span>)
-  if (caps?.optimizedForCode) capPills.push(<span key="code" className="oms-pill oms-pill-code">💻 Code</span>)
-  if (caps?.supportsFunctionCalling) capPills.push(<span key="func" className="oms-pill oms-pill-functions">🔧 Functions</span>)
+  if (caps?.supportsVision) capPills.push(<span key="vis" className="oms-pill oms-pill-vision"><Eye className="oms-icon" /> Vision</span>)
+  if (caps?.supportsReasoning) capPills.push(<span key="reas" className="oms-pill oms-pill-reasoning"><Brain className="oms-icon" /> Reasoning</span>)
+  if (caps?.optimizedForCode) capPills.push(<span key="code" className="oms-pill oms-pill-code"><Code className="oms-icon" /> Code</span>)
+  if (caps?.supportsFunctionCalling) capPills.push(<span key="func" className="oms-pill oms-pill-functions"><Wrench className="oms-icon" /> Functions</span>)
 
   return (
     <>
@@ -155,7 +157,7 @@ function renderImageContent(model: AnyModel) {
       )}
       {model.supportsWebSearch && (
         <div className="oms-tooltip-pills">
-          <span className="oms-pill oms-pill-web-search">🔍 Web Search</span>
+          <span className="oms-pill oms-pill-web-search"><Search className="oms-icon" /> Web Search</span>
         </div>
       )}
     </>
@@ -191,7 +193,7 @@ function renderVideoContent(model: AnyModel) {
           </div>
           {model.constraints.audio && (
             <div className="oms-tooltip-pills" style={{ marginTop: 4 }}>
-              <span className="oms-pill oms-pill-audio">🔊 Audio</span>
+              <span className="oms-pill oms-pill-audio"><Volume2 className="oms-icon" /> Audio</span>
             </div>
           )}
         </div>
@@ -395,7 +397,7 @@ export function ModelTooltip({ model, children }: ModelTooltipProps) {
       >
         {children}
       </div>
-      {visible && (
+      {visible && createPortal(
         <div
           ref={contentRef}
           className="oms-hover-content"
@@ -410,7 +412,8 @@ export function ModelTooltip({ model, children }: ModelTooltipProps) {
             )}
             {renderTooltipContent(model)}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )

@@ -1,8 +1,6 @@
 // Component exports
 export { ModelSelector, SYSTEM_DEFAULT_VALUE } from "./components/model-selector";
 export type { ModelSelectorProps } from "./components/model-selector";
-export { ModelItem } from "./components/model-item";
-export { ModelTooltip } from "./components/model-tooltip";
 export { TextModelSelector } from "./components/text-model-selector";
 export { ImageModelSelector } from "./components/image-model-selector";
 export { VideoModelSelector } from "./components/video-model-selector";

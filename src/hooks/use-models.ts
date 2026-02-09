@@ -22,7 +22,7 @@ export interface UseModelsProps {
    * Venice.ai requires `{ type: 'all' }` to return non-text models.
    * Other providers typically need no query params.
    *
-   * @default { type: 'all' }
+   * @default {}
    */
   queryParams?: Record<string, string>
   fetcher?: FetchFn
@@ -75,9 +75,9 @@ export function useModels(props: UseModelsProps): UseModelsResult {
       setError(null)
 
       try {
-        // Build URL with query params (default: ?type=all for Venice compatibility)
+        // Build URL with query params
         const cleanBase = baseUrl!.replace(/\/+$/, '')
-        const params = queryParamsRef.current ?? { type: 'all' }
+        const params = queryParamsRef.current ?? {}
         const qs = new URLSearchParams(params).toString()
         const url = `${cleanBase}/models${qs ? `?${qs}` : ''}`
 

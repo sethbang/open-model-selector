@@ -55,8 +55,9 @@ export interface ModelSelectorProps {
   type?: ModelType
 
   /**
-   * Query parameters for the /models endpoint.
-   * @default { type: 'all' }
+   * Query parameters appended to the /models endpoint URL as a query string.
+   * For Venice.ai, pass { type: 'text' } or { type: 'all' } to filter models server-side.
+   * @default {}
    */
   queryParams?: Record<string, string>
 
@@ -297,7 +298,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
             {value === SYSTEM_DEFAULT_VALUE ? (
                <span className="oms-muted">Use System Default</span>
             ) : selectedModel ? (
-              <span className="oms-truncate oms-flex-row oms-items-center oms-gap-2" style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+              <span className="oms-truncate oms-flex-row oms-items-center oms-gap-2">
                    <span className="oms-truncate">{selectedModel.name}</span>
                    <span className="oms-muted oms-text-xxs oms-truncate">({selectedModel.provider})</span>
               </span>
@@ -305,9 +306,9 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
               <span className="oms-muted">{placeholder}</span>
             )}
             {loading ? (
-                <Loader2 className="oms-icon oms-spin oms-muted" style={{ opacity: 0.5, marginLeft: 'auto' }} />
+                <Loader2 className="oms-icon oms-spin oms-muted oms-icon-trailing" />
             ) : (
-                <ChevronsUpDown className="oms-icon oms-muted" style={{ opacity: 0.5, marginLeft: 'auto' }} />
+                <ChevronsUpDown className="oms-icon oms-muted oms-icon-trailing" />
             )}
           </button>
         </PopoverPrimitive.Trigger>
@@ -316,7 +317,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
             <PopoverPrimitive.Content id={listboxId} className="oms-popover-content" align="start" side={side} sideOffset={4}>
                 <CommandPrimitive className="oms-command">
                    <div className="oms-search-container">
-                       <Search className="oms-icon oms-muted" style={{ marginRight: '8px', opacity: 0.5 }} />
+                       <Search className="oms-icon oms-muted oms-search-icon" />
                       <CommandPrimitive.Input
                           placeholder="Search models..."
                           aria-label="Search models"
@@ -324,30 +325,30 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
                       />
                       
                        <button
-                         aria-label={`Sort models by ${sortOrder === "name" ? "newest" : "name"}`}
-                         onClick={() => handleSortChange(sortOrder === "name" ? "created" : "name")}
-                         style={{ marginLeft: '4px', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px', padding: '4px', color: 'hsl(var(--oms-muted-foreground))' }}
-                       >
-                         <span className="oms-text-xxs" style={{ fontWeight: 700 }}>{sortOrder === "name" ? "AZ" : "New"}</span>
-                          <ChevronDown className="oms-icon" style={{ width: '8px', height: '8px' }} />
+                          aria-label={`Sort models by ${sortOrder === "name" ? "newest" : "name"}`}
+                          onClick={() => handleSortChange(sortOrder === "name" ? "created" : "name")}
+                          className="oms-sort-btn"
+                        >
+                          <span className="oms-text-xxs oms-sort-label">{sortOrder === "name" ? "AZ" : "New"}</span>
+                           <ChevronDown className="oms-icon oms-icon-xs" />
                        </button>
                    </div>
         
                   <CommandPrimitive.List>
                     {loading && (
-                        <div role="status" aria-live="polite" style={{ padding: '24px', textAlign: 'center', color: 'var(--oms-muted-foreground)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                        <div role="status" aria-live="polite" className="oms-loading-state">
                             <Loader2 className="oms-icon oms-spin" /> Loading...
                         </div>
                     )}
                     
                     {error && (
-                        <div role="alert" style={{ padding: '24px', textAlign: 'center', color: 'var(--oms-destructive)' }}>
+                        <div role="alert" className="oms-error-state">
                             Error: {error.message}
                         </div>
                     )}
         
                     {!loading && !error && (
-                        <CommandPrimitive.Empty style={{ padding: '24px', textAlign: 'center', fontSize: '12px', color: 'var(--oms-muted-foreground)' }}>
+                        <CommandPrimitive.Empty className="oms-empty-state">
                              No model found.
                         </CommandPrimitive.Empty>
                     )}

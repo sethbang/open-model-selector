@@ -207,7 +207,7 @@ The component forwards `ref` to the root `<div>`.
 | `baseUrl` | `string` | — | Base URL for the OpenAI-compatible API (e.g., `"https://api.venice.ai/api/v1"`). |
 | `apiKey` | `string` | — | API key for authentication. ⚠️ Visible in browser DevTools — use a backend proxy in production. |
 | `type` | `ModelType` | — | Filter to a specific model type (`"text"`, `"image"`, `"video"`, etc.). |
-| `queryParams` | `Record<string, string>` | `{ type: "all" }` | Query parameters for the `/models` endpoint. |
+| `queryParams` | `Record<string, string>` | `{}` | Query parameters appended to the `/models` URL as a query string. See [Query Parameters](#query-parameters) below. |
 | `fetcher` | `(url: string, init?: RequestInit) => Promise<Response>` | `fetch` | Custom fetch function for SSR, proxies, or testing. |
 | `responseExtractor` | `ResponseExtractor` | `defaultResponseExtractor` | Custom function to extract the model array from the API response. |
 | `normalizer` | `ModelNormalizer` | `defaultModelNormalizer` | Custom function to normalize each raw model object into an `AnyModel`. |
@@ -251,7 +251,7 @@ const { models, loading, error } = useModels({
 | `baseUrl` | `string` | — | Base URL for the API. If omitted, no fetch occurs. |
 | `apiKey` | `string` | — | Bearer token for authentication. |
 | `type` | `ModelType` | — | Client-side filter by model type. |
-| `queryParams` | `Record<string, string>` | `{ type: "all" }` | Query parameters appended to the `/models` URL. |
+| `queryParams` | `Record<string, string>` | `{}` | Query parameters appended to the `/models` URL. See [Query Parameters](#query-parameters) below. |
 | `fetcher` | `(url: string, init?: RequestInit) => Promise<Response>` | `fetch` | Custom fetch function. |
 | `responseExtractor` | `ResponseExtractor` | `defaultResponseExtractor` | Extracts model array from response JSON. |
 | `normalizer` | `ModelNormalizer` | `defaultModelNormalizer` | Normalizes each raw model into `AnyModel`. |
@@ -268,6 +268,34 @@ const { models, loading, error } = useModels({
 > - Automatically cleans up with `AbortController` on unmount
 > - Re-fetches when `baseUrl`, `apiKey`, or `queryParams` change
 > - `fetcher`, `responseExtractor`, and `normalizer` are stored in refs (no memoization needed)
+
+### Query Parameters
+
+The `queryParams` prop is appended to the `/models` endpoint URL as query string parameters (e.g., `queryParams={{ type: 'text' }}` fetches from `/models?type=text`).
+
+**Venice.ai users:** Venice's `/models` endpoint supports a `type` parameter to filter models server-side. Pass the model type you need:
+
+```tsx
+// Fetch only text models from Venice
+<ModelSelector
+  baseUrl="https://api.venice.ai/api/v1"
+  queryParams={{ type: 'text' }}
+  value={model}
+  onChange={setModel}
+/>
+
+// Fetch all model types from Venice
+<ModelSelector
+  baseUrl="https://api.venice.ai/api/v1"
+  queryParams={{ type: 'all' }}
+  value={model}
+  onChange={setModel}
+/>
+```
+
+> Venice supports `type` values: `"text"`, `"image"`, `"video"`, `"embedding"`, `"tts"`, `"asr"`, `"upscale"`, `"inpaint"`, and `"all"`.
+
+**Other APIs:** Pass whatever query parameters your endpoint expects, or omit `queryParams` entirely if none are needed.
 
 ### Model Types
 

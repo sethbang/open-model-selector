@@ -110,7 +110,7 @@ describe('useModels', () => {
   })
 
   // 3. URL construction with default queryParams
-  it('appends ?type=all by default', async () => {
+  it('appends no query string by default', async () => {
     const fetcher = createFetchMock([])
 
     renderHook(() =>
@@ -122,7 +122,7 @@ describe('useModels', () => {
 
     await waitFor(() => {
       expect(fetcher).toHaveBeenCalledWith(
-        'https://api.example.com/v1/models?type=all',
+        'https://api.example.com/v1/models',
         expect.any(Object),
       )
     })

@@ -201,10 +201,10 @@ describe('ModelSelector', () => {
         />
       )
 
-      // Wait for fetch to complete (useModels appends ?type=all by default)
+      // Wait for fetch to complete (useModels appends no query string by default)
       await waitFor(() => {
         expect(fetcher).toHaveBeenCalledWith(
-          'https://api.example.com/v1/models?type=all',
+          'https://api.example.com/v1/models',
           expect.objectContaining({
             headers: {},
             signal: expect.any(AbortSignal),

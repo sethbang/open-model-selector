@@ -432,6 +432,7 @@
 .oms-deprecation-badge {
   font-size: 10px;
   color: hsl(var(--oms-destructive));
+  margin-bottom: 4px;
 }
 
 /* Tooltip sections */
@@ -482,6 +483,9 @@
 
 /* Item name container */
 .oms-item-name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -500,4 +504,88 @@
 .oms-item-meta-separator::before {
   content: '•';
   margin: 0 1px;
+}
+
+/* Trailing icon in trigger button (chevron / spinner) */
+.oms-icon-trailing {
+  opacity: 0.5;
+  margin-left: auto;
+}
+
+/* Search icon inside search container */
+.oms-search-icon {
+  margin-right: 8px;
+  opacity: 0.5;
+}
+
+/* Sort toggle button */
+.oms-sort-btn {
+  margin-left: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  color: hsl(var(--oms-muted-foreground));
+}
+
+/* Sort button label */
+.oms-sort-label {
+  font-weight: 700;
+}
+
+/* Extra-small icon variant */
+.oms-icon-xs {
+  width: 8px;
+  height: 8px;
+}
+
+/* Loading state container */
+.oms-loading-state {
+  padding: 24px;
+  text-align: center;
+  color: hsl(var(--oms-muted-foreground));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Error state container */
+.oms-error-state {
+  padding: 24px;
+  text-align: center;
+  color: hsl(var(--oms-destructive));
+}
+
+/* Empty state container */
+.oms-empty-state {
+  padding: 24px;
+  text-align: center;
+  font-size: 12px;
+  color: hsl(var(--oms-muted-foreground));
+}
+
+/* Flex wrap utility */
+.oms-flex-wrap {
+  flex-wrap: wrap;
+}
+
+/* Tooltip trigger wrapper */
+.oms-tooltip-trigger {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  cursor: help;
+  max-width: 180px;
+  gap: 2px;
+  line-height: 1.3;
+}
+
+/* Tooltip heading */
+.oms-tooltip-title {
+  font-size: 14px;
+  font-weight: 600;
 }

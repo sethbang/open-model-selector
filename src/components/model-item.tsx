@@ -96,7 +96,7 @@ export const ModelItem = React.memo(function ModelItem({
           />
 
           <ModelTooltip model={model}>
-            <span className="oms-item-name" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span className="oms-item-name">
               {model.name}
               {model.type !== 'text' && (
                 <span className="oms-badge-type">{model.type}</span>

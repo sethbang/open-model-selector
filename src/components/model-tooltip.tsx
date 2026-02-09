@@ -26,7 +26,7 @@ function renderDeprecationWarning(model: AnyModel) {
   if (!model.deprecation) return null
   const past = isDeprecated(model.deprecation.date)
   return (
-    <div className="oms-deprecation-badge" style={{ marginBottom: 4 }}>
+    <div className="oms-deprecation-badge">
       <AlertTriangle className="oms-icon" /> {past ? 'Deprecated' : 'Deprecating'} {model.deprecation.date}
     </div>
   )
@@ -65,7 +65,7 @@ function renderTextContent(model: AnyModel) {
       {capPills.length > 0 && (
         <div className="oms-tooltip-pills">{capPills}</div>
       )}
-      <div className="oms-flex-row oms-gap-2" style={{ flexWrap: 'wrap' }}>
+      <div className="oms-flex-row oms-gap-2 oms-flex-wrap">
         {model.context_length > 0 && (
           <span className="oms-badge oms-badge-secondary">
             {formatContextLength(model.context_length)} Context
@@ -194,7 +194,7 @@ function renderVideoContent(model: AnyModel) {
             )}
           </div>
           {model.constraints.audio && (
-            <div className="oms-tooltip-pills" style={{ marginTop: 4 }}>
+            <div className="oms-tooltip-pills">
               <span className="oms-pill oms-pill-audio"><Volume2 className="oms-icon" /> Audio</span>
             </div>
           )}
@@ -395,7 +395,7 @@ export function ModelTooltip({ model, children }: ModelTooltipProps) {
         ref={triggerRef}
         onPointerEnter={show}
         onPointerLeave={hide}
-        style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', cursor: 'help', maxWidth: '180px', gap: '2px', lineHeight: 1.3 }}
+        className="oms-tooltip-trigger"
       >
         {children}
       </div>
@@ -407,7 +407,7 @@ export function ModelTooltip({ model, children }: ModelTooltipProps) {
           onPointerLeave={hide}
         >
           <div className="oms-flex-col oms-gap-2">
-            <h4 style={{ fontSize: '14px', fontWeight: 600 }}>{model.name}</h4>
+            <h4 className="oms-tooltip-title">{model.name}</h4>
             {renderDeprecationWarning(model)}
             {sharedBadges && (
               <div className="oms-tooltip-pills">{sharedBadges}</div>

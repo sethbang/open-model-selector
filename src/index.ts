@@ -26,6 +26,8 @@ export type {
 export {
   defaultModelNormalizer,
   defaultResponseExtractor,
+  extractBaseFields,
+  toNum,
   inferTypeFromId,
   MODEL_ID_TYPE_PATTERNS,
   normalizeTextModel,

@@ -26,6 +26,7 @@ export function formatPrice(value: string | number | undefined | null): string {
     const num = typeof value === "string" ? parseFloat(value) : value
     if (isNaN(num)) return "—"
     if (num < 0) return "—"
+    if (num === 0) return "Free"
     const perMillion = num * 1000000
     if (perMillion < 0.01) return "$" + perMillion.toFixed(6)
     return "$" + perMillion.toFixed(2)

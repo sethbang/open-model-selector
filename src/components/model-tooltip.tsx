@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react'
+import React, { useState, useRef, useCallback, useEffect, useLayoutEffect, useId } from 'react'
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 import { createPortal } from 'react-dom'
@@ -343,6 +343,7 @@ function renderTooltipContent(model: AnyModel) {
 
 export function ModelTooltip({ model, children }: ModelTooltipProps) {
   const [visible, setVisible] = useState(false)
+  const tooltipId = useId()
   const openTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
   const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
   const triggerRef = useRef<HTMLDivElement>(null)
@@ -357,6 +358,13 @@ export function ModelTooltip({ model, children }: ModelTooltipProps) {
     clearTimeout(openTimer.current)
     closeTimer.current = setTimeout(() => setVisible(false), 100)
   }, [])
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Escape' && visible) {
+      clearTimeout(openTimer.current)
+      setVisible(false)
+    }
+  }, [visible])
 
   // Position the tooltip to the right of the trigger
   useIsomorphicLayoutEffect(() => {
@@ -379,6 +387,24 @@ export function ModelTooltip({ model, children }: ModelTooltipProps) {
     }
   }, [visible])
 
+  // Hide tooltip when any ancestor scrolls (W-8 fix)
+  // The tooltip uses position:fixed and is portalled to document.body, so
+  // scrolling the list moves the trigger but leaves the tooltip floating.
+  // Using capture:true catches scroll events from any scrollable container.
+  useEffect(() => {
+    if (!visible) return
+
+    const handleScroll = () => {
+      clearTimeout(openTimer.current)
+      setVisible(false)
+    }
+
+    document.addEventListener('scroll', handleScroll, true)
+    return () => {
+      document.removeEventListener('scroll', handleScroll, true)
+    }
+  }, [visible])
+
   // Cleanup timers on unmount
   useEffect(() => {
     return () => {
@@ -395,6 +421,10 @@ export function ModelTooltip({ model, children }: ModelTooltipProps) {
         ref={triggerRef}
         onPointerEnter={show}
         onPointerLeave={hide}
+        onFocus={show}
+        onBlur={hide}
+        onKeyDown={handleKeyDown}
+        aria-describedby={visible ? tooltipId : undefined}
         className="oms-tooltip-trigger"
       >
         {children}
@@ -402,6 +432,8 @@ export function ModelTooltip({ model, children }: ModelTooltipProps) {
       {visible && createPortal(
         <div
           ref={contentRef}
+          id={tooltipId}
+          role="tooltip"
           className="oms-hover-content"
           onPointerEnter={show}
           onPointerLeave={hide}

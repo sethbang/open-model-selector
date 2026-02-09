@@ -297,6 +297,8 @@ The `queryParams` prop is appended to the `/models` endpoint URL as query string
 
 **Other APIs:** Pass whatever query parameters your endpoint expects, or omit `queryParams` entirely if none are needed.
 
+> **Performance tip:** The `type` prop (e.g., `type="text"`) filters **client-side** — all models are fetched first, then filtered in the browser. For large catalogs, use `queryParams` to filter **server-side** at the API level, reducing payload size and parse time. You can combine both: `queryParams` for server-side pre-filtering and `type` as a client-side safety net.
+
 ### Model Types
 
 The library supports 8 model types, each with its own TypeScript interface extending `BaseModel`:
@@ -323,7 +325,7 @@ The `BaseModel` interface includes these fields shared by all types:
 - `type: ModelType`
 - `description?: string`
 - `privacy?: "private" | "anonymized"`
-- `is_favorite: boolean`
+- `is_favorite?: boolean`
 - `offline?: boolean`
 - `betaModel?: boolean`
 - `modelSource?: string`
@@ -459,11 +461,88 @@ import {
 Usage examples:
 
 ```ts
-formatPrice("0.000003")       // "$3.00"  (per million tokens)
+formatPrice("0.000003")       // "$3.00"  — per-token price × 1,000,000
+formatPrice(0.00003)           // "$30.00" — works with numbers too
+formatPrice(0)                 // "Free"
+formatPrice(undefined)         // "—"
 formatContextLength(128000)    // "128k"
 formatFlatPrice(0.04)          // "$0.04"
 formatDuration(["5", "10"])    // "5s – 10s"
 ```
+
+> **Note:** `formatPrice` expects the raw **per-token** price (as returned by OpenAI, Venice.ai, OpenRouter, etc.) and converts it to a **per-million-token** display value by multiplying by 1,000,000. For example, a per-token cost of `0.000003` becomes `$3.00` per million tokens. Very small values (< $0.01/M) use 6 decimal places to preserve precision.
+
+### Normalizer Utilities
+
+In addition to `defaultModelNormalizer` and `defaultResponseExtractor`, the library exports the individual per-type normalizers, type inference helpers, and low-level building blocks. These are available from both `"open-model-selector"` and `"open-model-selector/utils"`.
+
+#### Per-Type Normalizers
+
+Each model type has a dedicated normalizer that converts a raw API response object into the corresponding typed model:
+
+```ts
+import {
+  normalizeTextModel,
+  normalizeImageModel,
+  normalizeVideoModel,
+  normalizeInpaintModel,
+  normalizeEmbeddingModel,
+  normalizeTtsModel,
+  normalizeAsrModel,
+  normalizeUpscaleModel,
+} from "open-model-selector/utils"
+
+// Each accepts a raw object and returns the typed model
+const textModel = normalizeTextModel(rawApiObject)   // → TextModel
+const imageModel = normalizeImageModel(rawApiObject) // → ImageModel
+```
+
+> These are the same functions used internally by `defaultModelNormalizer`. Use them directly when you need to normalize models of a known type without the dispatching logic.
+
+| Function | Returns |
+|----------|---------|
+| `normalizeTextModel(raw)` | `TextModel` |
+| `normalizeImageModel(raw)` | `ImageModel` |
+| `normalizeVideoModel(raw)` | `VideoModel` |
+| `normalizeInpaintModel(raw)` | `InpaintModel` |
+| `normalizeEmbeddingModel(raw)` | `EmbeddingModel` |
+| `normalizeTtsModel(raw)` | `TtsModel` |
+| `normalizeAsrModel(raw)` | `AsrModel` |
+| `normalizeUpscaleModel(raw)` | `UpscaleModel` |
+
+#### Type Inference
+
+`inferTypeFromId` uses heuristic pattern matching on a model's ID string to determine its type. This is how `defaultModelNormalizer` classifies models from providers that don't include an explicit `type` field (e.g., OpenAI, OpenRouter):
+
+```ts
+import { inferTypeFromId, MODEL_ID_TYPE_PATTERNS } from "open-model-selector/utils"
+
+inferTypeFromId("dall-e-3")           // "image"
+inferTypeFromId("whisper-large-v3")   // "asr"
+inferTypeFromId("gpt-4o")            // undefined (no match → caller defaults to "text")
+```
+
+`MODEL_ID_TYPE_PATTERNS` is the `Array<[RegExp, ModelType]>` used internally. It's exported so you can inspect the built-in rules or extend them for custom providers.
+
+#### Low-Level Helpers
+
+| Function | Signature | Description |
+|----------|-----------|-------------|
+| `extractBaseFields` | `(raw, type) → Omit<BaseModel, 'type'>` | Extracts shared `BaseModel` fields from a raw API object. Handles both Venice's nested `model_spec` format and flat top-level fields. Useful when writing custom per-type normalizers. |
+| `toNum` | `(v: unknown) → number \| undefined` | Safely coerces an unknown value to a number. Returns `undefined` for `null`, empty strings, and `NaN`. Used internally by all normalizers. |
+
+### Helper Utilities
+
+These are exported from `"open-model-selector/utils"` only (not the main entry):
+
+```ts
+import { cn, isDeprecated } from "open-model-selector/utils"
+```
+
+| Function | Signature | Description |
+|----------|-----------|-------------|
+| `cn` | `(...classes: (string \| undefined \| null \| false)[]) → string` | Merges class names, filtering out falsy values. Lightweight alternative to `clsx`/`classnames`. |
+| `isDeprecated` | `(dateStr: string) → boolean` | Returns `true` if the given ISO 8601 date string is in the past. Handles date-only strings (`"2025-01-15"`) by normalizing to UTC. Returns `false` for invalid dates. |
 
 ---
 
@@ -501,6 +580,26 @@ The library is SSR-safe:
   - A server-side proxy that injects the key (pass a relative `baseUrl` and a custom `fetcher`)
   - Environment variables scoped to the server (e.g., `VENICE_API_KEY`) with a thin API route
   - A scoped/read-only API key with minimal permissions
+
+### Accessibility
+
+The component implements the [ARIA combobox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/) and is designed to work well with screen readers and keyboard-only navigation.
+
+**Combobox & Popover:**
+- Trigger button has `role="combobox"` with `aria-expanded`, `aria-haspopup="listbox"`, and `aria-controls` linking to the listbox
+- Dynamic `aria-label` reflects the current selection state
+- Search input is labeled (`aria-label="Search models"`)
+- Loading state uses `role="status"` with `aria-live="polite"`; errors use `role="alert"`
+
+**Keyboard Navigation** (provided by [cmdk](https://cmdk.paco.me/) and [Radix Popover](https://www.radix-ui.com/primitives/docs/components/popover)):
+- `↑` / `↓` — navigate the model list
+- `Enter` — select the highlighted model
+- `Escape` — close the popover and return focus to the trigger
+- Type-ahead filtering via the search input (auto-focused on open)
+
+**Tooltips:**
+- Model detail tooltips use `role="tooltip"` with a unique `id` linked via `aria-describedby` on the trigger
+- Tooltips appear on both hover and keyboard focus (`onFocus` / `onBlur`), and dismiss with `Escape`
 
 ---
 

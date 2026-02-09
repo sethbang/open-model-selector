@@ -800,4 +800,122 @@ describe('ModelTooltip', () => {
       expect(tooltipContent!.parentElement).toBe(document.body)
     })
   })
+
+  // ----------------------------------------------------------------
+  // Accessibility (C-1)
+  // ----------------------------------------------------------------
+
+  describe('Accessibility', () => {
+    it('tooltip content has role="tooltip" and a matching id', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+      render(
+        <ModelTooltip model={textModel}>
+          <span data-testid="tooltip-trigger">trigger</span>
+        </ModelTooltip>,
+      )
+
+      await showTooltip(user)
+
+      const tooltipContent = document.querySelector('.oms-hover-content')
+      expect(tooltipContent).toBeTruthy()
+      expect(tooltipContent!.getAttribute('role')).toBe('tooltip')
+      expect(tooltipContent!.id).toBeTruthy()
+    })
+
+    it('trigger has aria-describedby referencing the tooltip id when visible', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+      render(
+        <ModelTooltip model={textModel}>
+          <span data-testid="tooltip-trigger">trigger</span>
+        </ModelTooltip>,
+      )
+
+      const trigger = screen.getByTestId('tooltip-trigger').closest('.oms-tooltip-trigger')!
+
+      // Before showing: no aria-describedby
+      expect(trigger.getAttribute('aria-describedby')).toBeNull()
+
+      await showTooltip(user)
+
+      // After showing: aria-describedby matches tooltip id
+      const tooltipContent = document.querySelector('.oms-hover-content')
+      expect(tooltipContent).toBeTruthy()
+      expect(trigger.getAttribute('aria-describedby')).toBe(tooltipContent!.id)
+    })
+
+    it('trigger has no aria-describedby when tooltip is hidden', () => {
+      render(
+        <ModelTooltip model={textModel}>
+          <span data-testid="tooltip-trigger">trigger</span>
+        </ModelTooltip>,
+      )
+
+      const trigger = screen.getByTestId('tooltip-trigger').closest('.oms-tooltip-trigger')!
+      expect(trigger.getAttribute('aria-describedby')).toBeNull()
+    })
+
+    it('shows tooltip on focus and hides on blur', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+      render(
+        <ModelTooltip model={textModel}>
+          <button data-testid="tooltip-trigger">focusable trigger</button>
+        </ModelTooltip>,
+      )
+
+      const button = screen.getByTestId('tooltip-trigger')
+
+      // Focus the button — React's onFocus (focusin) should bubble to the trigger wrapper
+      act(() => { button.focus() })
+      act(() => { vi.advanceTimersByTime(250) })
+
+      expect(screen.getByText(textModel.name)).toBeVisible()
+
+      // Blur the button
+      act(() => { button.blur() })
+      act(() => { vi.advanceTimersByTime(150) })
+
+      expect(screen.queryByText(textModel.name)).not.toBeInTheDocument()
+    })
+
+    it('hides tooltip when an ancestor scrolls (W-8)', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+      render(
+        <ModelTooltip model={textModel}>
+          <span data-testid="tooltip-trigger">trigger</span>
+        </ModelTooltip>,
+      )
+
+      await showTooltip(user)
+      expect(screen.getByText(textModel.name)).toBeVisible()
+
+      // Simulate a scroll event (capture phase) from a scrollable container
+      act(() => {
+        const scrollEvent = new Event('scroll', { bubbles: false })
+        document.dispatchEvent(scrollEvent)
+      })
+
+      expect(screen.queryByText(textModel.name)).not.toBeInTheDocument()
+    })
+
+    it('hides tooltip on Escape key', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+      render(
+        <ModelTooltip model={textModel}>
+          <button data-testid="tooltip-trigger">focusable trigger</button>
+        </ModelTooltip>,
+      )
+
+      const button = screen.getByTestId('tooltip-trigger')
+
+      // Show via focus
+      act(() => { button.focus() })
+      act(() => { vi.advanceTimersByTime(250) })
+      expect(screen.getByText(textModel.name)).toBeVisible()
+
+      // Press Escape
+      await user.keyboard('{Escape}')
+
+      expect(screen.queryByText(textModel.name)).not.toBeInTheDocument()
+    })
+  })
 })

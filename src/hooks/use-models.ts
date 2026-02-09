@@ -67,6 +67,14 @@ export function useModels(props: UseModelsProps): UseModelsResult {
       return
     }
 
+    // Validate URL scheme — only allow http(s) to prevent data: / javascript: / file: injection
+    if (!/^https?:\/\//i.test(baseUrl)) {
+      setAllModels([])
+      setLoading(false)
+      setError(new Error(`Invalid baseUrl scheme: URL must start with http:// or https://`))
+      return
+    }
+
     const controller = new AbortController()
     let isMounted = true
 
@@ -93,7 +101,7 @@ export function useModels(props: UseModelsProps): UseModelsResult {
         })
 
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+          throw new Error(`Failed to load models (HTTP ${response.status})`)
         }
 
         const json: unknown = await response.json()

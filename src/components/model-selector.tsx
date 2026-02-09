@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Command as CommandPrimitive } from "cmdk"
+import { Command as CommandPrimitive, useCommandState } from "cmdk"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
 import type { AnyModel, ModelType } from "../types"
 import { useModels, type UseModelsProps } from "../hooks/use-models"
@@ -29,6 +29,47 @@ const defaultOnChange: (modelId: string) => void = (() => {
   }
   return () => {}
 })()
+
+// --- Internal: aria-live announcer for search result count ---
+const ANNOUNCE_DEBOUNCE_MS = 300
+
+/** @internal Announces filtered result count to screen readers via aria-live. Must be rendered inside a CommandPrimitive. */
+function SearchResultAnnouncer() {
+  const search = useCommandState((state) => state.search)
+  const filteredCount = useCommandState((state) => state.filtered.count)
+  const [announcement, setAnnouncement] = React.useState("")
+
+  React.useEffect(() => {
+    // Only announce when there's an active search query
+    if (!search) {
+      setAnnouncement("")
+      return
+    }
+
+    const timer = setTimeout(() => {
+      setAnnouncement(
+        filteredCount === 0
+          ? "No models found"
+          : filteredCount === 1
+            ? "1 model found"
+            : `${filteredCount} models found`
+      )
+    }, ANNOUNCE_DEBOUNCE_MS)
+
+    return () => clearTimeout(timer)
+  }, [search, filteredCount])
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      className="oms-sr-only"
+    >
+      {announcement}
+    </div>
+  )
+}
 
 // --- Types ---
 /**
@@ -151,6 +192,15 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
   const [open, setOpen] = React.useState(false)
   const listboxId = React.useId() + '-listbox'
 
+  // Stable "now" reference for deprecation checks — refreshed each time the
+  // popover opens so the list is never stale when the user is looking at it.
+  const [now, setNow] = React.useState(() => new Date())
+  React.useEffect(() => {
+    if (open) {
+      setNow(new Date())
+    }
+  }, [open])
+
   // When consumer provides models, disable the internal fetch by withholding baseUrl
   const effectiveBaseUrl = models.length > 0 ? undefined : baseUrl
   const { models: fetchedModels, loading, error } = useModels({
@@ -231,8 +281,6 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
 
     let list = Array.from(map.values())
 
-    const now = new Date()
-
     // Filter out deprecated models (past date) when showDeprecated is false
     if (!showDeprecated) {
       list = list.filter(m => {
@@ -260,7 +308,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
     }
 
     return [...nonDeprecated, ...deprecated]
-  }, [models, fetchedModels, sortOrder, localFavorites, onToggleFavorite, showDeprecated])
+  }, [models, fetchedModels, sortOrder, localFavorites, onToggleFavorite, showDeprecated, now])
 
   const selectedModel = React.useMemo(
     () => allModels.find((model) => model.id === value),
@@ -333,7 +381,9 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
                            <ChevronDown className="oms-icon oms-icon-xs" />
                        </button>
                    </div>
-        
+
+                   <SearchResultAnnouncer />
+         
                   <CommandPrimitive.List>
                     {loading && (
                         <div role="status" aria-live="polite" className="oms-loading-state">

@@ -22,9 +22,12 @@ describe('formatPrice', () => {
     expect(formatPrice(NaN)).toBe('—')
   })
 
-  it('formats zero price', () => {
-    // 0 * 1_000_000 = 0, which is < 0.01, so uses 6 decimal places
-    expect(formatPrice(0)).toBe('$0.000000')
+  it('returns "Free" for zero price (number)', () => {
+    expect(formatPrice(0)).toBe('Free')
+  })
+
+  it('returns "Free" for zero price (string)', () => {
+    expect(formatPrice('0')).toBe('Free')
   })
 
   it('returns "—" for negative price', () => {

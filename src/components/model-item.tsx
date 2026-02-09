@@ -15,6 +15,34 @@ interface ModelItemProps {
   onToggleFavorite: (id: string) => void
 }
 
+/**
+ * Custom comparator for React.memo. Avoids unnecessary re-renders when model
+ * objects are recreated via spread (e.g. `{ ...m, is_favorite: true }`) during
+ * favorite toggles. Compares only the fields that affect visual output.
+ */
+function areModelItemPropsEqual(
+  prev: ModelItemProps,
+  next: ModelItemProps,
+): boolean {
+  if (prev.isSelected !== next.isSelected) return false
+  if (prev.onSelect !== next.onSelect) return false
+  if (prev.onToggleFavorite !== next.onToggleFavorite) return false
+
+  // Fast path: same object reference means all model fields match
+  if (prev.model === next.model) return true
+
+  // Model reference changed — compare fields that affect rendering
+  return (
+    prev.model.id === next.model.id &&
+    prev.model.is_favorite === next.model.is_favorite &&
+    prev.model.name === next.model.name &&
+    prev.model.provider === next.model.provider &&
+    prev.model.type === next.model.type &&
+    prev.model.description === next.model.description &&
+    prev.model.deprecation?.date === next.model.deprecation?.date
+  )
+}
+
 function renderInlineMeta(model: AnyModel): React.ReactNode {
   const parts: React.ReactNode[] = []
 
@@ -134,4 +162,4 @@ export const ModelItem = React.memo(function ModelItem({
       </div>
     </CommandPrimitive.Item>
   )
-})
+}, areModelItemPropsEqual)

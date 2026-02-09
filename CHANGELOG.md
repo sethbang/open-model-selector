@@ -46,7 +46,18 @@ Initial release of `open-model-selector`.
 - **Comprehensive test suite** — unit, component (jsdom), and Storybook (Playwright) test projects
 - **Storybook stories** — Default, PreselectedModel, SystemDefault, CustomPlaceholder, SortByNewest, ControlledFavorites, EmptyState, LoadingState, ErrorState, PopoverTop, WideContainer, DarkMode, MinimalModels, and VeniceLive
 - **GitHub Actions CI** — automated npm publish on GitHub release creation
-- **TypeScript** — full type exports for `AnyModel`, `BaseModel`, `TextModel`, `ImageModel`, `VideoModel`, `ModelSelectorProps`, `UseModelsProps`, `UseModelsResult`, `ModelNormalizer`, and `ResponseExtractor`
+- **TypeScript** — full type exports (30 types):
+  - **Base**: `ModelType`, `BaseModel`, `Deprecation`, `AnyModel`
+  - **Text**: `TextModel`, `TextPricing`, `TextCapabilities`, `TextConstraints`
+  - **Image**: `ImageModel`, `ImagePricing`, `ImageConstraints`
+  - **Video**: `VideoModel`, `VideoConstraints`
+  - **Inpaint**: `InpaintModel`, `InpaintPricing`, `InpaintConstraints`
+  - **Embedding**: `EmbeddingModel`, `EmbeddingPricing`
+  - **TTS**: `TtsModel`, `TtsPricing`
+  - **ASR**: `AsrModel`, `AsrPricing`
+  - **Upscale**: `UpscaleModel`, `UpscalePricing`
+  - **Component / Hook**: `ModelSelectorProps`, `UseModelsProps`, `UseModelsResult`, `FetchFn`
+  - **Normalizer**: `ModelNormalizer`, `ResponseExtractor`
 - **Dual CJS/ESM output** — built with tsup, sourcemaps and `.d.ts` included
 
 [0.1.0]: https://github.com/sethbang/open-model-selector/releases/tag/v0.1.0

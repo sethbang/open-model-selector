@@ -418,7 +418,99 @@ describe('useModels', () => {
     expect(result.current.models[0].type).toBe('video')
   })
 
-  // 17. Strips trailing slashes from baseUrl
+  // 17. Rejects javascript: baseUrl scheme
+  it('rejects javascript: baseUrl with an error', async () => {
+    const fetcher = createFetchMock([])
+
+    const { result } = renderHook(() =>
+      useModels({
+        baseUrl: 'javascript:alert(1)',
+        fetcher,
+      }),
+    )
+
+    expect(result.current.loading).toBe(false)
+    expect(result.current.error).toBeInstanceOf(Error)
+    expect(result.current.error!.message).toMatch(/Invalid baseUrl scheme/)
+    expect(result.current.models).toEqual([])
+    expect(fetcher).not.toHaveBeenCalled()
+  })
+
+  // 18. Rejects data: baseUrl scheme
+  it('rejects data: baseUrl with an error', async () => {
+    const fetcher = createFetchMock([])
+
+    const { result } = renderHook(() =>
+      useModels({
+        baseUrl: 'data:application/json,{"data":[]}',
+        fetcher,
+      }),
+    )
+
+    expect(result.current.loading).toBe(false)
+    expect(result.current.error).toBeInstanceOf(Error)
+    expect(result.current.error!.message).toMatch(/Invalid baseUrl scheme/)
+    expect(result.current.models).toEqual([])
+    expect(fetcher).not.toHaveBeenCalled()
+  })
+
+  // 19. Rejects file: baseUrl scheme
+  it('rejects file: baseUrl with an error', async () => {
+    const fetcher = createFetchMock([])
+
+    const { result } = renderHook(() =>
+      useModels({
+        baseUrl: 'file:///etc/passwd',
+        fetcher,
+      }),
+    )
+
+    expect(result.current.loading).toBe(false)
+    expect(result.current.error).toBeInstanceOf(Error)
+    expect(result.current.error!.message).toMatch(/Invalid baseUrl scheme/)
+    expect(result.current.models).toEqual([])
+    expect(fetcher).not.toHaveBeenCalled()
+  })
+
+  // 20. Accepts http:// baseUrl scheme
+  it('accepts http:// baseUrl scheme', async () => {
+    const fetcher = createFetchMock(mockApiResponse.data)
+
+    const { result } = renderHook(() =>
+      useModels({
+        baseUrl: 'http://localhost:3000/v1',
+        fetcher,
+      }),
+    )
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.error).toBeNull()
+    expect(result.current.models).toHaveLength(3)
+  })
+
+  // 21. Accepts HTTPS:// (case-insensitive) baseUrl scheme
+  it('accepts case-insensitive HTTPS:// baseUrl scheme', async () => {
+    const fetcher = createFetchMock(mockApiResponse.data)
+
+    const { result } = renderHook(() =>
+      useModels({
+        baseUrl: 'HTTPS://api.example.com/v1',
+        fetcher,
+      }),
+    )
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.error).toBeNull()
+    expect(result.current.models).toHaveLength(3)
+  })
+
+  // 22. Strips trailing slashes from baseUrl
   it('strips trailing slashes from baseUrl', async () => {
     const fetcher = createFetchMock([])
 

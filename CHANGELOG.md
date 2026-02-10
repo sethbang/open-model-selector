@@ -22,6 +22,7 @@ Initial release of `open-model-selector`.
   - `className` and `ref` forwarding
   - Configurable `storageKey` for localStorage namespace isolation
   - `showSystemDefault` toggle
+  - `onChange` callback receives the model ID **and** the full model object (`AnyModel | null`) — no secondary lookup needed
 - **`useModels` hook** — fetches and normalizes models from an OpenAI-compatible API
   - `baseUrl` and `apiKey` props for endpoint configuration
   - Custom `fetcher` prop for SSR, proxies, and testing (ref-stored — no memoization needed)

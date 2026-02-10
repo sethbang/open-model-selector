@@ -83,23 +83,28 @@ The simplest way to use the component — point it at [Venice.ai](https://venice
 ```tsx
 import { useState } from "react"
 import { ModelSelector } from "open-model-selector"
+import type { AnyModel } from "open-model-selector"
 import "open-model-selector/styles.css"
 
 function App() {
-  const [model, setModel] = useState<string>("")
+  const [modelId, setModelId] = useState<string>("")
+  const [selectedModel, setSelectedModel] = useState<AnyModel | null>(null)
 
   return (
     <ModelSelector
       baseUrl="https://api.venice.ai/api/v1"
       apiKey="your-api-key"
-      value={model}
-      onChange={setModel}
+      value={modelId}
+      onChange={(id, model) => {
+        setModelId(id)
+        setSelectedModel(model) // full model object, or null for system default
+      }}
     />
   )
 }
 ```
 
-> The component fetches from `{baseUrl}/models` and normalizes responses automatically. Venice.ai's rich `model_spec` format is fully supported — capabilities, privacy levels, traits, pricing, and deprecation info are all extracted out of the box.
+> The `onChange` callback receives the model ID **and** the full model object (or `null` when "Use System Default" is selected). This eliminates the need for a secondary lookup. The component fetches from `{baseUrl}/models` and normalizes responses automatically. Venice.ai's rich `model_spec` format is fully supported — capabilities, privacy levels, traits, pricing, and deprecation info are all extracted out of the box.
 
 ### Controlled Mode (Static Models)
 
@@ -161,13 +166,13 @@ const models: TextModel[] = [
 ]
 
 function App() {
-  const [model, setModel] = useState<string>("zai-org-glm-4.7")
+  const [modelId, setModelId] = useState<string>("zai-org-glm-4.7")
 
   return (
     <ModelSelector
       models={models}
-      value={model}
-      onChange={setModel}
+      value={modelId}
+      onChange={(id) => setModelId(id)}
       placeholder="Choose a model..."
     />
   )
@@ -184,9 +189,9 @@ Type-filtered convenience components for common model categories:
 import { TextModelSelector, ImageModelSelector, VideoModelSelector } from "open-model-selector"
 
 // These are pre-filtered wrappers around <ModelSelector type="...">
-<TextModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={setModel} />
-<ImageModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={setModel} />
-<VideoModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={setModel} />
+<TextModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={(id) => setModel(id)} />
+<ImageModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={(id) => setModel(id)} />
+<VideoModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={(id) => setModel(id)} />
 ```
 
 > These are convenience wrappers that pass `type="text"`, `type="image"`, or `type="video"` respectively.
@@ -212,7 +217,7 @@ The component forwards `ref` to the root `<div>`.
 | `responseExtractor` | `ResponseExtractor` | `defaultResponseExtractor` | Custom function to extract the model array from the API response. |
 | `normalizer` | `ModelNormalizer` | `defaultModelNormalizer` | Custom function to normalize each raw model object into an `AnyModel`. |
 | `value` | `string` | — | Currently selected model ID (controlled). |
-| `onChange` | `(modelId: string) => void` | — | Callback when a model is selected. If omitted, a dev-mode warning is logged. |
+| `onChange` | `(modelId: string, model: AnyModel \| null) => void` | — | Callback when a model is selected. Receives the model ID and the full model object (or `null` for the system-default sentinel). If omitted, a dev-mode warning is logged. |
 | `onToggleFavorite` | `(modelId: string) => void` | — | Callback for favorite toggle. If omitted, favorites use localStorage. |
 | `placeholder` | `string` | `"Select model..."` | Placeholder text when no model is selected. |
 | `sortOrder` | `"name" \| "created"` | — | Controlled sort order. If omitted, internal state is used. |
@@ -281,7 +286,7 @@ The `queryParams` prop is appended to the `/models` endpoint URL as query string
   baseUrl="https://api.venice.ai/api/v1"
   queryParams={{ type: 'text' }}
   value={model}
-  onChange={setModel}
+  onChange={(id) => setModel(id)}
 />
 
 // Fetch all model types from Venice
@@ -289,7 +294,7 @@ The `queryParams` prop is appended to the `/models` endpoint URL as query string
   baseUrl="https://api.venice.ai/api/v1"
   queryParams={{ type: 'all' }}
   value={model}
-  onChange={setModel}
+  onChange={(id) => setModel(id)}
 />
 ```
 
@@ -366,7 +371,7 @@ const myNormalizer: ModelNormalizer = (raw): AnyModel => ({
   baseUrl="https://my-api.com/v1"
   normalizer={myNormalizer}
   value={model}
-  onChange={setModel}
+  onChange={(id) => setModel(id)}
 />
 ```
 
@@ -389,7 +394,7 @@ const myExtractor: ResponseExtractor = (body) => {
   baseUrl="https://my-api.com/v1"
   responseExtractor={myExtractor}
   value={model}
-  onChange={setModel}
+  onChange={(id) => setModel(id)}
 />
 ```
 

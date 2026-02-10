@@ -112,7 +112,8 @@ export const ModelItem = React.memo(function ModelItem({
 
   return (
     <CommandPrimitive.Item
-      value={`${model.name} ${model.provider} ${model.id} ${model.description || ''} ${model.type}`}
+      value={model.id}
+      keywords={[model.name, model.provider, model.id, model.description || '', model.type]}
       onSelect={() => onSelect(model.id)}
       className={itemClass || undefined}
     >

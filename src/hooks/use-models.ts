@@ -95,9 +95,19 @@ export function useModels(props: UseModelsProps): UseModelsResult {
         }
 
         const fetchFn = fetcherRef.current ?? fetch
+        
+        // Create a timeout signal (10s)
+        const timeoutSignal = AbortSignal.timeout(10000)
+        
+        // Combine signals if possible, or just use timeout if controller not strictly needed for manual abort
+        // but here we have a controller for unmount. 
+        // We can race them or just rely on the controller + manual timeout logic 
+        // but AbortSignal.any() is modern. Let's stick to a simple timeout wrapper if env supports it, 
+        // or just race the fetch.
+        
         const response = await fetchFn(url, {
           headers,
-          signal: controller.signal,
+          signal: AbortSignal.any ? AbortSignal.any([controller.signal, timeoutSignal]) : controller.signal,
         })
 
         if (!response.ok) {

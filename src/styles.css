@@ -205,10 +205,30 @@
 
 @media (prefers-color-scheme: dark) {
     .oms-popover-content {
+        --oms-popover: 222.2 84% 4.9%;
+        --oms-popover-foreground: 210 40% 98%;
+        --oms-border: 217.2 32.6% 17.5%;
+        --oms-muted: 217.2 32.6% 17.5%;
+        --oms-muted-foreground: 215 20.2% 65.1%;
+        --oms-accent: 217.2 32.6% 17.5%;
+        --oms-accent-foreground: 210 40% 98%;
+        background-color: hsl(var(--oms-popover));
+        color: hsl(var(--oms-popover-foreground));
+        border-color: hsl(var(--oms-border));
         box-shadow: 0 8px 30px rgb(0 0 0 / 0.5), 0 4px 10px rgb(0 0 0 / 0.3);
     }
 }
 .dark .oms-popover-content {
+    --oms-popover: 222.2 84% 4.9%;
+    --oms-popover-foreground: 210 40% 98%;
+    --oms-border: 217.2 32.6% 17.5%;
+    --oms-muted: 217.2 32.6% 17.5%;
+    --oms-muted-foreground: 215 20.2% 65.1%;
+    --oms-accent: 217.2 32.6% 17.5%;
+    --oms-accent-foreground: 210 40% 98%;
+    background-color: hsl(var(--oms-popover));
+    color: hsl(var(--oms-popover-foreground));
+    border-color: hsl(var(--oms-border));
     box-shadow: 0 8px 30px rgb(0 0 0 / 0.5), 0 4px 10px rgb(0 0 0 / 0.3);
 }
 

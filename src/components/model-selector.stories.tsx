@@ -501,16 +501,29 @@ type Story = StoryObj<typeof ModelSelector>;
 
 // ─── Core Stories ────────────────────────────────────────────────────────────
 
-/** Default state with static mock models and controlled selection. */
+/** Default state with static mock models and controlled selection. Shows full model details on select. */
 export const Default: Story = {
   render: () => {
     const [value, setValue] = useState("");
+    const [selectedModel, setSelectedModel] = useState<AnyModel | null>(null);
     return (
       <>
-        <ModelSelector models={MOCK_MODELS} value={value} onChange={setValue} />
+        <ModelSelector
+          models={MOCK_MODELS}
+          value={value}
+          onChange={(id, model) => {
+            setValue(id);
+            setSelectedModel(model);
+          }}
+        />
         <p style={{ marginTop: 16, fontSize: 12, color: "#888" }}>
           Selected: <code>{value || "none"}</code>
         </p>
+        {selectedModel && (
+          <pre style={{ marginTop: 8, fontSize: 10, color: "#888", whiteSpace: "pre-wrap" }}>
+            {JSON.stringify(selectedModel, null, 2)}
+          </pre>
+        )}
       </>
     );
   },

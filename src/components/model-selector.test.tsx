@@ -143,10 +143,15 @@ describe('ModelSelector', () => {
       await user.click(screen.getByRole('combobox'))
       await user.click(screen.getByText('Claude 3 Opus'))
 
-      expect(onChange).toHaveBeenCalledWith('claude-3-opus')
+      expect(onChange).toHaveBeenCalledWith('claude-3-opus', expect.objectContaining({
+        id: 'claude-3-opus',
+        name: 'Claude 3 Opus',
+        provider: 'anthropic',
+        type: 'text',
+      }))
     })
 
-    it('calls onChange with SYSTEM_DEFAULT_VALUE when system default is selected', async () => {
+    it('calls onChange with SYSTEM_DEFAULT_VALUE and null model when system default is selected', async () => {
       const onChange = vi.fn()
       const user = userEvent.setup()
       render(<ModelSelector models={mockModels} onChange={onChange} showSystemDefault />)
@@ -158,7 +163,7 @@ describe('ModelSelector', () => {
       // Click the last one (the one in the popover list)
       await user.click(systemDefaultOptions[systemDefaultOptions.length - 1])
 
-      expect(onChange).toHaveBeenCalledWith(SYSTEM_DEFAULT_VALUE)
+      expect(onChange).toHaveBeenCalledWith(SYSTEM_DEFAULT_VALUE, null)
     })
 
     it('hides system default option when showSystemDefault is false', async () => {

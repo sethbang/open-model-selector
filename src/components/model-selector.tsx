@@ -13,10 +13,10 @@ import { Check, ChevronsUpDown, ChevronDown, Search, Loader2 } from "./icons"
 export const SYSTEM_DEFAULT_VALUE = "system_default" as const
 
 /** @internal Dev-mode warning when onChange is omitted */
-const defaultOnChange: (modelId: string) => void = (() => {
+const defaultOnChange: (modelId: string, model: AnyModel | null) => void = (() => {
   if (process.env.NODE_ENV !== 'production') {
     let warned = false
-    return (_modelId: string) => {
+    return (_modelId: string, _model: AnyModel | null) => {
       if (!warned) {
         warned = true
         console.warn(
@@ -124,10 +124,11 @@ export interface ModelSelectorProps {
   value?: string
   
   /**
-   * Callback fired when a model is selected. Receives the model ID.
+   * Callback fired when a model is selected.
+   * Receives the model ID and the full model object (or `null` for the system-default sentinel).
    * If omitted, selections are silently ignored (read-only / display-only usage).
    */
-  onChange?: (modelId: string) => void
+  onChange?: (modelId: string, model: AnyModel | null) => void
   
   /** Callback fired when a model is favorited/unfavorited. Only relevant if favorites are controlled. */
   onToggleFavorite?: (modelId: string) => void
@@ -321,9 +322,10 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
   }), [allModels])
 
   const handleModelSelect = React.useCallback((id: string) => {
-    onChange(id)
+    const model = allModels.find(m => m.id === id) ?? null
+    onChange(id, model)
     setOpen(false)
-  }, [onChange])
+  }, [onChange, allModels])
 
   return (
     <div ref={ref} className={cn("oms-reset", className)}>

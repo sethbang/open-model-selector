@@ -9,6 +9,7 @@ import {
   type ResponseExtractor,
 } from '../utils/normalizers/index'
 
+/** A fetch-compatible function signature. Used for SSR, testing, or proxy scenarios. */
 type FetchFn = (url: string, init?: RequestInit) => Promise<Response>
 
 export interface UseModelsProps {
@@ -36,6 +37,15 @@ export interface UseModelsResult {
   error: Error | null
 }
 
+/**
+ * Fetches and normalizes AI models from an OpenAI-compatible `/models` endpoint.
+ * Handles loading state, errors, abort/timeout, and optional client-side type filtering.
+ *
+ * @example
+ * ```ts
+ * const { models, loading, error } = useModels({ baseUrl: "/api/v1", type: "text" })
+ * ```
+ */
 export function useModels(props: UseModelsProps): UseModelsResult {
   const { baseUrl, apiKey, type, queryParams } = props
 

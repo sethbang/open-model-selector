@@ -168,6 +168,16 @@ export interface ModelSelectorProps {
   disabled?: boolean
 }
 
+/**
+ * A searchable, accessible model selector combobox for AI models.
+ * Supports managed mode (fetches from API) and controlled mode (static model list).
+ * Features include favorites, sorting, deprecation warnings, and screen-reader announcements.
+ *
+ * @example
+ * ```tsx
+ * <ModelSelector type="text" baseUrl="/api/v1" onChange={(id) => setModel(id)} />
+ * ```
+ */
 export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps>(
   function ModelSelector(
     {

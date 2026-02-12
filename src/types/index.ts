@@ -17,5 +17,6 @@ import type { TtsModel } from './tts'
 import type { AsrModel } from './asr'
 import type { UpscaleModel } from './upscale'
 
+/** Discriminated union of all supported model types. Use `model.type` to narrow. */
 export type AnyModel = TextModel | ImageModel | VideoModel | InpaintModel
   | EmbeddingModel | TtsModel | AsrModel | UpscaleModel

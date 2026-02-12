@@ -1,10 +1,30 @@
 # open-model-selector
 
-[![npm version](https://img.shields.io/npm/v/open-model-selector)](https://www.npmjs.com/package/open-model-selector) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/open-model-selector)](https://www.npmjs.com/package/open-model-selector) [![npm bundle size](https://img.shields.io/bundlephobia/minzip/open-model-selector)](https://bundlephobia.com/package/open-model-selector) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 
-An accessible, themeable model selector combobox for React that works with any OpenAI-compatible API. Built with first-class [Venice.ai](https://venice.ai) support — drop it into your app to let users search, filter, and pick from Venice's frontier model catalog (GPT-5.2, Claude Opus 4.6, Gemini 3 Pro, GLM 4.7, Qwen 3 Coder 480B, and more) or any other `/v1/models` endpoint.
+An accessible, themeable React model-selector combobox for any OpenAI-compatible API — with first-class [Venice.ai](https://venice.ai) support.
+
+> Drop it into your app to let users search, filter, and pick from Venice's frontier model catalog (GPT-5.2, Claude Opus 4.6, Gemini 3 Pro, GLM 4.7, Qwen 3 Coder 480B, and more) or any other `/v1/models` endpoint.
+
+
+
+
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [API Reference](#api-reference)
+- [TypeScript](#typescript)
+- [Customization](#customization)
+- [Framework Integration](#framework-integration)
+- [Development](#development)
+- [License](#license)
+- [Links](#links)
 
 ## Features
+<div>
+<img src="screenshots/main.png" alt="A floating image" style="float: right; margin-left: 15px;" height="420" />
 
 - **First-class [Venice.ai](https://venice.ai) support** — full normalizer for Venice's rich `model_spec` format including capabilities, privacy levels, traits, and per-type pricing across 60+ models
 - **Any OpenAI-compatible endpoint** — also works out of the box with OpenAI, OpenRouter, and more
@@ -22,8 +42,7 @@ An accessible, themeable model selector combobox for React that works with any O
 - **Full TypeScript types** exported
 - **Dual CJS/ESM output** with sourcemaps
 - **React 18 and 19** support
-
----
+</div>
 
 ## Installation
 
@@ -361,6 +380,51 @@ import type {
 
 ---
 
+## TypeScript
+
+Full `.d.ts` type declarations are included in the package — no separate `@types/` install is needed.
+
+### All Exported Types
+
+```ts
+// Component props
+import type {
+  ModelSelectorProps,
+  TextModelSelectorProps,
+  ImageModelSelectorProps,
+  VideoModelSelectorProps,
+} from "open-model-selector"
+
+// Hook types
+import type { UseModelsProps, UseModelsResult, FetchFn } from "open-model-selector"
+
+// Base model types
+import type { ModelType, BaseModel, Deprecation, AnyModel } from "open-model-selector"
+
+// Text model types
+import type { TextModel, TextPricing, TextCapabilities, TextConstraints } from "open-model-selector"
+
+// Image model types
+import type { ImageModel, ImagePricing, ImageConstraints } from "open-model-selector"
+
+// Video model types
+import type { VideoModel, VideoConstraints } from "open-model-selector"
+
+// Other model types
+import type { InpaintModel, InpaintPricing, InpaintConstraints } from "open-model-selector"
+import type { EmbeddingModel, EmbeddingPricing } from "open-model-selector"
+import type { TtsModel, TtsPricing } from "open-model-selector"
+import type { AsrModel, AsrPricing } from "open-model-selector"
+import type { UpscaleModel, UpscalePricing } from "open-model-selector"
+
+// Normalizer types (also available from "open-model-selector/utils")
+import type { ModelNormalizer, ResponseExtractor } from "open-model-selector"
+```
+
+> **Tip:** `import type` statements are erased at compile time and are always safe in React Server Components, regardless of `"use client"` directives.
+
+---
+
 ## Customization
 
 ### Custom Normalizer
@@ -504,7 +568,10 @@ formatPrice(0)                 // "Free"
 formatPrice(undefined)         // "—"
 formatContextLength(128000)    // "128k"
 formatFlatPrice(0.04)          // "$0.04"
+formatAudioPrice(0.006)        // "$0.0060 / sec"
 formatDuration(["5", "10"])    // "5s – 10s"
+formatResolutions(["720p", "1080p", "4K"])  // "720p, 1080p, 4K"
+formatAspectRatios(["1:1", "16:9", "4:3"]) // "1:1, 16:9, 4:3"
 ```
 
 > **Note:** `formatPrice` expects the raw **per-token** price (as returned by OpenAI, Venice.ai, OpenRouter, etc.) and converts it to a **per-million-token** display value by multiplying by 1,000,000. For example, a per-token cost of `0.000003` becomes `$3.00` per million tokens. Very small values (< $0.01/M) use 6 decimal places to preserve precision.
@@ -573,12 +640,11 @@ inferTypeFromId("gpt-4o")            // undefined (no match → caller defaults 
 These are exported from `"open-model-selector/utils"` only (not the main entry):
 
 ```ts
-import { cn, isDeprecated } from "open-model-selector/utils"
+import { isDeprecated } from "open-model-selector/utils"
 ```
 
 | Function | Signature | Description |
 |----------|-----------|-------------|
-| `cn` | `(...classes: (string \| undefined \| null \| false)[]) → string` | Merges class names, filtering out falsy values. Lightweight alternative to `clsx`/`classnames`. |
 | `isDeprecated` | `(dateStr: string) → boolean` | Returns `true` if the given ISO 8601 date string is in the past. Handles date-only strings (`"2025-01-15"`) by normalizing to UTC. Returns `false` for invalid dates. |
 
 ---

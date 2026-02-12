@@ -1,3 +1,4 @@
+/** Union of all supported model type identifiers. */
 export type ModelType = 'text' | 'image' | 'video' | 'inpaint' | 'embedding' | 'tts' | 'asr' | 'upscale'
 
 export interface Deprecation {

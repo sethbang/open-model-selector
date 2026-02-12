@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
 ## [0.1.0] — 2026-02-06
 
 Initial release of `open-model-selector`.
@@ -61,4 +63,5 @@ Initial release of `open-model-selector`.
   - **Normalizer**: `ModelNormalizer`, `ResponseExtractor`
 - **Dual CJS/ESM output** — built with tsup, sourcemaps and `.d.ts` included
 
+[Unreleased]: https://github.com/sethbang/open-model-selector/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/sethbang/open-model-selector/releases/tag/v0.1.0

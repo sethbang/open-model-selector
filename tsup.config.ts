@@ -6,7 +6,7 @@ export default defineConfig([
     entry: ['src/index.ts', 'src/styles.css'],
     format: ['cjs', 'esm'],
     dts: true,
-    sourcemap: true,
+    sourcemap: false,
     banner: {
       js: '"use client";',
     },
@@ -22,7 +22,7 @@ export default defineConfig([
     entry: { utils: 'src/utils/index.ts' },
     format: ['cjs', 'esm'],
     dts: true,
-    sourcemap: true,
+    sourcemap: false,
     external: [
       'react',
       'react-dom',

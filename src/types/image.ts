@@ -7,6 +7,7 @@ export interface ImagePricing {
   resolutions?: Record<string, number>  // normalized USD values, e.g. { "1K": 0.18, "2K": 0.24 }
 }
 
+/** Generation constraints for an image model (prompt limits, aspect ratios, resolutions, etc.). */
 export interface ImageConstraints {
   promptCharacterLimit?: number
   steps?: { default: number; max: number }

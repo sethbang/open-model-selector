@@ -25,7 +25,22 @@ export type {
 } from './normalizers/index'
 
 // Re-export helper utilities
-export { cn, isDeprecated } from './helpers'
+export { isDeprecated } from './helpers'
+
+// Re-export model types for normalizer consumers
+export type {
+  ModelType,
+  BaseModel,
+  AnyModel,
+  TextModel,
+  ImageModel,
+  VideoModel,
+  InpaintModel,
+  EmbeddingModel,
+  TtsModel,
+  AsrModel,
+  UpscaleModel,
+} from '../types'
 
 // Re-export format utilities
 export {

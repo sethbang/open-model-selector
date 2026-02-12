@@ -19,8 +19,9 @@ interface ModelItemProps {
  * Custom comparator for React.memo. Avoids unnecessary re-renders when model
  * objects are recreated via spread (e.g. `{ ...m, is_favorite: true }`) during
  * favorite toggles. Compares only the fields that affect visual output.
+ * @internal Exported for unit testing only.
  */
-function areModelItemPropsEqual(
+export function areModelItemPropsEqual(
   prev: ModelItemProps,
   next: ModelItemProps,
 ): boolean {

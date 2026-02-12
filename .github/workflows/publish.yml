@@ -7,6 +7,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       
@@ -28,7 +31,18 @@ jobs:
       - name: Build
         run: npm run build
         
+      - name: Validate version matches tag
+        env:
+          TAG_VERSION: ${{ github.ref_name }}
+        run: |
+          PACKAGE_VERSION="v$(node -p "require('./package.json').version")"
+          if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "::error::Tag $TAG_VERSION does not match package.json version $PACKAGE_VERSION"
+            exit 1
+          fi
+          echo "✅ Tag $TAG_VERSION matches package.json version $PACKAGE_VERSION"
+
       - name: Publish to npm
-        run: npm publish --access public
+        run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

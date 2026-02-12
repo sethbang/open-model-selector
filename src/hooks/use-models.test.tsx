@@ -529,4 +529,103 @@ describe('useModels', () => {
       )
     })
   })
+
+  // 23. Invalid JSON response shape (non-object/non-array)
+  it('handles non-object JSON response gracefully', async () => {
+    const fetcher = vi.fn(async () =>
+      new Response(JSON.stringify('hello'), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
+
+    const { result } = renderHook(() =>
+      useModels({
+        baseUrl: 'https://api.example.com/v1',
+        fetcher,
+      }),
+    )
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.error).toBeInstanceOf(Error)
+    expect(result.current.error!.message).toMatch(/Invalid response/)
+    expect(result.current.models).toEqual([])
+  })
+
+  // 24. Normalization failure for individual models
+  it('skips models that fail normalization and warns in dev mode', async () => {
+    const fetcher = createFetchMock(mockApiResponse.data)
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const { result } = renderHook(() =>
+      useModels({
+        baseUrl: 'https://api.example.com/v1',
+        fetcher,
+        normalizer: (raw) => {
+          if (raw.id === 'dall-e-3') {
+            throw new Error('Cannot normalize this model')
+          }
+          return {
+            id: String(raw.id),
+            name: String((raw.model_spec as Record<string, unknown>)?.name ?? raw.id),
+            type: 'text' as const,
+            provider: 'test',
+            created: 0,
+            is_favorite: false,
+            context_length: 0,
+            pricing: {},
+          }
+        },
+      }),
+    )
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    // The failing model (dall-e-3) should be excluded
+    expect(result.current.models).toHaveLength(2)
+    expect(result.current.models.find((m) => m.id === 'dall-e-3')).toBeUndefined()
+    expect(result.current.models.find((m) => m.id === 'gpt-4')).toBeDefined()
+    expect(result.current.models.find((m) => m.id === 'wan-video')).toBeDefined()
+
+    // console.warn should have been called for the failing model
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('dall-e-3'),
+      expect.any(Error),
+    )
+
+    warnSpy.mockRestore()
+  })
+
+  // 25. AbortSignal.any fallback
+  it('falls back gracefully when AbortSignal.any is not available', async () => {
+    const originalAny = AbortSignal.any
+    // @ts-expect-error — intentionally removing AbortSignal.any to test fallback
+    delete AbortSignal.any
+
+    try {
+      const fetcher = createFetchMock(mockApiResponse.data)
+
+      const { result } = renderHook(() =>
+        useModels({
+          baseUrl: 'https://api.example.com/v1',
+          fetcher,
+        }),
+      )
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      expect(result.current.error).toBeNull()
+      expect(result.current.models).toHaveLength(3)
+    } finally {
+      // Restore AbortSignal.any
+      AbortSignal.any = originalAny
+    }
+  })
 })

@@ -5,6 +5,7 @@ export interface EmbeddingPricing {
   output?: number   // per-token USD
 }
 
+/** A text embedding model with per-token pricing. */
 export interface EmbeddingModel extends BaseModel {
   type: 'embedding'
   pricing: EmbeddingPricing

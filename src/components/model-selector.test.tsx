@@ -497,4 +497,138 @@ describe('ModelSelector', () => {
       expect(trigger).toHaveAttribute('aria-expanded', 'false')
     })
   })
+
+  describe('showDeprecated and sortOrder', () => {
+    // A date safely in the past for deprecated models
+    const PAST_DATE = '2020-01-01T00:00:00Z'
+    // A date safely in the future for models scheduled for deprecation
+    const FUTURE_DATE = '2099-01-01T00:00:00Z'
+
+    const deprecatedModel: TextModel = {
+      id: 'old-model',
+      name: 'Old Model',
+      provider: 'test',
+      created: 1690000000,
+      type: 'text',
+      context_length: 4096,
+      pricing: {},
+      is_favorite: false,
+      deprecation: { date: PAST_DATE },
+    }
+
+    const activeModel: TextModel = {
+      id: 'active-model',
+      name: 'Active Model',
+      provider: 'test',
+      created: 1720000000,
+      type: 'text',
+      context_length: 8192,
+      pricing: {},
+      is_favorite: false,
+    }
+
+    const futureDeprecatedModel: TextModel = {
+      id: 'future-deprecated',
+      name: 'Future Deprecated',
+      provider: 'test',
+      created: 1715000000,
+      type: 'text',
+      context_length: 8192,
+      pricing: {},
+      is_favorite: false,
+      deprecation: { date: FUTURE_DATE },
+    }
+
+    it('hides deprecated models when showDeprecated is false', async () => {
+      const user = userEvent.setup()
+      render(
+        <ModelSelector
+          models={[activeModel, deprecatedModel]}
+          showDeprecated={false}
+          onChange={vi.fn()}
+        />
+      )
+
+      await user.click(screen.getByRole('combobox'))
+
+      expect(screen.getByText('Active Model')).toBeInTheDocument()
+      expect(screen.queryByText('Old Model')).not.toBeInTheDocument()
+    })
+
+    it('still shows future-deprecated models when showDeprecated is false', async () => {
+      const user = userEvent.setup()
+      render(
+        <ModelSelector
+          models={[activeModel, futureDeprecatedModel, deprecatedModel]}
+          showDeprecated={false}
+          onChange={vi.fn()}
+        />
+      )
+
+      await user.click(screen.getByRole('combobox'))
+
+      expect(screen.getByText('Active Model')).toBeInTheDocument()
+      expect(screen.getByText('Future Deprecated')).toBeInTheDocument()
+      expect(screen.queryByText('Old Model')).not.toBeInTheDocument()
+    })
+
+    it('shows deprecated models when showDeprecated is true (default)', async () => {
+      const user = userEvent.setup()
+      render(
+        <ModelSelector
+          models={[activeModel, deprecatedModel]}
+          onChange={vi.fn()}
+        />
+      )
+
+      await user.click(screen.getByRole('combobox'))
+
+      expect(screen.getByText('Active Model')).toBeInTheDocument()
+      expect(screen.getByText('Old Model')).toBeInTheDocument()
+    })
+
+    it('sorts models by creation date (newest first) when sortOrder is "created"', async () => {
+      const user = userEvent.setup()
+      // Use existing mockModels with known created timestamps:
+      // claude-3-opus: 1710000000, llama-3-70b: 1705000000, gpt-4: 1700000000
+      render(
+        <ModelSelector
+          models={mockModels}
+          sortOrder="created"
+          onChange={vi.fn()}
+        />
+      )
+
+      await user.click(screen.getByRole('combobox'))
+
+      const modelNames = screen.getAllByText(/^(Claude 3 Opus|GPT-4|Llama 3 70B)$/)
+      expect(modelNames[0]).toHaveTextContent('Claude 3 Opus')  // newest: 1710000000
+      expect(modelNames[1]).toHaveTextContent('Llama 3 70B')    // middle: 1705000000
+      expect(modelNames[2]).toHaveTextContent('GPT-4')           // oldest: 1700000000
+    })
+
+    it('places deprecated models at the end of the sorted list', async () => {
+      const user = userEvent.setup()
+      // deprecatedModel has the earliest created timestamp but should still appear last
+      // due to its past deprecation date, regardless of sort order
+      render(
+        <ModelSelector
+          models={[deprecatedModel, activeModel, futureDeprecatedModel]}
+          showDeprecated={true}
+          sortOrder="name"
+          onChange={vi.fn()}
+        />
+      )
+
+      await user.click(screen.getByRole('combobox'))
+
+      const modelNames = screen.getAllByText(/^(Old Model|Active Model|Future Deprecated)$/)
+      // Alphabetically: Active Model, Future Deprecated, Old Model
+      // But Old Model is past-deprecated so it moves to end
+      // Future Deprecated is NOT past-deprecated (date is in the future) so it stays in alpha order
+      expect(modelNames[0]).toHaveTextContent('Active Model')
+      expect(modelNames[1]).toHaveTextContent('Future Deprecated')
+      expect(modelNames[2]).toHaveTextContent('Old Model')
+    })
+  })
 })

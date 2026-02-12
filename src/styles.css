@@ -175,9 +175,19 @@
     cursor: pointer;
     transition: background-color 0.2s;
 }
+.oms-trigger-btn[disabled],
+.oms-trigger-btn.oms-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 .oms-trigger-btn:hover {
     background-color: hsl(var(--oms-accent));
     color: hsl(var(--oms-accent-foreground));
+}
+.oms-trigger-btn[disabled]:hover,
+.oms-trigger-btn.oms-disabled:hover {
+    background-color: transparent;
+    color: hsl(var(--oms-foreground));
 }
 .oms-trigger-btn:focus-visible {
     outline: 2px solid hsl(var(--oms-ring));

@@ -466,4 +466,35 @@ describe('ModelSelector', () => {
       expect(screen.getAllByLabelText('Add to favorites').length).toBeGreaterThan(0)
     })
   })
+
+  describe('Disabled', () => {
+    it('sets the disabled attribute on the trigger button', () => {
+      render(<ModelSelector models={mockModels} disabled onChange={vi.fn()} />)
+      const trigger = screen.getByRole('combobox')
+      expect(trigger).toBeDisabled()
+    })
+
+    it('applies the oms-disabled CSS class to the trigger button', () => {
+      render(<ModelSelector models={mockModels} disabled onChange={vi.fn()} />)
+      const trigger = screen.getByRole('combobox')
+      expect(trigger).toHaveClass('oms-disabled')
+    })
+
+    it('does not open the popover when clicked', async () => {
+      const user = userEvent.setup()
+      render(<ModelSelector models={mockModels} disabled onChange={vi.fn()} />)
+
+      const trigger = screen.getByRole('combobox')
+      await user.click(trigger)
+
+      expect(trigger).toHaveAttribute('aria-expanded', 'false')
+      expect(screen.queryByPlaceholderText('Search models...')).not.toBeInTheDocument()
+    })
+
+    it('has aria-expanded set to false when disabled', () => {
+      render(<ModelSelector models={mockModels} disabled onChange={vi.fn()} />)
+      const trigger = screen.getByRole('combobox')
+      expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    })
+  })
 })

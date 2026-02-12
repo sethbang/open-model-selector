@@ -82,6 +82,11 @@ export function useModels(props: UseModelsProps): UseModelsResult {
       setLoading(true)
       setError(null)
 
+      // Create a combined abort signal with 10s timeout.
+      // Use AbortSignal.any when available; otherwise fall back to a manual setTimeout.
+      let manualTimeoutId: ReturnType<typeof setTimeout> | undefined
+      let signal: AbortSignal
+
       try {
         // Build URL with query params
         const cleanBase = baseUrl!.replace(/\/+$/, '')
@@ -95,19 +100,19 @@ export function useModels(props: UseModelsProps): UseModelsResult {
         }
 
         const fetchFn = fetcherRef.current ?? fetch
-        
-        // Create a timeout signal (10s)
-        const timeoutSignal = AbortSignal.timeout(10000)
-        
-        // Combine signals if possible, or just use timeout if controller not strictly needed for manual abort
-        // but here we have a controller for unmount. 
-        // We can race them or just rely on the controller + manual timeout logic 
-        // but AbortSignal.any() is modern. Let's stick to a simple timeout wrapper if env supports it, 
-        // or just race the fetch.
-        
+
+        if (typeof AbortSignal.any === 'function') {
+          const timeoutSignal = AbortSignal.timeout(10000)
+          signal = AbortSignal.any([controller.signal, timeoutSignal])
+        } else {
+          // Fallback: manually abort the controller after 10s
+          manualTimeoutId = setTimeout(() => controller.abort(), 10000)
+          signal = controller.signal
+        }
+
         const response = await fetchFn(url, {
           headers,
-          signal: AbortSignal.any ? AbortSignal.any([controller.signal, timeoutSignal]) : controller.signal,
+          signal,
         })
 
         if (!response.ok) {
@@ -156,6 +161,7 @@ export function useModels(props: UseModelsProps): UseModelsResult {
           setError(err instanceof Error ? err : new Error(String(err)))
         }
       } finally {
+        if (manualTimeoutId !== undefined) clearTimeout(manualTimeoutId)
         if (isMounted) {
           setLoading(false)
         }
@@ -180,13 +186,4 @@ export function useModels(props: UseModelsProps): UseModelsResult {
   return { models, loading, error }
 }
 
-// Re-export types for convenience
 export type { FetchFn }
-export {
-  defaultModelNormalizer,
-  defaultResponseExtractor,
-} from '../utils/normalizers/index'
-export type {
-  ModelNormalizer,
-  ResponseExtractor,
-} from '../utils/normalizers/index'

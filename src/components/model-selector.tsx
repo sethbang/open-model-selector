@@ -163,6 +163,9 @@ export interface ModelSelectorProps {
    * Models with future deprecation dates are always shown with a warning.
    */
   showDeprecated?: boolean
+
+  /** When true, prevents opening the selector and dims the trigger button. */
+  disabled?: boolean
 }
 
 export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps>(
@@ -187,6 +190,7 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
       storageKey = "open-model-selector-favorites",
       showSystemDefault = true,
       showDeprecated = true,
+      disabled,
     },
     ref
   ) {
@@ -327,13 +331,17 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
     setOpen(false)
   }, [onChange, allModels])
 
+  const handleOpenChange = React.useCallback((o: boolean) => {
+    if (!disabled) setOpen(o)
+  }, [disabled])
+
   return (
     <div ref={ref} className={cn("oms-reset", className)}>
-      <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
+      <PopoverPrimitive.Root open={disabled ? false : open} onOpenChange={handleOpenChange}>
         <PopoverPrimitive.Trigger asChild>
           <button
             role="combobox"
-            aria-expanded={open}
+            aria-expanded={disabled ? false : open}
             aria-haspopup="listbox"
             aria-controls={listboxId}
             aria-label={
@@ -343,7 +351,8 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
                   ? `Model selector, ${selectedModel.name}`
                   : placeholder
             }
-            className="oms-trigger-btn"
+            disabled={disabled}
+            className={cn("oms-trigger-btn", disabled && "oms-disabled")}
           >
             {value === SYSTEM_DEFAULT_VALUE ? (
                <span className="oms-muted">Use System Default</span>

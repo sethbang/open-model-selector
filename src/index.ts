@@ -1,9 +1,21 @@
 // Component exports
 export { ModelSelector, SYSTEM_DEFAULT_VALUE } from "./components/model-selector";
-export type { ModelSelectorProps } from "./components/model-selector";
 export { TextModelSelector } from "./components/text-model-selector";
 export { ImageModelSelector } from "./components/image-model-selector";
 export { VideoModelSelector } from "./components/video-model-selector";
+
+// Type-specific selector prop types
+import type { ModelSelectorProps } from "./components/model-selector";
+export type { ModelSelectorProps };
+
+/** Props for TextModelSelector — same as ModelSelectorProps but without `type`. */
+export type TextModelSelectorProps = Omit<ModelSelectorProps, 'type'>
+
+/** Props for ImageModelSelector — same as ModelSelectorProps but without `type`. */
+export type ImageModelSelectorProps = Omit<ModelSelectorProps, 'type'>
+
+/** Props for VideoModelSelector — same as ModelSelectorProps but without `type`. */
+export type VideoModelSelectorProps = Omit<ModelSelectorProps, 'type'>
 
 // Hook exports
 export { useModels } from "./hooks/use-models";

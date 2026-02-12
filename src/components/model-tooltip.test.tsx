@@ -855,7 +855,6 @@ describe('ModelTooltip', () => {
     })
 
     it('shows tooltip on focus and hides on blur', async () => {
-      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
       render(
         <ModelTooltip model={textModel}>
           <button data-testid="tooltip-trigger">focusable trigger</button>

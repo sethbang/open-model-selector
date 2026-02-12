@@ -1,8 +1,6 @@
 "use client"
 
 import React, { useState, useRef, useCallback, useEffect, useLayoutEffect, useId } from 'react'
-
-const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 import { createPortal } from 'react-dom'
 import type { AnyModel } from '../types'
 import {
@@ -16,6 +14,8 @@ import {
 } from '../utils/format'
 import { isDeprecated } from '../utils/helpers'
 import { AlertTriangle, Lock, EyeOff, Zap, CircleX, Eye, Brain, Code, Wrench, Search, Volume2 } from './icons'
+
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
 interface ModelTooltipProps {
   model: AnyModel

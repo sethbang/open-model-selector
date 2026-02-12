@@ -58,6 +58,8 @@ Install the non-React peer dependencies (React and React DOM are typically alrea
 npm install @radix-ui/react-popover cmdk
 ```
 
+> **React 18 users:** React 18 does not bundle its own TypeScript types. If you're using TypeScript with React 18, ensure `@types/react` and `@types/react-dom` are installed in your project.
+
 ### CSS import
 
 You must import the stylesheet for the component to render correctly:
@@ -227,6 +229,7 @@ The component forwards `ref` to the root `<div>`.
 | `storageKey` | `string` | `"open-model-selector-favorites"` | localStorage key for persisting favorites (uncontrolled mode). |
 | `showSystemDefault` | `boolean` | `true` | Whether to show the "Use System Default" option. |
 | `showDeprecated` | `boolean` | `true` | Whether to show deprecated models. When `false`, past-date deprecated models are hidden. |
+| `disabled` | `boolean` | `false` | When true, prevents opening the selector and dims the trigger button. |
 
 The library exports a sentinel constant for the system default option:
 
@@ -273,6 +276,8 @@ const { models, loading, error } = useModels({
 > - Automatically cleans up with `AbortController` on unmount
 > - Re-fetches when `baseUrl`, `apiKey`, or `queryParams` change
 > - `fetcher`, `responseExtractor`, and `normalizer` are stored in refs (no memoization needed)
+
+> **⚠️ Stability:** `apiKey` and `baseUrl` are used as React effect dependencies. Ensure these are stable values (string constants, state variables, or `useMemo`'d values). Passing an unstable reference (e.g., `apiKey={computeKey()}`) will cause infinite re-fetching.
 
 ### Query Parameters
 
@@ -340,6 +345,19 @@ The `BaseModel` interface includes these fields shared by all types:
 ```tsx
 import type { TextModel, ImageModel, AnyModel, ModelType } from "open-model-selector"
 ```
+
+The library also exports prop types for each specialized selector:
+
+```tsx
+import type {
+  ModelSelectorProps,
+  TextModelSelectorProps,
+  ImageModelSelectorProps,
+  VideoModelSelectorProps,
+} from "open-model-selector"
+```
+
+> `TextModelSelectorProps`, `ImageModelSelectorProps`, and `VideoModelSelectorProps` are each `Omit<ModelSelectorProps, 'type'>` — identical to `ModelSelectorProps` with the `type` prop removed.
 
 ---
 
@@ -426,7 +444,21 @@ All CSS variables are scoped under `.oms-reset` and use the `--oms-` prefix — 
 | `--oms-radius` | `0.5rem` | Border radius |
 | `--oms-popover-width` | `300px` | Popover width |
 
-> Values are HSL triplets (without the `hsl()` wrapper), following the Shadcn/ui convention. This allows alpha composition: `hsl(var(--oms-accent) / 0.5)`.
+> **Important:** CSS variable values must be space-separated HSL triplets (e.g., `220 14% 96%`), **not** hex, rgb, or named colors. The component uses these values inside `hsl()` wrappers internally, following the Shadcn/ui convention. This allows alpha composition: `hsl(var(--oms-accent) / 0.5)`.
+>
+> ```css
+> /* ✅ Correct */
+> .my-theme .oms-popover-content {
+>   --oms-background: 220 14% 96%;
+> }
+>
+> /* ❌ Incorrect — will break styling */
+> .my-theme .oms-popover-content {
+>   --oms-background: #f0f0f0;
+>   --oms-background: rgb(240, 240, 240);
+>   --oms-background: white;
+> }
+> ```
 
 **Dark mode:**
 
@@ -585,6 +617,33 @@ The library is SSR-safe:
   - A server-side proxy that injects the key (pass a relative `baseUrl` and a custom `fetcher`)
   - Environment variables scoped to the server (e.g., `VENICE_API_KEY`) with a thin API route
   - A scoped/read-only API key with minimal permissions
+
+#### Recommended: Backend Proxy Pattern
+
+Instead of passing `apiKey` directly, use a server-side proxy and the `fetcher` prop:
+
+```tsx
+// Next.js API Route: app/api/models/route.ts
+import { NextResponse } from 'next/server'
+
+export async function GET() {
+  const res = await fetch('https://api.venice.ai/api/v1/models', {
+    headers: { Authorization: `Bearer ${process.env.VENICE_API_KEY}` },
+  })
+  return NextResponse.json(await res.json())
+}
+```
+
+```tsx
+// Client component
+<ModelSelector
+  baseUrl="/api"
+  fetcher={(url, init) => fetch(url, init)}
+  onChange={(id) => console.log(id)}
+/>
+```
+
+This keeps your API key server-side and never exposes it to the browser.
 
 ### Accessibility
 

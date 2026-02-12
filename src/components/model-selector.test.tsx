@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor, cleanup } from '@testing-library/react'
+import { renderToString } from 'react-dom/server'
 import userEvent from '@testing-library/user-event'
 import { ModelSelector, SYSTEM_DEFAULT_VALUE } from './model-selector'
 import type { TextModel } from '../types'
@@ -629,6 +630,116 @@ describe('ModelSelector', () => {
       expect(modelNames[0]).toHaveTextContent('Active Model')
       expect(modelNames[1]).toHaveTextContent('Future Deprecated')
       expect(modelNames[2]).toHaveTextContent('Old Model')
+    })
+  })
+
+  describe('Empty models array', () => {
+    it('renders and opens popover without crashing when models is an empty array', async () => {
+      const user = userEvent.setup()
+      render(<ModelSelector models={[]} onChange={vi.fn()} />)
+
+      const trigger = screen.getByRole('combobox')
+      expect(trigger).toHaveTextContent('Select model...')
+
+      await user.click(trigger)
+
+      expect(trigger).toHaveAttribute('aria-expanded', 'true')
+
+      // With no models, the search input should still be present
+      expect(screen.getByPlaceholderText('Search models...')).toBeInTheDocument()
+
+      // The system default option is still available (showSystemDefault=true by default)
+      expect(screen.getAllByText('Use System Default').length).toBeGreaterThanOrEqual(1)
+
+      // The "All Models" group heading should be present but the group should be empty
+      expect(screen.getByText('All Models')).toBeInTheDocument()
+    })
+
+    it('shows "No model found." when models is empty and showSystemDefault is false', async () => {
+      const user = userEvent.setup()
+      render(<ModelSelector models={[]} showSystemDefault={false} onChange={vi.fn()} />)
+
+      await user.click(screen.getByRole('combobox'))
+
+      await waitFor(() => {
+        expect(screen.getByText('No model found.')).toBeVisible()
+      })
+    })
+  })
+
+  describe('SSR / hydration safety', () => {
+    it('can be rendered to string via renderToString without throwing', () => {
+      expect(() => {
+        const html = renderToString(<ModelSelector models={mockModels} />)
+        expect(typeof html).toBe('string')
+        expect(html.length).toBeGreaterThan(0)
+      }).not.toThrow()
+    })
+
+    it('can be rendered to string with an empty models array', () => {
+      expect(() => {
+        const html = renderToString(<ModelSelector models={[]} />)
+        expect(typeof html).toBe('string')
+      }).not.toThrow()
+    })
+  })
+
+  describe('Keyboard navigation', () => {
+    it('supports arrow-key navigation between model items', async () => {
+      const user = userEvent.setup()
+      render(<ModelSelector models={mockModels} onChange={vi.fn()} />)
+
+      await user.click(screen.getByRole('combobox'))
+
+      // The search input should be focused after opening
+      const searchInput = screen.getByPlaceholderText('Search models...')
+      expect(searchInput).toHaveFocus()
+
+      // Press ArrowDown to navigate into the list
+      await user.keyboard('{ArrowDown}')
+
+      // cmdk manages its own aria-selected state on items.
+      // After ArrowDown from search, the first item should become active.
+      // We verify that at least one option element has aria-selected="true"
+      await waitFor(() => {
+        const options = screen.getAllByRole('option')
+        const selectedOption = options.find(
+          (opt) => opt.getAttribute('aria-selected') === 'true',
+        )
+        expect(selectedOption).toBeDefined()
+      })
+
+      // Press ArrowDown again to move to the next item
+      await user.keyboard('{ArrowDown}')
+
+      await waitFor(() => {
+        const options = screen.getAllByRole('option')
+        const selectedOptions = options.filter(
+          (opt) => opt.getAttribute('aria-selected') === 'true',
+        )
+        // Exactly one item should be selected at a time
+        expect(selectedOptions).toHaveLength(1)
+      })
+    })
+
+    it('selects a model with Enter after arrow-key navigation', async () => {
+      const onChange = vi.fn()
+      const user = userEvent.setup()
+      render(<ModelSelector models={mockModels} onChange={onChange} />)
+
+      await user.click(screen.getByRole('combobox'))
+
+      // Navigate down and select with Enter
+      await user.keyboard('{ArrowDown}')
+      await user.keyboard('{Enter}')
+
+      // onChange should have been called with a model id
+      await waitFor(() => {
+        expect(onChange).toHaveBeenCalledWith(
+          expect.any(String),
+          expect.objectContaining({ id: expect.any(String) }),
+        )
+      })
     })
   })
 })

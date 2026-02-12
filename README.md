@@ -24,7 +24,7 @@ An accessible, themeable React model-selector combobox for any OpenAI-compatible
 
 ## Features
 <div>
-<img src="screenshots/main.png" alt="A floating image" style="float: right; margin-left: 15px;" height="420" />
+<img src="https://raw.githubusercontent.com/sethbang/open-model-selector/main/screenshots/main.png" alt="Model selector screenshot" height="420" />
 
 - **First-class [Venice.ai](https://venice.ai) support** — full normalizer for Venice's rich `model_spec` format including capabilities, privacy levels, traits, and per-type pricing across 60+ models
 - **Any OpenAI-compatible endpoint** — also works out of the box with OpenAI, OpenRouter, and more
@@ -74,7 +74,12 @@ The following peer dependencies are required and must be installed separately:
 Install the non-React peer dependencies (React and React DOM are typically already in your project):
 
 ```bash
+# npm
 npm install @radix-ui/react-popover cmdk
+# yarn
+yarn add @radix-ui/react-popover cmdk
+# pnpm
+pnpm add @radix-ui/react-popover cmdk
 ```
 
 > **React 18 users:** React 18 does not bundle its own TypeScript types. If you're using TypeScript with React 18, ensure `@types/react` and `@types/react-dom` are installed in your project.
@@ -208,6 +213,7 @@ Type-filtered convenience components for common model categories:
 
 ```tsx
 import { TextModelSelector, ImageModelSelector, VideoModelSelector } from "open-model-selector"
+import "open-model-selector/styles.css" // Required — same stylesheet as <ModelSelector>
 
 // These are pre-filtered wrappers around <ModelSelector type="...">
 <TextModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={(id) => setModel(id)} />
@@ -215,7 +221,7 @@ import { TextModelSelector, ImageModelSelector, VideoModelSelector } from "open-
 <VideoModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={(id) => setModel(id)} />
 ```
 
-> These are convenience wrappers that pass `type="text"`, `type="image"`, or `type="video"` respectively.
+> These are convenience wrappers that pass `type="text"`, `type="image"`, or `type="video"` respectively. All three forward `ref` to the root `<div>`, just like `<ModelSelector>`.
 
 ---
 
@@ -334,8 +340,8 @@ The library supports 8 model types, each with its own TypeScript interface exten
 
 | Type | Interface | Key Fields |
 |------|-----------|------------|
-| `"text"` | `TextModel` | `pricing.prompt`, `pricing.completion`, `context_length`, `capabilities` |
-| `"image"` | `ImageModel` | `pricing.generation`, `pricing.resolutions`, `constraints.aspectRatios`, `constraints.resolutions` |
+| `"text"` | `TextModel` | `pricing.prompt`, `pricing.completion`, `pricing.cache_input`, `pricing.cache_write`, `context_length`, `capabilities` |
+| `"image"` | `ImageModel` | `pricing.generation`, `pricing.resolutions`, `constraints.aspectRatios`, `constraints.resolutions`, `supportsWebSearch` |
 | `"video"` | `VideoModel` | `constraints.resolutions`, `constraints.durations`, `constraints.aspect_ratios`, `model_sets` |
 | `"inpaint"` | `InpaintModel` | `pricing.generation`, `constraints.aspectRatios`, `constraints.combineImages` |
 | `"embedding"` | `EmbeddingModel` | `pricing.input`, `pricing.output` |
@@ -633,7 +639,7 @@ inferTypeFromId("gpt-4o")            // undefined (no match → caller defaults 
 | Function | Signature | Description |
 |----------|-----------|-------------|
 | `extractBaseFields` | `(raw, type) → Omit<BaseModel, 'type'>` | Extracts shared `BaseModel` fields from a raw API object. Handles both Venice's nested `model_spec` format and flat top-level fields. Useful when writing custom per-type normalizers. |
-| `toNum` | `(v: unknown) → number \| undefined` | Safely coerces an unknown value to a number. Returns `undefined` for `null`, empty strings, and `NaN`. Used internally by all normalizers. |
+| `toNum` | `(v: unknown) → number \| undefined` | Safely coerces an unknown value to a number. Returns `undefined` for `undefined`, `null`, empty strings, and `NaN`. Used internally by all normalizers. |
 
 ### Helper Utilities
 

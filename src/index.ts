@@ -57,6 +57,9 @@ export type {
   ResponseExtractor,
 } from "./utils/normalizers/index";
 
+// Helper utilities
+export { isDeprecated } from "./utils/helpers";
+
 // Format utilities
 export {
   formatPrice,

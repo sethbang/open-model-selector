@@ -41,6 +41,10 @@ Initial release of `open-model-selector`.
 - **`formatPrice`** — formats per-token prices into per-million-tokens dollar strings with adaptive precision
 - **`formatContextLength`** — formats token counts into compact strings (e.g. `128k`, `1M`, `1.5M`)
 - **Separate `open-model-selector/utils` entry point** — pure utility functions without `"use client"` directive, safe for React Server Components
+  - Normalizers: `defaultModelNormalizer`, `defaultResponseExtractor`, per-type normalizers (`normalizeTextModel`, `normalizeImageModel`, …)
+  - Formatters: `formatPrice`, `formatContextLength`, `formatFlatPrice`, `formatAudioPrice`, `formatDuration`, `formatResolutions`, `formatAspectRatios`
+  - Helpers: `isDeprecated`
+  - All model types re-exported for normalizer consumers
 - **Scoped CSS** — all variables use `--oms-` prefix; never pollutes `:root` or host app styles
   - Light theme defaults
   - Dark mode via `@media (prefers-color-scheme: dark)` and `.dark` class ancestor

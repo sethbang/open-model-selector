@@ -601,7 +601,29 @@ describe('useModels', () => {
     warnSpy.mockRestore()
   })
 
-  // 25. AbortSignal.any fallback
+  // 25. Network-level fetch failure (TypeError: Failed to fetch)
+  it('sets error state when fetch rejects with a TypeError (network failure)', async () => {
+    const fetcher = vi.fn(async () => {
+      throw new TypeError('Failed to fetch')
+    })
+
+    const { result } = renderHook(() =>
+      useModels({
+        baseUrl: 'https://api.example.com/v1',
+        fetcher,
+      }),
+    )
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.error).toBeInstanceOf(TypeError)
+    expect(result.current.error!.message).toBe('Failed to fetch')
+    expect(result.current.models).toEqual([])
+  })
+
+  // 26. AbortSignal.any fallback
   it('falls back gracefully when AbortSignal.any is not available', async () => {
     const originalAny = AbortSignal.any
     // @ts-expect-error — intentionally removing AbortSignal.any to test fallback

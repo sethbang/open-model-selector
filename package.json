@@ -43,14 +43,15 @@
     },
     "homepage": "https://github.com/sethbang/open-model-selector#readme",
     "scripts": {
-        "prebuild": "rm -rf dist",
+        "prebuild": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
         "build": "tsup",
         "dev": "tsup --watch",
         "typecheck": "tsc",
         "test": "vitest run",
         "test:watch": "vitest",
         "prepublishOnly": "npm run typecheck && npm run test && npm run build",
-        "preversion": "npm run typecheck && npm run test",
+        "preversion": "npm run typecheck && npm run test && npm run build",
+        "version": "node scripts/check-changelog.cjs",
         "postversion": "git push && git push --tags",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build"
@@ -89,14 +90,6 @@
         "cmdk": "^1.0.0",
         "react": "^18.0.0 || ^19.0.0",
         "react-dom": "^18.0.0 || ^19.0.0"
-    },
-    "peerDependenciesMeta": {
-        "@radix-ui/react-popover": {
-            "optional": false
-        },
-        "cmdk": {
-            "optional": false
-        }
     },
     "devDependencies": {
         "@chromatic-com/storybook": "^5.0.0",

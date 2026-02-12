@@ -31,15 +31,28 @@ export { isDeprecated } from './helpers'
 export type {
   ModelType,
   BaseModel,
+  Deprecation,
   AnyModel,
   TextModel,
+  TextPricing,
+  TextCapabilities,
+  TextConstraints,
   ImageModel,
+  ImagePricing,
+  ImageConstraints,
   VideoModel,
+  VideoConstraints,
   InpaintModel,
+  InpaintPricing,
+  InpaintConstraints,
   EmbeddingModel,
+  EmbeddingPricing,
   TtsModel,
+  TtsPricing,
   AsrModel,
+  AsrPricing,
   UpscaleModel,
+  UpscalePricing,
 } from '../types'
 
 // Re-export format utilities

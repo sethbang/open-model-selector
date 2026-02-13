@@ -168,12 +168,13 @@
     padding: 0 12px;
     border-radius: var(--oms-radius);
     border: 1px solid hsl(var(--oms-border));
-    background-color: transparent;
+    background-color: hsl(var(--oms-popover));
     color: hsl(var(--oms-foreground));
     font-size: 12px;
     line-height: 1;
     cursor: pointer;
-    transition: background-color 0.2s;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.04), 0 1px 2px rgb(0 0 0 / 0.03);
+    transition: background-color 0.2s, box-shadow 0.2s;
 }
 .oms-trigger-btn[disabled],
 .oms-trigger-btn.oms-disabled {
@@ -186,7 +187,7 @@
 }
 .oms-trigger-btn[disabled]:hover,
 .oms-trigger-btn.oms-disabled:hover {
-    background-color: transparent;
+    background-color: hsl(var(--oms-popover));
     color: hsl(var(--oms-foreground));
 }
 .oms-trigger-btn:focus-visible {
@@ -197,12 +198,13 @@
 /* Popover Content */
 .oms-popover-content {
     z-index: 50;
-    width: var(--oms-popover-width, 300px);
+    width: var(--radix-popover-trigger-width, var(--oms-popover-width, 300px));
+    min-width: 300px;
     border-radius: var(--oms-radius);
     border: 1px solid hsl(var(--oms-border));
     background-color: hsl(var(--oms-popover));
     color: hsl(var(--oms-popover-foreground));
-    box-shadow: 0 8px 30px rgb(0 0 0 / 0.12), 0 4px 10px rgb(0 0 0 / 0.08);
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.10), 0 2px 6px rgb(0 0 0 / 0.06);
     outline: none;
     overflow: hidden;
     box-sizing: border-box;
@@ -225,7 +227,7 @@
         background-color: hsl(var(--oms-popover));
         color: hsl(var(--oms-popover-foreground));
         border-color: hsl(var(--oms-border));
-        box-shadow: 0 8px 30px rgb(0 0 0 / 0.5), 0 4px 10px rgb(0 0 0 / 0.3);
+        box-shadow: 0 4px 20px rgb(0 0 0 / 0.35), 0 2px 8px rgb(0 0 0 / 0.2);
     }
 }
 .dark .oms-popover-content {
@@ -239,7 +241,7 @@
     background-color: hsl(var(--oms-popover));
     color: hsl(var(--oms-popover-foreground));
     border-color: hsl(var(--oms-border));
-    box-shadow: 0 8px 30px rgb(0 0 0 / 0.5), 0 4px 10px rgb(0 0 0 / 0.3);
+    box-shadow: 0 4px 20px rgb(0 0 0 / 0.35), 0 2px 8px rgb(0 0 0 / 0.2);
 }
 
 /* Command (cmdk) */

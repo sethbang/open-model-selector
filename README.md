@@ -2,12 +2,15 @@
 
 [![npm version](https://img.shields.io/npm/v/open-model-selector)](https://www.npmjs.com/package/open-model-selector) [![npm bundle size](https://img.shields.io/bundlephobia/minzip/open-model-selector)](https://bundlephobia.com/package/open-model-selector) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 
-An accessible, themeable React model-selector combobox for any OpenAI-compatible API — with first-class [Venice.ai](https://venice.ai) support.
+### An accessible, themeable React model-selector combobox for any OpenAI-compatible API — with first-class [Venice.ai](https://venice.ai) support.
+
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sethbang/open-model-selector/main/screenshots/main.png" alt="open-model-selector screenshot showing auto-discovery, code snippet, and the model selector popover" width="50%" />
+</p>
 
 > Drop it into your app to let users search, filter, and pick from Venice's frontier model catalog (GPT-5.2, Claude Opus 4.6, Gemini 3 Pro, GLM 4.7, Qwen 3 Coder 480B, and more) or any other `/v1/models` endpoint.
-
-
-
+<br />
 
 ## Table of Contents
 
@@ -23,8 +26,6 @@ An accessible, themeable React model-selector combobox for any OpenAI-compatible
 - [Links](#links)
 
 ## Features
-<div>
-<img src="https://raw.githubusercontent.com/sethbang/open-model-selector/main/screenshots/main.png" alt="Model selector screenshot" height="420" />
 
 - **First-class [Venice.ai](https://venice.ai) support** — full normalizer for Venice's rich `model_spec` format including capabilities, privacy levels, traits, and per-type pricing across 60+ models
 - **Any OpenAI-compatible endpoint** — also works out of the box with OpenAI, OpenRouter, and more
@@ -42,7 +43,6 @@ An accessible, themeable React model-selector combobox for any OpenAI-compatible
 - **Full TypeScript types** exported
 - **Dual CJS/ESM output** with sourcemaps
 - **React 18 and 19** support
-</div>
 
 ## Installation
 

@@ -13,7 +13,7 @@ import {
   inferTypeFromId,
   MODEL_ID_TYPE_PATTERNS,
 } from './index'
-import { toNum, extractBaseFields } from './base'
+import { toNum, extractBaseFields } from './index'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -117,49 +117,48 @@ describe('defaultResponseExtractor', () => {
 
 describe('extractBaseFields', () => {
   it('extracts id from raw.id', () => {
-    const result = extractBaseFields({ id: 'gpt-4o' }, 'text')
+    const result = extractBaseFields({ id: 'gpt-4o' })
     expect(result.id).toBe('gpt-4o')
   })
 
   it('falls back to raw.model_id', () => {
-    const result = extractBaseFields({ model_id: 'claude-3' }, 'text')
+    const result = extractBaseFields({ model_id: 'claude-3' })
     expect(result.id).toBe('claude-3')
   })
 
   it('throws when id is missing', () => {
-    expect(() => extractBaseFields({}, 'text')).toThrow('Model missing required id field')
+    expect(() => extractBaseFields({})).toThrow('Model missing required id field')
   })
 
   it('extracts name from spec.name (Venice)', () => {
     const result = extractBaseFields(
       { id: 'x', model_spec: { name: 'Venice Name' } },
-      'text',
     )
     expect(result.name).toBe('Venice Name')
   })
 
   it('falls back to raw.name', () => {
-    const result = extractBaseFields({ id: 'x', name: 'Raw Name' }, 'text')
+    const result = extractBaseFields({ id: 'x', name: 'Raw Name' })
     expect(result.name).toBe('Raw Name')
   })
 
   it('falls back to id for name', () => {
-    const result = extractBaseFields({ id: 'fallback-id' }, 'text')
+    const result = extractBaseFields({ id: 'fallback-id' })
     expect(result.name).toBe('fallback-id')
   })
 
   it('extracts provider from slash-separated id', () => {
-    const result = extractBaseFields({ id: 'anthropic/claude-3' }, 'text')
+    const result = extractBaseFields({ id: 'anthropic/claude-3' })
     expect(result.provider).toBe('anthropic')
   })
 
   it('falls back to owned_by for provider', () => {
-    const result = extractBaseFields({ id: 'gpt-4o', owned_by: 'openai' }, 'text')
+    const result = extractBaseFields({ id: 'gpt-4o', owned_by: 'openai' })
     expect(result.provider).toBe('openai')
   })
 
   it('defaults provider to "Unknown" when nothing available', () => {
-    const result = extractBaseFields({ id: 'gpt-4o' }, 'text')
+    const result = extractBaseFields({ id: 'gpt-4o' })
     expect(result.provider).toBe('Unknown')
   })
 
@@ -174,7 +173,7 @@ describe('extractBaseFields', () => {
         traits: ['fast', 'cheap'],
         deprecation: { date: '2025-12-31' },
       },
-    }, 'text')
+    })
     expect(result.betaModel).toBe(true)
     expect(result.privacy).toBe('private')
     expect(result.offline).toBe(false)
@@ -184,7 +183,7 @@ describe('extractBaseFields', () => {
   })
 
   it('always sets is_favorite to false', () => {
-    const result = extractBaseFields({ id: 'x' }, 'text')
+    const result = extractBaseFields({ id: 'x' })
     expect(result.is_favorite).toBe(false)
   })
 })

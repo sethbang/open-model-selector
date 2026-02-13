@@ -29,4 +29,24 @@ if (!diff.includes('CHANGELOG.md')) {
     '  then run \x1b[36mnpm version\x1b[0m again.'
   )
   process.exitCode = 1
+} else {
+  // Verify that CHANGELOG.md contains a version heading matching package.json.
+  // This prevents trivial whitespace-only edits from satisfying the check above.
+  const fs = require('fs')
+  const pkg = require('../package.json')
+  try {
+    const path = require('path')
+    const changelog = fs.readFileSync(path.join(__dirname, '..', 'CHANGELOG.md'), 'utf8')
+
+    if (!changelog.includes('## [' + pkg.version + ']')) {
+      console.error(
+        '\x1b[31m✖ Error: CHANGELOG.md does not contain a ## [' + pkg.version + '] heading.\x1b[0m\n' +
+        '  Please add a "## [' + pkg.version + ']" section to CHANGELOG.md,\n' +
+        '  then run \x1b[36mnpm version\x1b[0m again.'
+      )
+      process.exitCode = 1
+    }
+  } catch {
+    // If CHANGELOG.md can't be read, don't block versioning
+  }
 }

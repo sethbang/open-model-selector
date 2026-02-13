@@ -3,7 +3,7 @@ import { extractBaseFields } from './base'
 
 /** Normalize a raw API response object into an AsrModel. */
 export function normalizeAsrModel(raw: Record<string, unknown>): AsrModel {
-  const base = extractBaseFields(raw, 'asr')
+  const base = extractBaseFields(raw)
   const spec = raw.model_spec as Record<string, unknown> | undefined
   const specPricing = spec?.pricing as Record<string, unknown> | undefined
 

@@ -3,7 +3,7 @@ import { extractBaseFields } from './base'
 
 /** Normalize a raw API response object into a TtsModel. */
 export function normalizeTtsModel(raw: Record<string, unknown>): TtsModel {
-  const base = extractBaseFields(raw, 'tts')
+  const base = extractBaseFields(raw)
   const spec = raw.model_spec as Record<string, unknown> | undefined
   const specPricing = spec?.pricing as Record<string, unknown> | undefined
 

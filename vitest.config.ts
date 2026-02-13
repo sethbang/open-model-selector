@@ -50,5 +50,16 @@ export default defineConfig({
         },
       },
     ],
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/*.test.{ts,tsx}', 'src/**/*.stories.{ts,tsx}', 'src/testing.d.ts'],
+      thresholds: {
+        statements: 70,
+        branches: 65,
+        functions: 70,
+        lines: 70,
+      },
+    },
   },
 });

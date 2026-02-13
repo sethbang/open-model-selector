@@ -4,7 +4,7 @@ import { extractBaseFields } from './base'
 /** Normalize a raw API response object into an EmbeddingModel.
  *  Note: Venice embedding models have BOTH input and output pricing. */
 export function normalizeEmbeddingModel(raw: Record<string, unknown>): EmbeddingModel {
-  const base = extractBaseFields(raw, 'embedding')
+  const base = extractBaseFields(raw)
   const spec = raw.model_spec as Record<string, unknown> | undefined
   const specPricing = spec?.pricing as Record<string, unknown> | undefined
 

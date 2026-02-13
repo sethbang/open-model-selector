@@ -3,7 +3,7 @@ import { extractBaseFields, toNum } from './base'
 
 /** Normalize a raw API response object into a TextModel. */
 export function normalizeTextModel(raw: Record<string, unknown>): TextModel {
-  const base = extractBaseFields(raw, 'text')
+  const base = extractBaseFields(raw)
   const spec = raw.model_spec as Record<string, unknown> | undefined
   const specPricing = spec?.pricing as Record<string, unknown> | undefined
 

@@ -3,7 +3,7 @@ import { extractBaseFields } from './base'
 
 /** Normalize a raw API response object into an InpaintModel. */
 export function normalizeInpaintModel(raw: Record<string, unknown>): InpaintModel {
-  const base = extractBaseFields(raw, 'inpaint')
+  const base = extractBaseFields(raw)
   const spec = raw.model_spec as Record<string, unknown> | undefined
   const pricing = spec?.pricing as Record<string, unknown> | undefined
   const constraints = spec?.constraints as Record<string, unknown> | undefined

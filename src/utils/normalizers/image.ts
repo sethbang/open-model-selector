@@ -3,7 +3,7 @@ import { extractBaseFields } from './base'
 
 /** Normalize a raw API response object into an ImageModel. */
 export function normalizeImageModel(raw: Record<string, unknown>): ImageModel {
-  const base = extractBaseFields(raw, 'image')
+  const base = extractBaseFields(raw)
   const spec = raw.model_spec as Record<string, unknown> | undefined
   const pricing = spec?.pricing as Record<string, unknown> | undefined
   const constraints = spec?.constraints as Record<string, unknown> | undefined

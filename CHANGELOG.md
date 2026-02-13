@@ -2,6 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
@@ -53,7 +54,7 @@ Initial release of `open-model-selector`.
 - **Comprehensive test suite** — unit, component (jsdom), and Storybook (Playwright) test projects
 - **Storybook stories** — Default, PreselectedModel, SystemDefault, CustomPlaceholder, SortByNewest, ControlledFavorites, EmptyState, LoadingState, ErrorState, PopoverTop, WideContainer, DarkMode, MinimalModels, and VeniceLive
 - **GitHub Actions CI** — automated npm publish on GitHub release creation
-- **TypeScript** — full type exports (30 types):
+- **TypeScript** — full type exports (33 types):
   - **Base**: `ModelType`, `BaseModel`, `Deprecation`, `AnyModel`
   - **Text**: `TextModel`, `TextPricing`, `TextCapabilities`, `TextConstraints`
   - **Image**: `ImageModel`, `ImagePricing`, `ImageConstraints`
@@ -63,7 +64,7 @@ Initial release of `open-model-selector`.
   - **TTS**: `TtsModel`, `TtsPricing`
   - **ASR**: `AsrModel`, `AsrPricing`
   - **Upscale**: `UpscaleModel`, `UpscalePricing`
-  - **Component / Hook**: `ModelSelectorProps`, `UseModelsProps`, `UseModelsResult`, `FetchFn`
+  - **Component / Hook**: `ModelSelectorProps`, `TextModelSelectorProps`, `ImageModelSelectorProps`, `VideoModelSelectorProps`, `UseModelsProps`, `UseModelsResult`, `FetchFn`
   - **Normalizer**: `ModelNormalizer`, `ResponseExtractor`
 - **Dual CJS/ESM output** — built with tsup, sourcemaps and `.d.ts` included
 

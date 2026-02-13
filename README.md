@@ -212,13 +212,22 @@ function App() {
 Type-filtered convenience components for common model categories:
 
 ```tsx
+import { useState } from "react"
 import { TextModelSelector, ImageModelSelector, VideoModelSelector } from "open-model-selector"
 import "open-model-selector/styles.css" // Required — same stylesheet as <ModelSelector>
 
-// These are pre-filtered wrappers around <ModelSelector type="...">
-<TextModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={(id) => setModel(id)} />
-<ImageModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={(id) => setModel(id)} />
-<VideoModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={(id) => setModel(id)} />
+function App() {
+  const [model, setModel] = useState("")
+
+  return (
+    <>
+      {/* These are pre-filtered wrappers around <ModelSelector type="..."> */}
+      <TextModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={(id) => setModel(id)} />
+      <ImageModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={(id) => setModel(id)} />
+      <VideoModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={(id) => setModel(id)} />
+    </>
+  )
+}
 ```
 
 > These are convenience wrappers that pass `type="text"`, `type="image"`, or `type="video"` respectively. All three forward `ref` to the root `<div>`, just like `<ModelSelector>`.
@@ -340,7 +349,7 @@ The library supports 8 model types, each with its own TypeScript interface exten
 
 | Type | Interface | Key Fields |
 |------|-----------|------------|
-| `"text"` | `TextModel` | `pricing.prompt`, `pricing.completion`, `pricing.cache_input`, `pricing.cache_write`, `context_length`, `capabilities` |
+| `"text"` | `TextModel` | `pricing.prompt`, `pricing.completion`, `pricing.cache_input`, `pricing.cache_write`, `context_length`, `capabilities`, `constraints.temperature`, `constraints.top_p` |
 | `"image"` | `ImageModel` | `pricing.generation`, `pricing.resolutions`, `constraints.aspectRatios`, `constraints.resolutions`, `supportsWebSearch` |
 | `"video"` | `VideoModel` | `constraints.resolutions`, `constraints.durations`, `constraints.aspect_ratios`, `model_sets` |
 | `"inpaint"` | `InpaintModel` | `pricing.generation`, `constraints.aspectRatios`, `constraints.combineImages` |
@@ -643,10 +652,12 @@ inferTypeFromId("gpt-4o")            // undefined (no match → caller defaults 
 
 ### Helper Utilities
 
-These are exported from `"open-model-selector/utils"` only (not the main entry):
+These are exported from `"open-model-selector/utils"` (and also re-exported from the main entry):
 
 ```ts
 import { isDeprecated } from "open-model-selector/utils"
+// or equivalently:
+import { isDeprecated } from "open-model-selector"
 ```
 
 | Function | Signature | Description |

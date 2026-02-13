@@ -1,4 +1,4 @@
-import type { ModelType, BaseModel } from '../../types'
+import type { BaseModel } from '../../types'
 
 /** Safely coerce an unknown value to a number. Returns undefined for non-numeric/NaN. */
 export function toNum(v: unknown): number | undefined {
@@ -10,7 +10,7 @@ export function toNum(v: unknown): number | undefined {
 /** Extract shared BaseModel fields from a raw API response object.
  *  Venice nests most metadata under model_spec; other providers use top-level fields.
  *  This helper checks both locations with model_spec taking priority for Venice-specific fields. */
-export function extractBaseFields(raw: Record<string, unknown>, _type: ModelType): Omit<BaseModel, 'type'> {
+export function extractBaseFields(raw: Record<string, unknown>): Omit<BaseModel, 'type'> {
   const spec = raw.model_spec as Record<string, unknown> | undefined
   const id = (raw.id as string) || (raw.model_id as string) || ''
   if (!id) throw new Error('Model missing required id field')

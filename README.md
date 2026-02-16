@@ -1,6 +1,6 @@
 # open-model-selector
 
-[![npm version](https://img.shields.io/npm/v/open-model-selector)](https://www.npmjs.com/package/open-model-selector) [![npm bundle size](https://img.shields.io/bundlephobia/minzip/open-model-selector)](https://bundlephobia.com/package/open-model-selector) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/open-model-selector)](https://www.npmjs.com/package/open-model-selector) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 
 ### An accessible, themeable React model-selector combobox for any OpenAI-compatible API — with first-class [Venice.ai](https://venice.ai) support.
 
@@ -43,6 +43,9 @@
 - **Full TypeScript types** exported
 - **Dual CJS/ESM output** with sourcemaps
 - **React 18 and 19** support
+
+### Check out the [demo here!](https://sethbang.github.io/open-model-selector-demo/)
+
 
 ## Installation
 

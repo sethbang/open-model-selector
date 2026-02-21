@@ -2,13 +2,17 @@ import type { ModelType } from '../../types'
 
 /** Known model ID patterns for heuristic type inference.
  *  Used when the API response lacks an explicit `type` field (non-Venice providers).
- *  Exported so consumers can inspect or extend. */
+ *  Exported so consumers can inspect or extend.
+ *
+ *  Patterns are tested in order — first match wins. More specific patterns should
+ *  come before broader ones (e.g. "gpt-image" before generic "image"). */
 export const MODEL_ID_TYPE_PATTERNS: Array<[RegExp, ModelType]> = [
-  [/\b(embed|embedding)\b/i, 'embedding'],
-  [/\b(dall-e|stable-diffusion|sdxl|midjourney|flux)\b/i, 'image'],
+  [/\b(embed|embedding|embedqa)\b/i, 'embedding'],
+  [/\b(dall-e|stable-diffusion|sdxl|midjourney|flux|imagen)\b/i, 'image'],
+  [/\b(gpt-image|image-preview)\b/i, 'image'],
   [/\b(tts)\b/i, 'tts'],
   [/\b(whisper|asr)\b/i, 'asr'],
-  [/\b(sora|video|wan)\b/i, 'video'],
+  [/\b(sora|video|wan|kling)\b/i, 'video'],
   [/\b(inpaint)\b/i, 'inpaint'],
   [/\b(upscale|esrgan)\b/i, 'upscale'],
 ]

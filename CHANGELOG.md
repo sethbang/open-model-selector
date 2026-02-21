@@ -7,6 +7,26 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-02-20
+
+### Added
+
+- **Multi-provider type resolution** — `defaultModelNormalizer` now uses a 6-tier classification strategy to correctly identify model types across providers that use non-standard vocabulary:
+  1. Direct match against canonical types (Venice)
+  2. Non-text alias mapping (Together AI: `"audio"`→`"tts"`, `"transcribe"`→`"asr"`)
+  3. Architecture-based inference from `output_modalities` (OpenRouter)
+  4. Heuristic inference from model ID patterns
+  5. Text-aliased type (Together AI: `"chat"`→`"text"`, Mistral: `"base"`→`"text"`, Vercel: `"language"`→`"text"`)
+  6. Default to `"text"`
+- **`TYPE_ALIASES` export** — maps provider-specific type strings (`chat`, `language`, `base`, `moderation`, `rerank`, `audio`, `transcribe`) to canonical `ModelType` values; exported from both `"open-model-selector"` and `"open-model-selector/utils"` so consumers can inspect or extend
+- **Extended `MODEL_ID_TYPE_PATTERNS`** — new heuristic patterns: `embedqa`, `imagen`, `gpt-image`, `image-preview`, `kling`
+- **Provider compatibility test suite** (`provider-compat.test.ts`) — 418 lines covering type resolution for Together AI, Vercel AI Gateway, Mistral AI, OpenRouter, OpenAI, Nvidia NIM, Helicone, and Venice AI response shapes, plus `defaultResponseExtractor` wrapper shapes
+- **Live provider Storybook stories** (`provider-live.stories.tsx`) — interactive stories for testing against 12 real provider APIs: OpenAI, OpenRouter, Together, Groq, Cerebras, Nvidia, Mistral, DeepSeek, SambaNova, Venice, Helicone, and Vercel
+- **`.env.example`** — environment variable template for 13 API provider keys used by Storybook live stories and the snapshot capture script
+- **Provider snapshot capture script** (`scripts/capture-provider-snapshots.cjs`) — fetches and stores real provider API responses for test fixture generation
+- **`.env` parser utility** (`scripts/parse-env.cjs`) — shared `.env` file parser used by both Storybook config and the snapshot capture script
+- **Storybook provider proxy support** — `.storybook/main.ts` now loads `.env` keys and configures Vite proxies for cross-origin provider API access during development
+
 ## [0.1.0] — 2026-02-06
 
 Initial release of `open-model-selector`.
@@ -68,5 +88,6 @@ Initial release of `open-model-selector`.
   - **Normalizer**: `ModelNormalizer`, `ResponseExtractor`
 - **Dual CJS/ESM output** — built with tsup, sourcemaps and `.d.ts` included
 
-[Unreleased]: https://github.com/sethbang/open-model-selector/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/sethbang/open-model-selector/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/sethbang/open-model-selector/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/sethbang/open-model-selector/releases/tag/v0.1.0

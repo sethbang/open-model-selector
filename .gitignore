@@ -21,6 +21,7 @@ npm-debug.log*
 # Test artifacts
 coverage/
 .nyc_output/
+test-fixtures/providers/
 
 # npm pack output
 *.tgz

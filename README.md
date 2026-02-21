@@ -37,7 +37,7 @@
 - **"Use System Default"** sentinel option for fallback behavior
 - **8 model types**: text, image, video, inpaint, embedding, TTS, ASR, upscale
 - **Specialized selectors**: `<TextModelSelector>`, `<ImageModelSelector>`, `<VideoModelSelector>`
-- **Built-in normalizers** for Venice.ai, OpenAI, and OpenRouter response shapes
+- **Built-in normalizers** for Venice.ai, OpenAI, OpenRouter, Together AI, Vercel AI Gateway, Mistral, Groq, Cerebras, Nvidia NIM, DeepSeek, SambaNova, and Helicone response shapes
 - **Scoped CSS** with `--oms-` custom property prefix — never pollutes host styles
 - **Dark mode** via `prefers-color-scheme` and `.dark` class
 - **Full TypeScript types** exported
@@ -447,7 +447,7 @@ import type { ModelNormalizer, ResponseExtractor } from "open-model-selector"
 
 ### Custom Normalizer
 
-The built-in `defaultModelNormalizer` handles Venice.ai, OpenAI, and OpenRouter response shapes automatically — including Venice's nested `model_spec` format with capabilities, privacy, traits, and deprecation info. If your API returns a different shape, provide a custom normalizer:
+The built-in `defaultModelNormalizer` handles response shapes from Venice.ai, OpenAI, OpenRouter, Together AI, Vercel AI Gateway, Mistral, Groq, Cerebras, Nvidia NIM, DeepSeek, SambaNova, and Helicone automatically — using a [6-tier type classification strategy](#type-inference) that resolves provider-specific vocabulary, architecture metadata, and model ID heuristics. Venice's nested `model_spec` format with capabilities, privacy, traits, and deprecation info is fully supported. If your API returns a different shape, provide a custom normalizer:
 
 ```tsx
 import { ModelSelector } from "open-model-selector"
@@ -634,12 +634,42 @@ const imageModel = normalizeImageModel(rawApiObject) // → ImageModel
 
 #### Type Inference
 
-`inferTypeFromId` uses heuristic pattern matching on a model's ID string to determine its type. This is how `defaultModelNormalizer` classifies models from providers that don't include an explicit `type` field (e.g., OpenAI, OpenRouter):
+`defaultModelNormalizer` uses a **6-tier type resolution strategy** to correctly classify models across providers with different metadata formats:
+
+| Tier | Strategy | Providers |
+|------|----------|-----------|
+| 1 | Direct match against canonical types (`text`, `image`, etc.) | Venice |
+| 2 | Non-text alias mapping (e.g. `"audio"`→`"tts"`, `"transcribe"`→`"asr"`) | Together AI |
+| 3 | Architecture-based inference from `output_modalities` | OpenRouter |
+| 4 | Heuristic pattern matching on model ID | OpenAI, Nvidia, Helicone |
+| 5 | Text-aliased type (e.g. `"chat"`→`"text"`, `"base"`→`"text"`) | Together AI, Mistral, Vercel |
+| 6 | Default to `"text"` | All |
+
+> Text aliases (Tier 5) are checked **after** the ID heuristic (Tier 4) so that e.g. Mistral's `mistral-embed` (type: `"base"`) still gets classified as `"embedding"` via its model ID rather than being swallowed by the `"base"`→`"text"` alias.
+
+**`TYPE_ALIASES`** maps provider-specific type vocabulary to canonical `ModelType` values:
+
+```ts
+import { TYPE_ALIASES } from "open-model-selector/utils"
+
+// TYPE_ALIASES = {
+//   chat: 'text',        // Together AI
+//   language: 'text',    // Vercel AI Gateway, Together AI
+//   base: 'text',        // Mistral AI
+//   moderation: 'text',  // Together AI
+//   rerank: 'text',      // Together AI
+//   audio: 'tts',        // Together AI (Cartesia Sonic etc.)
+//   transcribe: 'asr',   // Together AI (Whisper etc.)
+// }
+```
+
+**`inferTypeFromId`** uses heuristic pattern matching on a model's ID string (Tier 4). This is how `defaultModelNormalizer` classifies models from providers that don't include an explicit `type` field (e.g., OpenAI, Nvidia):
 
 ```ts
 import { inferTypeFromId, MODEL_ID_TYPE_PATTERNS } from "open-model-selector/utils"
 
 inferTypeFromId("dall-e-3")           // "image"
+inferTypeFromId("gpt-image-1")       // "image"
 inferTypeFromId("whisper-large-v3")   // "asr"
 inferTypeFromId("gpt-4o")            // undefined (no match → caller defaults to "text")
 ```
@@ -766,6 +796,7 @@ The component implements the [ARIA combobox pattern](https://www.w3.org/WAI/ARIA
 | `npm run test:watch` | Run tests in watch mode. |
 | `npm run storybook` | Start Storybook dev server on port 6006. |
 | `npm run build-storybook` | Build static Storybook site. |
+| `node scripts/capture-provider-snapshots.cjs` | Capture real provider API responses into `test-fixtures/providers/` for test fixture generation. Requires `.env` with API keys. |
 
 > `npm run prepublishOnly` runs typecheck → test → build automatically before publishing.
 
@@ -783,6 +814,7 @@ Test files:
 - [`src/hooks/use-models.test.tsx`](src/hooks/use-models.test.tsx) — Hook tests
 - [`src/utils/format.test.ts`](src/utils/format.test.ts) — Format utility tests
 - [`src/utils/normalizers/normalizers.test.ts`](src/utils/normalizers/normalizers.test.ts) — Normalizer tests
+- [`src/utils/normalizers/provider-compat.test.ts`](src/utils/normalizers/provider-compat.test.ts) — Provider compatibility tests (Together AI, Vercel, Mistral, OpenRouter, OpenAI, Nvidia, Helicone, Venice)
 
 ```bash
 # Run all tests
@@ -796,7 +828,14 @@ npm run test:watch
 
 The project includes comprehensive Storybook stories covering multiple scenarios: Default, PreselectedModel, SystemDefault, CustomPlaceholder, SortByNewest, ControlledFavorites, EmptyState, LoadingState, ErrorState, PopoverTop, WideContainer, DarkMode, MinimalModels, and VeniceLive.
 
+**Live provider stories** are also available for testing against real APIs (OpenAI, OpenRouter, Together, Groq, Cerebras, Nvidia, Mistral, DeepSeek, SambaNova, Venice, Helicone, Vercel). To use them:
+
+1. Copy `.env.example` to `.env` and fill in the API keys you want to test
+2. Run `npm run storybook` — the Storybook config auto-loads your `.env` keys and configures CORS proxies
+
 ```bash
+cp .env.example .env
+# Edit .env with your API keys
 npm run storybook
 # Opens at http://localhost:6006
 ```

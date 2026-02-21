@@ -472,6 +472,14 @@ describe('useModels', () => {
     expect(fetcher).not.toHaveBeenCalled()
   })
 
+  // 19b. Rejects protocol-relative //evil.com baseUrl
+  it('rejects protocol-relative //evil.com baseUrl', async () => {
+    const { result } = renderHook(() =>
+      useModels({ baseUrl: '//evil.com' })
+    );
+    expect(result.current.error!.message).toMatch(/Invalid baseUrl scheme/);
+  });
+
   // 20. Accepts http:// baseUrl scheme
   it('accepts http:// baseUrl scheme', async () => {
     const fetcher = createFetchMock(mockApiResponse.data)

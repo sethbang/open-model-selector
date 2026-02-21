@@ -42,6 +42,7 @@ export {
   toNum,
   inferTypeFromId,
   MODEL_ID_TYPE_PATTERNS,
+  TYPE_ALIASES,
   normalizeTextModel,
   normalizeImageModel,
   normalizeVideoModel,

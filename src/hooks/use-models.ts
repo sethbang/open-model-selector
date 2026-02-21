@@ -77,11 +77,12 @@ export function useModels(props: UseModelsProps): UseModelsResult {
       return
     }
 
-    // Validate URL scheme — only allow http(s) to prevent data: / javascript: / file: injection
-    if (!/^https?:\/\//i.test(baseUrl)) {
+    // Validate URL scheme — allow http(s) and relative paths (for proxy setups).
+    // Block dangerous schemes like data:, javascript:, file:, blob:, etc.
+    if (!/^(https?:\/\/|\/(?!\/))/i.test(baseUrl)) {
       setAllModels([])
       setLoading(false)
-      setError(new Error(`Invalid baseUrl scheme: URL must start with http:// or https://`))
+      setError(new Error(`Invalid baseUrl scheme: URL must start with http://, https://, or /`))
       return
     }
 

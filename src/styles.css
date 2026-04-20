@@ -507,6 +507,10 @@
   border-radius: 3px;
   background: hsl(var(--oms-muted));
   color: hsl(var(--oms-muted-foreground));
+  /* Keep the badge at natural size — long model names should ellipsis,
+   * not clip the badge. */
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* Capability pills */
@@ -661,6 +665,7 @@
   font-size: 10px;
   color: hsl(var(--oms-destructive));
   margin-bottom: 4px;
+  flex-shrink: 0;
 }
 
 /* Tooltip sections */
@@ -715,6 +720,16 @@
   align-items: center;
   gap: 4px;
   font-weight: 500;
+  overflow: hidden;
+  /* Must allow children to shrink below their intrinsic width so the name
+   * text can truncate when the row is narrow. */
+  min-width: 0;
+}
+
+/* The actual name text. Takes available space and ellipsis-truncates; the
+ * type / deprecation badges next to it stay at natural size (flex-shrink: 0). */
+.oms-item-name-text {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

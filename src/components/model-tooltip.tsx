@@ -66,7 +66,7 @@ function renderTextContent(model: AnyModel) {
         <div className="oms-tooltip-pills">{capPills}</div>
       )}
       <div className="oms-flex-row oms-gap-2 oms-flex-wrap">
-        {model.context_length > 0 && (
+        {model.context_length != null && model.context_length > 0 && (
           <span className="oms-badge oms-badge-secondary">
             {formatContextLength(model.context_length)} Context
           </span>

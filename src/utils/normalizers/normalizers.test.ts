@@ -435,10 +435,17 @@ describe('normalizeTextModel', () => {
     const result = normalizeTextModel({ id: 'bare-model' })
     expect(result.type).toBe('text')
     expect(result.id).toBe('bare-model')
-    expect(result.context_length).toBe(0)
+    expect(result.context_length).toBeUndefined()
     expect(result.capabilities).toBeUndefined()
     expect(result.constraints).toBeUndefined()
     expect(result.is_favorite).toBe(false)
+  })
+
+  it('context_length is undefined when no source resolves (distinct from an actual zero)', () => {
+    // Previously defaulted to 0, which was indistinguishable from a model with
+    // genuinely zero context. undefined now signals "unknown".
+    expect(normalizeTextModel({ id: 'x' }).context_length).toBeUndefined()
+    expect(normalizeTextModel({ id: 'x', context_length: 0 }).context_length).toBe(0)
   })
 
   it('cache pricing from Venice spec', () => {
@@ -455,6 +462,22 @@ describe('normalizeTextModel', () => {
     })
     expect(result.pricing.cache_input).toBeCloseTo(0.5 / 1_000_000)
     expect(result.pricing.cache_write).toBeCloseTo(0.75 / 1_000_000)
+  })
+
+  it('reads OpenRouter cache pricing (input_cache_read / input_cache_write)', () => {
+    // OpenRouter's /models uses `input_cache_read` and `input_cache_write`,
+    // not `cache_input`/`cache_write`. Both field conventions must resolve.
+    const result = normalizeTextModel({
+      id: 'anthropic/claude-sonnet-4.6',
+      pricing: {
+        prompt: '0.000003',
+        completion: '0.000015',
+        input_cache_read: '0.0000003',
+        input_cache_write: '0.00000375',
+      },
+    })
+    expect(result.pricing.cache_input).toBeCloseTo(3e-7)
+    expect(result.pricing.cache_write).toBeCloseTo(3.75e-6)
   })
 })
 

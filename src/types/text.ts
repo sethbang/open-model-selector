@@ -30,7 +30,8 @@ export interface TextConstraints {
 /** A text/chat completion model with context length, pricing, and optional capabilities. */
 export interface TextModel extends BaseModel {
   type: 'text'
-  context_length: number
+  /** Model context window in tokens. `undefined` when no source in the API response advertises one. */
+  context_length?: number
   pricing: TextPricing
   capabilities?: TextCapabilities
   constraints?: TextConstraints

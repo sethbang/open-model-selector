@@ -7,12 +7,11 @@ export function normalizeTextModel(raw: Record<string, unknown>): TextModel {
   const spec = raw.model_spec as Record<string, unknown> | undefined
   const specPricing = spec?.pricing as Record<string, unknown> | undefined
 
-  // Context length: try multiple locations
+  // Context length: try multiple locations; undefined if none apply.
   const context_length =
     toNum(raw.context_length) ??
     toNum(raw.context_window) ??
-    toNum(spec?.availableContextTokens) ??
-    0
+    toNum(spec?.availableContextTokens)
 
   // Pricing resolution: check multiple locations and shapes
   // 1. raw.pricing (OpenRouter format — already per-token)
@@ -30,11 +29,13 @@ export function normalizeTextModel(raw: Record<string, unknown>): TextModel {
   let cache_write: number | undefined
 
   if (rawPricing) {
-    // OpenRouter/OpenAI format — values are per-token already
+    // OpenRouter/OpenAI format — values are per-token already.
+    // OpenRouter names cache fields `input_cache_read` / `input_cache_write`;
+    // some providers use `cache_input` / `cache_write`. Accept both.
     prompt = toNum(rawPricing.prompt)
     completion = toNum(rawPricing.completion)
-    cache_input = toNum(rawPricing.cache_input)
-    cache_write = toNum(rawPricing.cache_write)
+    cache_input = toNum(rawPricing.cache_input) ?? toNum(rawPricing.input_cache_read)
+    cache_write = toNum(rawPricing.cache_write) ?? toNum(rawPricing.input_cache_write)
   } else if (metaPricing) {
     prompt = toNum(metaPricing.prompt)
     completion = toNum(metaPricing.completion)

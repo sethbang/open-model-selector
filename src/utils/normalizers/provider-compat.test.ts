@@ -14,6 +14,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
+import type { TextModel } from '../../types'
 import { defaultModelNormalizer, defaultResponseExtractor } from './index'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -21,6 +22,15 @@ import { defaultModelNormalizer, defaultResponseExtractor } from './index'
 /** Shorthand to normalize a raw model and return its resolved type */
 function resolvedType(raw: Record<string, unknown>): string {
   return defaultModelNormalizer(raw).type
+}
+
+/** Normalize and cast to TextModel for field-level assertions. */
+function asText(raw: Record<string, unknown>): TextModel {
+  const model = defaultModelNormalizer(raw)
+  if (model.type !== 'text') {
+    throw new Error(`expected text model, got ${model.type}`)
+  }
+  return model
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -223,6 +233,31 @@ describe('OpenRouter architecture-based type detection', () => {
         output_modalities: ['text', 'image'],
       },
     })).toBe('text')
+  })
+
+  it('preserves cache pricing from input_cache_read / input_cache_write', () => {
+    // OpenRouter uses input_cache_read/write, not cache_input/cache_write.
+    // Pricing values arrive as strings in the API response.
+    const model = asText({
+      id: 'anthropic/claude-sonnet-4.6',
+      name: 'Anthropic: Claude Sonnet 4.6',
+      context_length: 1000000,
+      architecture: {
+        modality: 'text+image->text',
+        input_modalities: ['text', 'image'],
+        output_modalities: ['text'],
+      },
+      pricing: {
+        prompt: '0.000003',
+        completion: '0.000015',
+        input_cache_read: '0.0000003',
+        input_cache_write: '0.00000375',
+      },
+    })
+    expect(model.pricing.prompt).toBeCloseTo(3e-6)
+    expect(model.pricing.completion).toBeCloseTo(1.5e-5)
+    expect(model.pricing.cache_input).toBeCloseTo(3e-7)
+    expect(model.pricing.cache_write).toBeCloseTo(3.75e-6)
   })
 })
 

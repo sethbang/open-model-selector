@@ -51,7 +51,7 @@ function renderInlineMeta(model: AnyModel): React.ReactNode {
   parts.push(<span key="prov" className="oms-truncate">{model.provider}</span>)
 
   if (model.type === 'text') {
-    if (model.context_length > 0) {
+    if (model.context_length != null && model.context_length > 0) {
       parts.push(<span key="sep-ctx" className="oms-item-meta-separator" />)
       parts.push(<span key="ctx">{formatContextLength(model.context_length)}</span>)
     }

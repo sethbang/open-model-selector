@@ -7,6 +7,14 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **OpenRouter cache pricing no longer silently dropped** — `normalizeTextModel` now reads OpenRouter's `input_cache_read` and `input_cache_write` fields in addition to `cache_input`/`cache_write`.
+
+### Changed
+
+- **BREAKING: `TextModel.context_length` is now `number | undefined`** — previously the field defaulted to `0` when no context-length source resolved, which was indistinguishable from a model with genuinely zero context. Now `undefined` signals "unknown". Consumers doing `if (model.context_length > 0)` are unaffected; anything branching on `=== 0` will need to handle `undefined`.
+
 ## [0.2.0] — 2026-02-20
 
 ### Added

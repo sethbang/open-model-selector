@@ -202,6 +202,22 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
     const [open, setOpen] = React.useState(false)
     const listboxId = React.useId() + '-listbox'
 
+    // Dev-mode warn-once-per-instance when neither data source is provided.
+    // Tracked via ref so each mount gets its own flag (test-friendly).
+    const emptyConfigWarnedRef = React.useRef(false)
+    if (
+      process.env.NODE_ENV !== 'production' &&
+      !baseUrl &&
+      models.length === 0 &&
+      !emptyConfigWarnedRef.current
+    ) {
+      emptyConfigWarnedRef.current = true
+      console.warn(
+        '[open-model-selector] ModelSelector: rendered with no `models` and no `baseUrl`. ' +
+          'The list will be empty. Provide a `models` array or a `baseUrl` for managed fetch.',
+      )
+    }
+
     // Stable "now" reference for deprecation checks. Captured once at mount to
     // avoid cascading memo invalidations on every popover open; sessions long
     // enough to straddle a deprecation boundary are rare in practice, so the

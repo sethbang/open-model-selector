@@ -737,6 +737,23 @@ describe('ModelSelector', () => {
         expect(screen.getByText('No model found.')).toBeVisible()
       })
     })
+
+    it('warns once in dev when neither `baseUrl` nor `models` is provided', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      render(<ModelSelector onChange={vi.fn()} />)
+      const calls = warn.mock.calls.flat().filter((arg) => typeof arg === 'string')
+      expect(calls.some((c) => c.includes('rendered with no `models` and no `baseUrl`'))).toBe(true)
+    })
+
+    it('does NOT warn when only `baseUrl` is provided', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const fetcher = createFetchMock(mockModels)
+      render(
+        <ModelSelector baseUrl="https://api.example.com/v1" fetcher={fetcher} onChange={vi.fn()} />,
+      )
+      const calls = warn.mock.calls.flat().filter((arg) => typeof arg === 'string')
+      expect(calls.some((c) => c.includes('rendered with no `models`'))).toBe(false)
+    })
   })
 
   describe('SSR / hydration safety', () => {

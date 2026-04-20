@@ -112,7 +112,9 @@ describe('ModelSelector', () => {
     })
 
     it('applies custom className to root element', () => {
-      const { container } = render(<ModelSelector models={mockModels} className="my-custom-class" />)
+      const { container } = render(
+        <ModelSelector models={mockModels} className="my-custom-class" />,
+      )
       expect(container.firstElementChild).toHaveClass('oms-reset', 'my-custom-class')
     })
 
@@ -144,12 +146,15 @@ describe('ModelSelector', () => {
       await user.click(screen.getByRole('combobox'))
       await user.click(screen.getByText('Claude 3 Opus'))
 
-      expect(onChange).toHaveBeenCalledWith('claude-3-opus', expect.objectContaining({
-        id: 'claude-3-opus',
-        name: 'Claude 3 Opus',
-        provider: 'anthropic',
-        type: 'text',
-      }))
+      expect(onChange).toHaveBeenCalledWith(
+        'claude-3-opus',
+        expect.objectContaining({
+          id: 'claude-3-opus',
+          name: 'Claude 3 Opus',
+          provider: 'anthropic',
+          type: 'text',
+        }),
+      )
     })
 
     it('calls onChange with SYSTEM_DEFAULT_VALUE and null model when system default is selected', async () => {
@@ -158,7 +163,7 @@ describe('ModelSelector', () => {
       render(<ModelSelector models={mockModels} onChange={onChange} showSystemDefault />)
 
       await user.click(screen.getByRole('combobox'))
-      
+
       // Find all "Use System Default" texts — one in trigger, one in popover list
       const systemDefaultOptions = screen.getAllByText('Use System Default')
       // Click the last one (the one in the popover list)
@@ -200,11 +205,7 @@ describe('ModelSelector', () => {
       const user = userEvent.setup()
 
       render(
-        <ModelSelector
-          baseUrl="https://api.example.com/v1"
-          fetcher={fetcher}
-          onChange={vi.fn()}
-        />
+        <ModelSelector baseUrl="https://api.example.com/v1" fetcher={fetcher} onChange={vi.fn()} />,
       )
 
       // Wait for fetch to complete (useModels appends no query string by default)
@@ -214,7 +215,7 @@ describe('ModelSelector', () => {
           expect.objectContaining({
             headers: {},
             signal: expect.any(AbortSignal),
-          })
+          }),
         )
       })
 
@@ -235,7 +236,7 @@ describe('ModelSelector', () => {
           apiKey="sk-test-key"
           fetcher={fetcher}
           onChange={vi.fn()}
-        />
+        />,
       )
 
       await waitFor(() => {
@@ -243,7 +244,7 @@ describe('ModelSelector', () => {
           expect.any(String),
           expect.objectContaining({
             headers: { Authorization: 'Bearer sk-test-key' },
-          })
+          }),
         )
       })
     })
@@ -253,11 +254,7 @@ describe('ModelSelector', () => {
       const user = userEvent.setup()
 
       render(
-        <ModelSelector
-          baseUrl="https://api.example.com/v1"
-          fetcher={fetcher}
-          onChange={vi.fn()}
-        />
+        <ModelSelector baseUrl="https://api.example.com/v1" fetcher={fetcher} onChange={vi.fn()} />,
       )
 
       // Wait for fetch to fail
@@ -282,7 +279,7 @@ describe('ModelSelector', () => {
           baseUrl="https://api.example.com/v1"
           fetcher={fetcher}
           onChange={vi.fn()}
-        />
+        />,
       )
 
       // Fetcher should NOT be called when models are provided
@@ -331,7 +328,7 @@ describe('ModelSelector', () => {
           models={mockModels}
           onChange={vi.fn()}
           onToggleFavorite={onToggleFavorite}
-        />
+        />,
       )
 
       await user.click(screen.getByRole('combobox'))
@@ -381,16 +378,33 @@ describe('ModelSelector', () => {
           onChange={vi.fn()}
           sortOrder="name"
           onSortChange={onSortChange}
-        />
+        />,
       )
 
       await user.click(screen.getByRole('combobox'))
 
-      // Click the sort toggle button — it cycles from "name" to "created"
-      const sortButton = screen.getByLabelText('Sort models by newest')
+      // Sort button label describes current state; aria-pressed reflects whether
+      // we're in the "newest" (pressed) state.
+      const sortButton = screen.getByLabelText('Sort: name (A–Z)')
+      expect(sortButton).toHaveAttribute('aria-pressed', 'false')
       await user.click(sortButton)
 
       expect(onSortChange).toHaveBeenCalledWith('created')
+    })
+
+    it('sort button reflects current state via aria-label and aria-pressed', async () => {
+      const user = userEvent.setup()
+      render(<ModelSelector models={mockModels} onChange={vi.fn()} />)
+      await user.click(screen.getByRole('combobox'))
+
+      // Default is "name" — label describes name sort, aria-pressed false.
+      let sortButton = screen.getByLabelText('Sort: name (A–Z)')
+      expect(sortButton).toHaveAttribute('aria-pressed', 'false')
+
+      await user.click(sortButton)
+      // Flipped to "created" — label and aria-pressed both update.
+      sortButton = screen.getByLabelText('Sort: newest first')
+      expect(sortButton).toHaveAttribute('aria-pressed', 'true')
     })
   })
 
@@ -547,7 +561,7 @@ describe('ModelSelector', () => {
           models={[activeModel, deprecatedModel]}
           showDeprecated={false}
           onChange={vi.fn()}
-        />
+        />,
       )
 
       await user.click(screen.getByRole('combobox'))
@@ -563,7 +577,7 @@ describe('ModelSelector', () => {
           models={[activeModel, futureDeprecatedModel, deprecatedModel]}
           showDeprecated={false}
           onChange={vi.fn()}
-        />
+        />,
       )
 
       await user.click(screen.getByRole('combobox'))
@@ -575,12 +589,7 @@ describe('ModelSelector', () => {
 
     it('shows deprecated models when showDeprecated is true (default)', async () => {
       const user = userEvent.setup()
-      render(
-        <ModelSelector
-          models={[activeModel, deprecatedModel]}
-          onChange={vi.fn()}
-        />
-      )
+      render(<ModelSelector models={[activeModel, deprecatedModel]} onChange={vi.fn()} />)
 
       await user.click(screen.getByRole('combobox'))
 
@@ -592,20 +601,14 @@ describe('ModelSelector', () => {
       const user = userEvent.setup()
       // Use existing mockModels with known created timestamps:
       // claude-3-opus: 1710000000, llama-3-70b: 1705000000, gpt-4: 1700000000
-      render(
-        <ModelSelector
-          models={mockModels}
-          sortOrder="created"
-          onChange={vi.fn()}
-        />
-      )
+      render(<ModelSelector models={mockModels} sortOrder="created" onChange={vi.fn()} />)
 
       await user.click(screen.getByRole('combobox'))
 
       const modelNames = screen.getAllByText(/^(Claude 3 Opus|GPT-4|Llama 3 70B)$/)
-      expect(modelNames[0]).toHaveTextContent('Claude 3 Opus')  // newest: 1710000000
-      expect(modelNames[1]).toHaveTextContent('Llama 3 70B')    // middle: 1705000000
-      expect(modelNames[2]).toHaveTextContent('GPT-4')           // oldest: 1700000000
+      expect(modelNames[0]).toHaveTextContent('Claude 3 Opus') // newest: 1710000000
+      expect(modelNames[1]).toHaveTextContent('Llama 3 70B') // middle: 1705000000
+      expect(modelNames[2]).toHaveTextContent('GPT-4') // oldest: 1700000000
     })
 
     it('places deprecated models at the end of the sorted list', async () => {
@@ -618,7 +621,7 @@ describe('ModelSelector', () => {
           showDeprecated={true}
           sortOrder="name"
           onChange={vi.fn()}
-        />
+        />,
       )
 
       await user.click(screen.getByRole('combobox'))
@@ -630,6 +633,75 @@ describe('ModelSelector', () => {
       expect(modelNames[0]).toHaveTextContent('Active Model')
       expect(modelNames[1]).toHaveTextContent('Future Deprecated')
       expect(modelNames[2]).toHaveTextContent('Old Model')
+    })
+
+    it('deprecation boundary is captured once at mount (no flicker on re-open)', async () => {
+      // Regression guard: previously the component refreshed its `now` reference
+      // every time the popover opened (useEffect on `open`). That caused models
+      // crossing the deprecation boundary mid-session to appear/disappear between
+      // opens. `now` is now captured once at mount.
+      const RealDate = Date
+      let currentTime = new Date('2098-01-01T00:00:00Z').getTime()
+      class ShimDate extends RealDate {
+        constructor(...args: unknown[]) {
+          if (args.length === 0) super(currentTime)
+          else super(...(args as ConstructorParameters<typeof Date>))
+        }
+        static now() {
+          return currentTime
+        }
+      }
+      globalThis.Date = ShimDate as unknown as DateConstructor
+
+      try {
+        const user = userEvent.setup()
+        render(
+          <ModelSelector
+            models={[activeModel, futureDeprecatedModel]}
+            showDeprecated={false}
+            onChange={vi.fn()}
+          />,
+        )
+
+        const trigger = screen.getByRole('combobox')
+        await user.click(trigger)
+        expect(screen.getByText('Future Deprecated')).toBeInTheDocument()
+        await user.keyboard('{Escape}')
+
+        // Advance wall-clock past the 2099 deprecation date.
+        currentTime = new Date('2099-06-01T00:00:00Z').getTime()
+
+        await user.click(trigger)
+        // If `now` were refreshed on open, the future-deprecated model would
+        // now be past-deprecated and filtered out. Stable `now` keeps it visible.
+        expect(screen.getByText('Future Deprecated')).toBeInTheDocument()
+      } finally {
+        globalThis.Date = RealDate
+      }
+    })
+  })
+
+  describe('Memoization stability', () => {
+    it('handleModelSelect still resolves the correct model after a favorite toggle', async () => {
+      // Regression guard: handleModelSelect previously depended on `allModels`,
+      // so every favorite-toggle recreated it and broke ModelItem's memoization.
+      // The callback now reads from a live ref, so identity stays stable AND
+      // it still resolves the latest list — toggling favorites between mount
+      // and click must not corrupt the selection.
+      const onChange = vi.fn()
+      const user = userEvent.setup()
+      render(<ModelSelector models={mockModels} onChange={onChange} />)
+
+      await user.click(screen.getByRole('combobox'))
+      const favButtons = await screen.findAllByRole('button', { name: /Add to favorites/ })
+      await user.click(favButtons[1]) // toggle Claude 3 Opus into favorites
+      await user.click(screen.getAllByText('Claude 3 Opus')[0])
+
+      expect(onChange).toHaveBeenCalledTimes(1)
+      const [id, model] = onChange.mock.calls[0]
+      expect(id).toBe('claude-3-opus')
+      expect(model).toMatchObject({ id: 'claude-3-opus' })
+      expect(model).not.toBeNull()
     })
   })
 
@@ -703,9 +775,7 @@ describe('ModelSelector', () => {
       // We verify that at least one option element has aria-selected="true"
       await waitFor(() => {
         const options = screen.getAllByRole('option')
-        const selectedOption = options.find(
-          (opt) => opt.getAttribute('aria-selected') === 'true',
-        )
+        const selectedOption = options.find((opt) => opt.getAttribute('aria-selected') === 'true')
         expect(selectedOption).toBeDefined()
       })
 

@@ -1,16 +1,18 @@
 import type { BaseModel } from './base'
 
 export interface TextPricing {
-  prompt?: number        // per-token USD
-  completion?: number    // per-token USD
-  cache_input?: number   // per-token USD (cached prompt)
-  cache_write?: number   // per-token USD (cache write)
+  prompt?: number // per-token USD
+  completion?: number // per-token USD
+  cache_input?: number // per-token USD (cached prompt)
+  cache_write?: number // per-token USD (cache write)
 }
 
 /** Feature flags indicating what a text model supports (vision, reasoning, function calling, etc.). */
 export interface TextCapabilities {
   optimizedForCode?: boolean
   supportsVision?: boolean
+  /** Venice: whether the vision model accepts multiple images per request. */
+  supportsMultipleImages?: boolean
   supportsReasoning?: boolean
   supportsFunctionCalling?: boolean
   supportsResponseSchema?: boolean
@@ -18,7 +20,7 @@ export interface TextCapabilities {
   supportsAudioInput?: boolean
   supportsVideoInput?: boolean
   supportsWebSearch?: boolean
-  quantization?: string  // fp4, fp8, fp16, int4, not-available
+  quantization?: string // fp4, fp8, fp16, int4, not-available
 }
 
 /** Default sampling parameter values for a text model. */

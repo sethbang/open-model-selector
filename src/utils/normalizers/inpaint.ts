@@ -1,5 +1,5 @@
 import type { InpaintModel } from '../../types'
-import { extractBaseFields } from './base'
+import { extractBaseFields, toBool, toStrArray } from './base'
 
 /** Normalize a raw API response object into an InpaintModel. */
 export function normalizeInpaintModel(raw: Record<string, unknown>): InpaintModel {
@@ -16,9 +16,11 @@ export function normalizeInpaintModel(raw: Record<string, unknown>): InpaintMode
     pricing: {
       generation: generation?.usd,
     },
-    constraints: constraints ? {
-      aspectRatios: constraints.aspectRatios as string[] | undefined,
-      combineImages: constraints.combineImages as boolean | undefined,
-    } : undefined,
+    constraints: constraints
+      ? {
+          aspectRatios: toStrArray(constraints.aspectRatios),
+          combineImages: toBool(constraints.combineImages),
+        }
+      : undefined,
   }
 }

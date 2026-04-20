@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import type { ModelType, AnyModel } from '../types'
@@ -66,8 +66,9 @@ export function useModels(props: UseModelsProps): UseModelsResult {
   const queryParamsRef = useRef(queryParams)
   queryParamsRef.current = queryParams
 
-  // Serialized key for stable change detection (avoids infinite loop from inline objects)
-  const queryParamsKey = JSON.stringify(queryParams)
+  // Serialized key for stable change detection (avoids infinite loop from inline objects).
+  // useMemo keyed on the reference so we don't re-serialize on every render.
+  const queryParamsKey = useMemo(() => JSON.stringify(queryParams), [queryParams])
 
   useEffect(() => {
     if (!baseUrl) {
@@ -137,10 +138,10 @@ export function useModels(props: UseModelsProps): UseModelsResult {
         }
 
         const extractor = extractorRef.current ?? defaultResponseExtractor
-        const rawModels = extractor(json as Record<string, unknown> | unknown[])
-          .filter((item): item is Record<string, unknown> =>
-            item !== null && typeof item === 'object' && !Array.isArray(item)
-          )
+        const rawModels = extractor(json as Record<string, unknown> | unknown[]).filter(
+          (item): item is Record<string, unknown> =>
+            item !== null && typeof item === 'object' && !Array.isArray(item),
+        )
 
         const normalizer = normalizerRef.current ?? defaultModelNormalizer
         const normalized: AnyModel[] = []
@@ -154,10 +155,7 @@ export function useModels(props: UseModelsProps): UseModelsResult {
             // Skip models that fail normalization
             if (process.env.NODE_ENV !== 'production') {
               const modelId = raw.id ?? raw.model_id ?? 'unknown'
-              console.warn(
-                `[open-model-selector] Failed to normalize model "${modelId}":`,
-                error
-              )
+              console.warn(`[open-model-selector] Failed to normalize model "${modelId}":`, error)
             }
           }
         }
@@ -185,13 +183,12 @@ export function useModels(props: UseModelsProps): UseModelsResult {
       isMounted = false
       controller.abort()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- queryParamsKey is a serialized stable proxy for queryParams
   }, [baseUrl, apiKey, queryParamsKey])
 
   // Client-side filter by type if specified
   const models = useMemo(() => {
     if (!type) return allModels
-    return allModels.filter(m => m.type === type)
+    return allModels.filter((m) => m.type === type)
   }, [allModels, type])
 
   return { models, loading, error }

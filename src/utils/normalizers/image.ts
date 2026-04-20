@@ -1,5 +1,5 @@
 import type { ImageModel } from '../../types'
-import { extractBaseFields } from './base'
+import { extractBaseFields, toBool, toNum, toStr, toStrArray } from './base'
 
 /** Normalize a raw API response object into an ImageModel. */
 export function normalizeImageModel(raw: Record<string, unknown>): ImageModel {
@@ -37,17 +37,29 @@ export function normalizeImageModel(raw: Record<string, unknown>): ImageModel {
       upscale_4x: upscale?.['4x']?.usd,
       resolutions: normalizedResolutions,
     },
-    constraints: constraints ? {
-      promptCharacterLimit: constraints.promptCharacterLimit as number | undefined,
-      steps: constraints.steps as { default: number; max: number } | undefined,
-      widthHeightDivisor: constraints.widthHeightDivisor as number | undefined,
-      aspectRatios: constraints.aspectRatios as string[] | undefined,
-      defaultAspectRatio: constraints.defaultAspectRatio as string | undefined,
-      resolutions: constraints.resolutions as string[] | undefined,
-      defaultResolution: constraints.defaultResolution as string | undefined,
-    } : undefined,
+    constraints: constraints
+      ? {
+          promptCharacterLimit: toNum(constraints.promptCharacterLimit),
+          // `steps` is a small structured object; keep the cast but wrap in a runtime guard.
+          steps: isStepsShape(constraints.steps) ? constraints.steps : undefined,
+          widthHeightDivisor: toNum(constraints.widthHeightDivisor),
+          aspectRatios: toStrArray(constraints.aspectRatios),
+          defaultAspectRatio: toStr(constraints.defaultAspectRatio),
+          resolutions: toStrArray(constraints.resolutions),
+          defaultResolution: toStr(constraints.defaultResolution),
+        }
+      : undefined,
     // supportsWebSearch lives at model_spec.supportsWebSearch (sibling of constraints),
     // NOT inside model_spec.constraints. Extract from spec, not constraints.
-    supportsWebSearch: (spec?.supportsWebSearch as boolean) ?? undefined,
+    supportsWebSearch: toBool(spec?.supportsWebSearch),
   }
+}
+
+function isStepsShape(v: unknown): v is { default: number; max: number } {
+  return (
+    typeof v === 'object' &&
+    v !== null &&
+    typeof (v as { default?: unknown }).default === 'number' &&
+    typeof (v as { max?: unknown }).max === 'number'
+  )
 }

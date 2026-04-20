@@ -12,7 +12,9 @@ import { normalizeUpscaleModel } from './upscale'
 // ---- Types ----
 
 /** Function that extracts the array of raw model objects from an API response body. */
-export type ResponseExtractor = (body: Record<string, unknown> | unknown[]) => Record<string, unknown>[]
+export type ResponseExtractor = (
+  body: Record<string, unknown> | unknown[],
+) => Record<string, unknown>[]
 
 /** Function that normalizes a single raw model object into an AnyModel. */
 export type ModelNormalizer = (raw: Record<string, unknown>) => AnyModel
@@ -37,7 +39,16 @@ export function defaultResponseExtractor(
 
 // ---- Dispatching Normalizer ----
 
-const VALID_TYPES = new Set<string>(['text', 'image', 'video', 'inpaint', 'embedding', 'tts', 'asr', 'upscale'])
+const VALID_TYPES = new Set<string>([
+  'text',
+  'image',
+  'video',
+  'inpaint',
+  'embedding',
+  'tts',
+  'asr',
+  'upscale',
+])
 
 /** Maps provider-specific type strings to our canonical ModelType values.
  *  Covers vocabulary differences across Together AI, Vercel AI Gateway, Mistral, etc.
@@ -45,12 +56,12 @@ const VALID_TYPES = new Set<string>(['text', 'image', 'video', 'inpaint', 'embed
 export const TYPE_ALIASES: Record<string, ModelType> = {
   // Together AI
   chat: 'text',
-  language: 'text',       // Vercel AI Gateway, Together AI
-  base: 'text',           // Mistral AI
-  moderation: 'text',     // Together AI
-  rerank: 'text',         // Together AI
-  audio: 'tts',           // Together AI (Cartesia Sonic etc.)
-  transcribe: 'asr',      // Together AI (Whisper etc.)
+  language: 'text', // Vercel AI Gateway, Together AI
+  base: 'text', // Mistral AI
+  moderation: 'text', // Together AI
+  rerank: 'text', // Together AI
+  audio: 'tts', // Together AI (Cartesia Sonic etc.)
+  transcribe: 'asr', // Together AI (Whisper etc.)
   // image, video, embedding already match VALID_TYPES directly
 }
 
@@ -97,7 +108,7 @@ export function defaultModelNormalizer(raw: Record<string, unknown>): AnyModel {
 
   const type: ModelType =
     // 1. Direct match against canonical types (Venice)
-    (rawType && VALID_TYPES.has(rawType) ? rawType as ModelType : undefined) ??
+    (rawType && VALID_TYPES.has(rawType) ? (rawType as ModelType) : undefined) ??
     // 2. Non-text alias (e.g. "audio"→"tts", "transcribe"→"asr") — these are specific enough to trust
     (aliasedType && aliasedType !== 'text' ? aliasedType : undefined) ??
     // 3. Architecture-based inference (OpenRouter output_modalities)
@@ -110,21 +121,30 @@ export function defaultModelNormalizer(raw: Record<string, unknown>): AnyModel {
     'text'
 
   switch (type) {
-    case 'text':      return normalizeTextModel(raw)
-    case 'image':     return normalizeImageModel(raw)
-    case 'video':     return normalizeVideoModel(raw)
-    case 'inpaint':   return normalizeInpaintModel(raw)
-    case 'embedding': return normalizeEmbeddingModel(raw)
-    case 'tts':       return normalizeTtsModel(raw)
-    case 'asr':       return normalizeAsrModel(raw)
-    case 'upscale':   return normalizeUpscaleModel(raw)
-    default:          return normalizeTextModel(raw) // final fallback
+    case 'text':
+      return normalizeTextModel(raw)
+    case 'image':
+      return normalizeImageModel(raw)
+    case 'video':
+      return normalizeVideoModel(raw)
+    case 'inpaint':
+      return normalizeInpaintModel(raw)
+    case 'embedding':
+      return normalizeEmbeddingModel(raw)
+    case 'tts':
+      return normalizeTtsModel(raw)
+    case 'asr':
+      return normalizeAsrModel(raw)
+    case 'upscale':
+      return normalizeUpscaleModel(raw)
+    default:
+      return normalizeTextModel(raw) // final fallback
   }
 }
 
 // ---- Re-exports ----
 
-export { extractBaseFields, toNum } from './base'
+export { extractBaseFields, toNum, toBool, toStr, toStrArray } from './base'
 export { inferTypeFromId, MODEL_ID_TYPE_PATTERNS } from './type-inference'
 // TYPE_ALIASES is exported inline above
 export { normalizeTextModel } from './text'

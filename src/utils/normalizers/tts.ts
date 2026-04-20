@@ -1,5 +1,5 @@
 import type { TtsModel } from '../../types'
-import { extractBaseFields } from './base'
+import { extractBaseFields, toStrArray } from './base'
 
 /** Normalize a raw API response object into a TtsModel. */
 export function normalizeTtsModel(raw: Record<string, unknown>): TtsModel {
@@ -16,6 +16,6 @@ export function normalizeTtsModel(raw: Record<string, unknown>): TtsModel {
     pricing: {
       input: input?.usd !== undefined ? input.usd / 1_000_000 : undefined,
     },
-    voices: (spec?.voices as string[]) ?? undefined,
+    voices: toStrArray(spec?.voices),
   }
 }

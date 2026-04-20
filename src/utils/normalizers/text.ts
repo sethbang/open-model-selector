@@ -1,5 +1,5 @@
 import type { TextModel } from '../../types'
-import { extractBaseFields, toNum } from './base'
+import { extractBaseFields, toNum, toBool, toStr } from './base'
 
 /** Normalize a raw API response object into a TextModel. */
 export function normalizeTextModel(raw: Record<string, unknown>): TextModel {
@@ -9,9 +9,7 @@ export function normalizeTextModel(raw: Record<string, unknown>): TextModel {
 
   // Context length: try multiple locations; undefined if none apply.
   const context_length =
-    toNum(raw.context_length) ??
-    toNum(raw.context_window) ??
-    toNum(spec?.availableContextTokens)
+    toNum(raw.context_length) ?? toNum(raw.context_window) ?? toNum(spec?.availableContextTokens)
 
   // Pricing resolution: check multiple locations and shapes
   // 1. raw.pricing (OpenRouter format — already per-token)
@@ -20,7 +18,9 @@ export function normalizeTextModel(raw: Record<string, unknown>): TextModel {
   // 4. spec.pricing (Venice format — per-million-token, needs division by 1,000,000)
   // 5. fallback to empty
   const rawPricing = raw.pricing as Record<string, unknown> | undefined
-  const metaPricing = (raw.metadata as Record<string, unknown> | undefined)?.pricing as Record<string, unknown> | undefined
+  const metaPricing = (raw.metadata as Record<string, unknown> | undefined)?.pricing as
+    | Record<string, unknown>
+    | undefined
   const costPricing = raw.cost as Record<string, unknown> | undefined
 
   let prompt: number | undefined
@@ -70,21 +70,26 @@ export function normalizeTextModel(raw: Record<string, unknown>): TextModel {
       cache_input,
       cache_write,
     },
-    capabilities: caps ? {
-      optimizedForCode: caps.optimizedForCode as boolean | undefined,
-      supportsVision: caps.supportsVision as boolean | undefined,
-      supportsReasoning: caps.supportsReasoning as boolean | undefined,
-      supportsFunctionCalling: caps.supportsFunctionCalling as boolean | undefined,
-      supportsResponseSchema: caps.supportsResponseSchema as boolean | undefined,
-      supportsLogProbs: caps.supportsLogProbs as boolean | undefined,
-      supportsAudioInput: caps.supportsAudioInput as boolean | undefined,
-      supportsVideoInput: caps.supportsVideoInput as boolean | undefined,
-      supportsWebSearch: caps.supportsWebSearch as boolean | undefined,
-      quantization: caps.quantization as string | undefined,
-    } : undefined,
-    constraints: constraints ? {
-      temperature: constraints.temperature as { default: number } | undefined,
-      top_p: constraints.top_p as { default: number } | undefined,
-    } : undefined,
+    capabilities: caps
+      ? {
+          optimizedForCode: toBool(caps.optimizedForCode),
+          supportsVision: toBool(caps.supportsVision),
+          supportsMultipleImages: toBool(caps.supportsMultipleImages),
+          supportsReasoning: toBool(caps.supportsReasoning),
+          supportsFunctionCalling: toBool(caps.supportsFunctionCalling),
+          supportsResponseSchema: toBool(caps.supportsResponseSchema),
+          supportsLogProbs: toBool(caps.supportsLogProbs),
+          supportsAudioInput: toBool(caps.supportsAudioInput),
+          supportsVideoInput: toBool(caps.supportsVideoInput),
+          supportsWebSearch: toBool(caps.supportsWebSearch),
+          quantization: toStr(caps.quantization),
+        }
+      : undefined,
+    constraints: constraints
+      ? {
+          temperature: constraints.temperature as { default: number } | undefined,
+          top_p: constraints.top_p as { default: number } | undefined,
+        }
+      : undefined,
   }
 }

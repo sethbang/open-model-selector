@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import React, { useState, useRef, useCallback, useEffect, useLayoutEffect, useId } from 'react'
 import { createPortal } from 'react-dom'
@@ -13,7 +13,19 @@ import {
   formatAspectRatios,
 } from '../utils/format'
 import { isDeprecated } from '../utils/helpers'
-import { AlertTriangle, Lock, EyeOff, Zap, CircleX, Eye, Brain, Code, Wrench, Search, Volume2 } from './icons'
+import {
+  AlertTriangle,
+  Lock,
+  EyeOff,
+  Zap,
+  CircleX,
+  Eye,
+  Brain,
+  Code,
+  Wrench,
+  Search,
+  Volume2,
+} from './icons'
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
@@ -27,7 +39,8 @@ function renderDeprecationWarning(model: AnyModel) {
   const past = isDeprecated(model.deprecation.date)
   return (
     <div className="oms-deprecation-badge">
-      <AlertTriangle className="oms-icon" /> {past ? 'Deprecated' : 'Deprecating'} {model.deprecation.date}
+      <AlertTriangle className="oms-icon" /> {past ? 'Deprecated' : 'Deprecating'}{' '}
+      {model.deprecation.date}
     </div>
   )
 }
@@ -35,15 +48,31 @@ function renderDeprecationWarning(model: AnyModel) {
 function renderSharedBadges(model: AnyModel) {
   const pills: React.ReactNode[] = []
   if (model.privacy === 'private') {
-    pills.push(<span key="priv" className="oms-pill oms-pill-private"><Lock className="oms-icon" /> Private</span>)
+    pills.push(
+      <span key="priv" className="oms-pill oms-pill-private">
+        <Lock className="oms-icon" /> Private
+      </span>,
+    )
   } else if (model.privacy === 'anonymized') {
-    pills.push(<span key="anon" className="oms-pill oms-pill-anonymized"><EyeOff className="oms-icon" /> Anonymized</span>)
+    pills.push(
+      <span key="anon" className="oms-pill oms-pill-anonymized">
+        <EyeOff className="oms-icon" /> Anonymized
+      </span>,
+    )
   }
   if (model.betaModel) {
-    pills.push(<span key="beta" className="oms-pill oms-pill-beta"><Zap className="oms-icon" /> Beta</span>)
+    pills.push(
+      <span key="beta" className="oms-pill oms-pill-beta">
+        <Zap className="oms-icon" /> Beta
+      </span>,
+    )
   }
   if (model.offline) {
-    pills.push(<span key="offline" className="oms-offline-indicator"><CircleX className="oms-icon" /> Offline</span>)
+    pills.push(
+      <span key="offline" className="oms-offline-indicator">
+        <CircleX className="oms-icon" /> Offline
+      </span>,
+    )
   }
   return pills.length > 0 ? pills : null
 }
@@ -52,19 +81,35 @@ function renderTextContent(model: AnyModel) {
   if (model.type !== 'text') return null
   const caps = model.capabilities
   const capPills: React.ReactNode[] = []
-  if (caps?.supportsVision) capPills.push(<span key="vis" className="oms-pill oms-pill-vision"><Eye className="oms-icon" /> Vision</span>)
-  if (caps?.supportsReasoning) capPills.push(<span key="reas" className="oms-pill oms-pill-reasoning"><Brain className="oms-icon" /> Reasoning</span>)
-  if (caps?.optimizedForCode) capPills.push(<span key="code" className="oms-pill oms-pill-code"><Code className="oms-icon" /> Code</span>)
-  if (caps?.supportsFunctionCalling) capPills.push(<span key="func" className="oms-pill oms-pill-functions"><Wrench className="oms-icon" /> Functions</span>)
+  if (caps?.supportsVision)
+    capPills.push(
+      <span key="vis" className="oms-pill oms-pill-vision">
+        <Eye className="oms-icon" /> Vision
+      </span>,
+    )
+  if (caps?.supportsReasoning)
+    capPills.push(
+      <span key="reas" className="oms-pill oms-pill-reasoning">
+        <Brain className="oms-icon" /> Reasoning
+      </span>,
+    )
+  if (caps?.optimizedForCode)
+    capPills.push(
+      <span key="code" className="oms-pill oms-pill-code">
+        <Code className="oms-icon" /> Code
+      </span>,
+    )
+  if (caps?.supportsFunctionCalling)
+    capPills.push(
+      <span key="func" className="oms-pill oms-pill-functions">
+        <Wrench className="oms-icon" /> Functions
+      </span>,
+    )
 
   return (
     <>
-      {model.description && (
-        <p className="oms-text-xs oms-muted">{model.description}</p>
-      )}
-      {capPills.length > 0 && (
-        <div className="oms-tooltip-pills">{capPills}</div>
-      )}
+      {model.description && <p className="oms-text-xs oms-muted">{model.description}</p>}
+      {capPills.length > 0 && <div className="oms-tooltip-pills">{capPills}</div>}
       <div className="oms-flex-row oms-gap-2 oms-flex-wrap">
         {model.context_length != null && model.context_length > 0 && (
           <span className="oms-badge oms-badge-secondary">
@@ -79,17 +124,23 @@ function renderTextContent(model: AnyModel) {
             <span className="oms-tooltip-grid-label">Input:</span>
             <span className="oms-tooltip-grid-value">{formatPrice(model.pricing.prompt)} / 1M</span>
             <span className="oms-tooltip-grid-label">Output:</span>
-            <span className="oms-tooltip-grid-value">{formatPrice(model.pricing.completion)} / 1M</span>
+            <span className="oms-tooltip-grid-value">
+              {formatPrice(model.pricing.completion)} / 1M
+            </span>
             {model.pricing.cache_input != null && (
               <>
                 <span className="oms-tooltip-grid-label">Cache input:</span>
-                <span className="oms-tooltip-grid-value">{formatPrice(model.pricing.cache_input)} / 1M</span>
+                <span className="oms-tooltip-grid-value">
+                  {formatPrice(model.pricing.cache_input)} / 1M
+                </span>
               </>
             )}
             {model.pricing.cache_write != null && (
               <>
                 <span className="oms-tooltip-grid-label">Cache write:</span>
-                <span className="oms-tooltip-grid-value">{formatPrice(model.pricing.cache_write)} / 1M</span>
+                <span className="oms-tooltip-grid-value">
+                  {formatPrice(model.pricing.cache_write)} / 1M
+                </span>
               </>
             )}
           </div>
@@ -116,19 +167,25 @@ function renderImageContent(model: AnyModel) {
           ) : (
             <>
               <span className="oms-tooltip-grid-label">Generation:</span>
-              <span className="oms-tooltip-grid-value">{formatFlatPrice(model.pricing.generation)}</span>
+              <span className="oms-tooltip-grid-value">
+                {formatFlatPrice(model.pricing.generation)}
+              </span>
             </>
           )}
           {model.pricing.upscale_2x != null && (
             <>
               <span className="oms-tooltip-grid-label">Upscale 2x:</span>
-              <span className="oms-tooltip-grid-value">{formatFlatPrice(model.pricing.upscale_2x)}</span>
+              <span className="oms-tooltip-grid-value">
+                {formatFlatPrice(model.pricing.upscale_2x)}
+              </span>
             </>
           )}
           {model.pricing.upscale_4x != null && (
             <>
               <span className="oms-tooltip-grid-label">Upscale 4x:</span>
-              <span className="oms-tooltip-grid-value">{formatFlatPrice(model.pricing.upscale_4x)}</span>
+              <span className="oms-tooltip-grid-value">
+                {formatFlatPrice(model.pricing.upscale_4x)}
+              </span>
             </>
           )}
         </div>
@@ -139,19 +196,25 @@ function renderImageContent(model: AnyModel) {
             {model.constraints.steps && (
               <>
                 <span className="oms-tooltip-grid-label">Steps:</span>
-                <span className="oms-tooltip-grid-value">1–{model.constraints.steps.max} (default {model.constraints.steps.default})</span>
+                <span className="oms-tooltip-grid-value">
+                  1–{model.constraints.steps.max} (default {model.constraints.steps.default})
+                </span>
               </>
             )}
             {model.constraints.aspectRatios && model.constraints.aspectRatios.length > 0 && (
               <>
                 <span className="oms-tooltip-grid-label">Aspects:</span>
-                <span className="oms-tooltip-grid-value">{formatAspectRatios(model.constraints.aspectRatios)}</span>
+                <span className="oms-tooltip-grid-value">
+                  {formatAspectRatios(model.constraints.aspectRatios)}
+                </span>
               </>
             )}
             {model.constraints.resolutions && model.constraints.resolutions.length > 0 && (
               <>
                 <span className="oms-tooltip-grid-label">Resolutions:</span>
-                <span className="oms-tooltip-grid-value">{formatResolutions(model.constraints.resolutions)}</span>
+                <span className="oms-tooltip-grid-value">
+                  {formatResolutions(model.constraints.resolutions)}
+                </span>
               </>
             )}
           </div>
@@ -159,7 +222,9 @@ function renderImageContent(model: AnyModel) {
       )}
       {model.supportsWebSearch && (
         <div className="oms-tooltip-pills">
-          <span className="oms-pill oms-pill-web-search"><Search className="oms-icon" /> Web Search</span>
+          <span className="oms-pill oms-pill-web-search">
+            <Search className="oms-icon" /> Web Search
+          </span>
         </div>
       )}
     </>
@@ -177,33 +242,43 @@ function renderVideoContent(model: AnyModel) {
             {model.constraints.durations && model.constraints.durations.length > 0 && (
               <>
                 <span className="oms-tooltip-grid-label">Duration:</span>
-                <span className="oms-tooltip-grid-value">{formatDuration(model.constraints.durations)}</span>
+                <span className="oms-tooltip-grid-value">
+                  {formatDuration(model.constraints.durations)}
+                </span>
               </>
             )}
             {model.constraints.resolutions && model.constraints.resolutions.length > 0 && (
               <>
                 <span className="oms-tooltip-grid-label">Resolutions:</span>
-                <span className="oms-tooltip-grid-value">{formatResolutions(model.constraints.resolutions)}</span>
+                <span className="oms-tooltip-grid-value">
+                  {formatResolutions(model.constraints.resolutions)}
+                </span>
               </>
             )}
             {model.constraints.aspect_ratios && model.constraints.aspect_ratios.length > 0 && (
               <>
                 <span className="oms-tooltip-grid-label">Aspects:</span>
-                <span className="oms-tooltip-grid-value">{formatAspectRatios(model.constraints.aspect_ratios)}</span>
+                <span className="oms-tooltip-grid-value">
+                  {formatAspectRatios(model.constraints.aspect_ratios)}
+                </span>
               </>
             )}
           </div>
           {model.constraints.audio && (
             <div className="oms-tooltip-pills">
-              <span className="oms-pill oms-pill-audio"><Volume2 className="oms-icon" /> Audio</span>
+              <span className="oms-pill oms-pill-audio">
+                <Volume2 className="oms-icon" /> Audio
+              </span>
             </div>
           )}
         </div>
       )}
       {model.model_sets && model.model_sets.length > 0 && (
         <div className="oms-tooltip-pills">
-          {model.model_sets.map(s => (
-            <span key={s} className="oms-pill">{s}</span>
+          {model.model_sets.map((s) => (
+            <span key={s} className="oms-pill">
+              {s}
+            </span>
           ))}
         </div>
       )}
@@ -219,7 +294,9 @@ function renderInpaintContent(model: AnyModel) {
       <div className="oms-tooltip-section">
         <div className="oms-tooltip-grid">
           <span className="oms-tooltip-grid-label">Price:</span>
-          <span className="oms-tooltip-grid-value">{formatFlatPrice(model.pricing.generation)}</span>
+          <span className="oms-tooltip-grid-value">
+            {formatFlatPrice(model.pricing.generation)}
+          </span>
         </div>
       </div>
       {model.constraints && (
@@ -228,7 +305,9 @@ function renderInpaintContent(model: AnyModel) {
             {model.constraints.aspectRatios && model.constraints.aspectRatios.length > 0 && (
               <>
                 <span className="oms-tooltip-grid-label">Aspects:</span>
-                <span className="oms-tooltip-grid-value">{formatAspectRatios(model.constraints.aspectRatios)}</span>
+                <span className="oms-tooltip-grid-value">
+                  {formatAspectRatios(model.constraints.aspectRatios)}
+                </span>
               </>
             )}
             {model.constraints.combineImages && (
@@ -255,13 +334,17 @@ function renderEmbeddingContent(model: AnyModel) {
             {model.pricing.input != null && (
               <>
                 <span className="oms-tooltip-grid-label">Input:</span>
-                <span className="oms-tooltip-grid-value">{formatPrice(model.pricing.input)} / 1M</span>
+                <span className="oms-tooltip-grid-value">
+                  {formatPrice(model.pricing.input)} / 1M
+                </span>
               </>
             )}
             {model.pricing.output != null && (
               <>
                 <span className="oms-tooltip-grid-label">Output:</span>
-                <span className="oms-tooltip-grid-value">{formatPrice(model.pricing.output)} / 1M</span>
+                <span className="oms-tooltip-grid-value">
+                  {formatPrice(model.pricing.output)} / 1M
+                </span>
               </>
             )}
           </div>
@@ -304,7 +387,9 @@ function renderAsrContent(model: AnyModel) {
         <div className="oms-tooltip-section">
           <div className="oms-tooltip-grid">
             <span className="oms-tooltip-grid-label">Price:</span>
-            <span className="oms-tooltip-grid-value">{formatAudioPrice(model.pricing.per_audio_second)}</span>
+            <span className="oms-tooltip-grid-value">
+              {formatAudioPrice(model.pricing.per_audio_second)}
+            </span>
           </div>
         </div>
       )}
@@ -320,7 +405,9 @@ function renderUpscaleContent(model: AnyModel) {
       <div className="oms-tooltip-section">
         <div className="oms-tooltip-grid">
           <span className="oms-tooltip-grid-label">Price:</span>
-          <span className="oms-tooltip-grid-value">{formatFlatPrice(model.pricing.generation)}</span>
+          <span className="oms-tooltip-grid-value">
+            {formatFlatPrice(model.pricing.generation)}
+          </span>
         </div>
       </div>
     </>
@@ -329,15 +416,24 @@ function renderUpscaleContent(model: AnyModel) {
 
 function renderTooltipContent(model: AnyModel) {
   switch (model.type) {
-    case 'text': return renderTextContent(model)
-    case 'image': return renderImageContent(model)
-    case 'video': return renderVideoContent(model)
-    case 'inpaint': return renderInpaintContent(model)
-    case 'embedding': return renderEmbeddingContent(model)
-    case 'tts': return renderTtsContent(model)
-    case 'asr': return renderAsrContent(model)
-    case 'upscale': return renderUpscaleContent(model)
-    default: return null
+    case 'text':
+      return renderTextContent(model)
+    case 'image':
+      return renderImageContent(model)
+    case 'video':
+      return renderVideoContent(model)
+    case 'inpaint':
+      return renderInpaintContent(model)
+    case 'embedding':
+      return renderEmbeddingContent(model)
+    case 'tts':
+      return renderTtsContent(model)
+    case 'asr':
+      return renderAsrContent(model)
+    case 'upscale':
+      return renderUpscaleContent(model)
+    default:
+      return null
   }
 }
 
@@ -359,12 +455,15 @@ export function ModelTooltip({ model, children }: ModelTooltipProps) {
     closeTimer.current = setTimeout(() => setVisible(false), 100)
   }, [])
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Escape' && visible) {
-      clearTimeout(openTimer.current)
-      setVisible(false)
-    }
-  }, [visible])
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Escape' && visible) {
+        clearTimeout(openTimer.current)
+        setVisible(false)
+      }
+    },
+    [visible],
+  )
 
   // Position the tooltip to the right of the trigger
   useIsomorphicLayoutEffect(() => {
@@ -417,6 +516,12 @@ export function ModelTooltip({ model, children }: ModelTooltipProps) {
 
   return (
     <>
+      {/*
+        Tooltip trigger wrapper. The events are passive hover/focus tooltip
+        reveal/dismiss handlers with no activation semantics; the inner child
+        is the actual focusable/clickable element (cmdk item).
+      */}
+      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
       <div
         ref={triggerRef}
         onPointerEnter={show}
@@ -429,26 +534,25 @@ export function ModelTooltip({ model, children }: ModelTooltipProps) {
       >
         {children}
       </div>
-      {visible && createPortal(
-        <div
-          ref={contentRef}
-          id={tooltipId}
-          role="tooltip"
-          className="oms-hover-content"
-          onPointerEnter={show}
-          onPointerLeave={hide}
-        >
-          <div className="oms-flex-col oms-gap-2">
-            <h4 className="oms-tooltip-title">{model.name}</h4>
-            {renderDeprecationWarning(model)}
-            {sharedBadges && (
-              <div className="oms-tooltip-pills">{sharedBadges}</div>
-            )}
-            {renderTooltipContent(model)}
-          </div>
-        </div>,
-        document.body
-      )}
+      {visible &&
+        createPortal(
+          <div
+            ref={contentRef}
+            id={tooltipId}
+            role="tooltip"
+            className="oms-hover-content"
+            onPointerEnter={show}
+            onPointerLeave={hide}
+          >
+            <div className="oms-flex-col oms-gap-2">
+              <h4 className="oms-tooltip-title">{model.name}</h4>
+              {renderDeprecationWarning(model)}
+              {sharedBadges && <div className="oms-tooltip-pills">{sharedBadges}</div>}
+              {renderTooltipContent(model)}
+            </div>
+          </div>,
+          document.body,
+        )}
     </>
   )
 }

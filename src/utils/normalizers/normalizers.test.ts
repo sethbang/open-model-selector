@@ -13,7 +13,7 @@ import {
   inferTypeFromId,
   MODEL_ID_TYPE_PATTERNS,
 } from './index'
-import { toNum, extractBaseFields } from './index'
+import { toNum, extractBaseFields, toBool, toStr } from './index'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -87,6 +87,56 @@ describe('toNum', () => {
 })
 
 // ═══════════════════════════════════════════════════════════════════════════
+// toBool — strict boolean coercion
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('toBool', () => {
+  it('passes through actual booleans', () => {
+    expect(toBool(true)).toBe(true)
+    expect(toBool(false)).toBe(false)
+  })
+
+  it('returns undefined for null / undefined', () => {
+    expect(toBool(null)).toBeUndefined()
+    expect(toBool(undefined)).toBeUndefined()
+  })
+
+  it('returns undefined for non-boolean values (no coercion)', () => {
+    // Strict: don't coerce truthy/falsy — callers want "yes this is a boolean".
+    expect(toBool(0)).toBeUndefined()
+    expect(toBool(1)).toBeUndefined()
+    expect(toBool('true')).toBeUndefined()
+    expect(toBool('')).toBeUndefined()
+    expect(toBool({})).toBeUndefined()
+    expect(toBool({ enabled: true })).toBeUndefined()
+    expect(toBool([])).toBeUndefined()
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// toStr — strict string coercion
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('toStr', () => {
+  it('passes through actual strings', () => {
+    expect(toStr('hello')).toBe('hello')
+    expect(toStr('')).toBe('')
+  })
+
+  it('returns undefined for null / undefined', () => {
+    expect(toStr(null)).toBeUndefined()
+    expect(toStr(undefined)).toBeUndefined()
+  })
+
+  it('returns undefined for non-string values (no coercion)', () => {
+    expect(toStr(42)).toBeUndefined()
+    expect(toStr(true)).toBeUndefined()
+    expect(toStr({})).toBeUndefined()
+    expect(toStr([])).toBeUndefined()
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
 // defaultResponseExtractor
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -131,9 +181,7 @@ describe('extractBaseFields', () => {
   })
 
   it('extracts name from spec.name (Venice)', () => {
-    const result = extractBaseFields(
-      { id: 'x', model_spec: { name: 'Venice Name' } },
-    )
+    const result = extractBaseFields({ id: 'x', model_spec: { name: 'Venice Name' } })
     expect(result.name).toBe('Venice Name')
   })
 
@@ -185,6 +233,37 @@ describe('extractBaseFields', () => {
   it('always sets is_favorite to false', () => {
     const result = extractBaseFields({ id: 'x' })
     expect(result.is_favorite).toBe(false)
+  })
+
+  it('ignores any is_favorite value sent by the API (client-side overlay only)', () => {
+    // If an API response somehow includes is_favorite, the normalizer must
+    // discard it — favorites are a client-side overlay managed via localStorage.
+    const result = extractBaseFields({ id: 'x', is_favorite: true } as Record<string, unknown>)
+    expect(result.is_favorite).toBe(false)
+  })
+
+  it('slash-in-id wins over owned_by for provider (intentional OpenRouter behavior)', () => {
+    // Pinning current behavior: when an id contains "/", the leading segment is
+    // used regardless of owned_by. This is how OpenRouter's provider attribution
+    // works. Any future change to prefer owned_by must update this test.
+    const result = extractBaseFields({ id: 'anthropic/claude-3', owned_by: 'openrouter' })
+    expect(result.provider).toBe('anthropic')
+  })
+
+  it('rejects non-string privacy values (strict guard, not coerced)', () => {
+    const result = extractBaseFields({
+      id: 'x',
+      model_spec: { privacy: 'public' as unknown as 'private' },
+    })
+    expect(result.privacy).toBeUndefined()
+  })
+
+  it('rejects malformed deprecation shapes (missing string date)', () => {
+    const result = extractBaseFields({
+      id: 'x',
+      model_spec: { deprecation: { date: 12345 as unknown as string } },
+    })
+    expect(result.deprecation).toBeUndefined()
   })
 })
 
@@ -462,6 +541,38 @@ describe('normalizeTextModel', () => {
     })
     expect(result.pricing.cache_input).toBeCloseTo(0.5 / 1_000_000)
     expect(result.pricing.cache_write).toBeCloseTo(0.75 / 1_000_000)
+  })
+
+  it('extracts Venice supportsMultipleImages capability', () => {
+    const result = normalizeTextModel(
+      veniceRaw('x', 'text', {
+        capabilities: { supportsMultipleImages: false, supportsVision: true },
+      }),
+    )
+    expect(result.capabilities?.supportsMultipleImages).toBe(false)
+    expect(result.capabilities?.supportsVision).toBe(true)
+  })
+
+  it('rejects non-boolean capability values instead of unsafe-casting them', () => {
+    // If a provider returns `{ supportsVision: { enabled: true } }` instead of
+    // a plain boolean, we must not surface it as `true`. The strict toBool
+    // guard returns undefined and the rendering layer treats that as "absent".
+    const result = normalizeTextModel({
+      id: 'weird-shape',
+      model_spec: {
+        capabilities: {
+          supportsVision: { enabled: true },
+          optimizedForCode: 1,
+          quantization: { type: 'fp8' },
+          supportsReasoning: true,
+        },
+      },
+    })
+    expect(result.capabilities?.supportsVision).toBeUndefined()
+    expect(result.capabilities?.optimizedForCode).toBeUndefined()
+    expect(result.capabilities?.quantization).toBeUndefined()
+    // Actual booleans still pass through
+    expect(result.capabilities?.supportsReasoning).toBe(true)
   })
 
   it('reads OpenRouter cache pricing (input_cache_read / input_cache_write)', () => {

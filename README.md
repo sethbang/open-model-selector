@@ -364,18 +364,40 @@ The `queryParams` prop is appended to the `/models` endpoint URL as query string
 
 The library supports 8 model types, each with its own TypeScript interface extending `BaseModel`:
 
-| Type          | Interface        | Key Fields                                                                                                                                                             |
-| ------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `"text"`      | `TextModel`      | `pricing.prompt`, `pricing.completion`, `pricing.cache_input`, `pricing.cache_write`, `context_length`, `capabilities`, `constraints.temperature`, `constraints.top_p` |
-| `"image"`     | `ImageModel`     | `pricing.generation`, `pricing.resolutions`, `constraints.aspectRatios`, `constraints.resolutions`, `supportsWebSearch`                                                |
-| `"video"`     | `VideoModel`     | `constraints.resolutions`, `constraints.durations`, `constraints.aspect_ratios`, `model_sets`                                                                          |
-| `"inpaint"`   | `InpaintModel`   | `pricing.generation`, `constraints.aspectRatios`, `constraints.combineImages`                                                                                          |
-| `"embedding"` | `EmbeddingModel` | `pricing.input`, `pricing.output`                                                                                                                                      |
-| `"tts"`       | `TtsModel`       | `pricing.input`, `voices`                                                                                                                                              |
-| `"asr"`       | `AsrModel`       | `pricing.per_audio_second`                                                                                                                                             |
-| `"upscale"`   | `UpscaleModel`   | `pricing.generation`                                                                                                                                                   |
+| Type          | Interface        | Key Fields                                                                                                                                                              |
+| ------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `"text"`      | `TextModel`      | `pricing.prompt`, `pricing.completion`, `pricing.cache_input`, `pricing.cache_write`, `context_length?`, `capabilities`, `constraints.temperature`, `constraints.top_p` |
+| `"image"`     | `ImageModel`     | `pricing.generation`, `pricing.resolutions`, `constraints.aspectRatios`, `constraints.resolutions`, `supportsWebSearch`                                                 |
+| `"video"`     | `VideoModel`     | `constraints.resolutions`, `constraints.durations`, `constraints.aspect_ratios`, `model_sets`                                                                           |
+| `"inpaint"`   | `InpaintModel`   | `pricing.generation`, `constraints.aspectRatios`, `constraints.combineImages`                                                                                           |
+| `"embedding"` | `EmbeddingModel` | `pricing.input`, `pricing.output`                                                                                                                                       |
+| `"tts"`       | `TtsModel`       | `pricing.input`, `voices`                                                                                                                                               |
+| `"asr"`       | `AsrModel`       | `pricing.per_audio_second`                                                                                                                                              |
+| `"upscale"`   | `UpscaleModel`   | `pricing.generation`                                                                                                                                                    |
 
 The union type `AnyModel` represents any of the above.
+
+> **Cache pricing field aliases:** `normalizeTextModel` accepts both `pricing.cache_input` / `pricing.cache_write` (Venice, many providers) and OpenRouter's `pricing.input_cache_read` / `pricing.input_cache_write`. Whichever pair is present is resolved into `TextPricing.cache_input` and `TextPricing.cache_write`.
+>
+> **`context_length` is `number | undefined`** — missing sources return `undefined` rather than a `0` sentinel. Branch on `model.context_length != null && model.context_length > 0` when reading.
+
+#### `TextCapabilities` fields
+
+All fields are optional booleans (unless noted) and only populated when the source API advertises them. Non-boolean inputs are rejected (resolve to `undefined`) — see `toBool`.
+
+| Field                     | Description                                                                             |
+| ------------------------- | --------------------------------------------------------------------------------------- |
+| `optimizedForCode`        | Model is specifically tuned for code generation / software engineering                  |
+| `supportsVision`          | Can accept image inputs                                                                 |
+| `supportsMultipleImages`  | Vision model accepts more than one image per request (Venice)                           |
+| `supportsReasoning`       | Emits / benefits from explicit reasoning traces (e.g. `<think>` blocks)                 |
+| `supportsFunctionCalling` | Supports function / tool calling                                                        |
+| `supportsResponseSchema`  | Accepts a JSON schema constraint on the response                                        |
+| `supportsLogProbs`        | Can return token log-probabilities                                                      |
+| `supportsAudioInput`      | Accepts audio in the input                                                              |
+| `supportsVideoInput`      | Accepts video in the input                                                              |
+| `supportsWebSearch`       | Model can perform web search as part of its response                                    |
+| `quantization`            | Quantization format string (`"fp4"`, `"fp8"`, `"fp16"`, `"int4"`, `"not-available"`, …) |
 
 The `BaseModel` interface includes these fields shared by all types:
 
@@ -692,10 +714,13 @@ inferTypeFromId('gpt-4o') // undefined (no match → caller defaults to "text")
 
 #### Low-Level Helpers
 
-| Function            | Signature                               | Description                                                                                                                                                                            |
-| ------------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `extractBaseFields` | `(raw, type) → Omit<BaseModel, 'type'>` | Extracts shared `BaseModel` fields from a raw API object. Handles both Venice's nested `model_spec` format and flat top-level fields. Useful when writing custom per-type normalizers. |
-| `toNum`             | `(v: unknown) → number \| undefined`    | Safely coerces an unknown value to a number. Returns `undefined` for `undefined`, `null`, empty strings, and `NaN`. Used internally by all normalizers.                                |
+| Function            | Signature                               | Description                                                                                                                                                                                              |
+| ------------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `extractBaseFields` | `(raw, type) → Omit<BaseModel, 'type'>` | Extracts shared `BaseModel` fields from a raw API object. Handles both Venice's nested `model_spec` format and flat top-level fields. Useful when writing custom per-type normalizers.                   |
+| `toNum`             | `(v: unknown) → number \| undefined`    | Safely coerces an unknown value to a number. Returns `undefined` for `undefined`, `null`, empty strings, and `NaN`. Used internally by all normalizers.                                                  |
+| `toBool`            | `(v: unknown) → boolean \| undefined`   | Strict boolean guard. Returns the value only when it is a real `boolean`; any other shape (`0`, `"true"`, `{ enabled: true }`, arrays) returns `undefined`. Used to reject mis-shaped capability fields. |
+| `toStr`             | `(v: unknown) → string \| undefined`    | Strict string guard. Returns the value only when it is a real `string`; other types return `undefined`. No coercion (`42` does not become `"42"`).                                                       |
+| `toStrArray`        | `(v: unknown) → string[] \| undefined`  | Strict string-array guard. Returns the array only when every element is a `string`; otherwise `undefined`. Useful for safely reading `string[]` fields from untrusted API shapes.                        |
 
 ### Helper Utilities
 
@@ -786,6 +811,17 @@ The component implements the [ARIA combobox pattern](https://www.w3.org/WAI/ARIA
 - Search input is labeled (`aria-label="Search models"`)
 - Loading state uses `role="status"` with `aria-live="polite"`; errors use `role="alert"`
 
+**Sort button:**
+
+- `aria-label` describes the **current** sort state (e.g. `"Sort: name (A–Z)"` or `"Sort: newest first"`), not the next action — screen readers announce what is active, not what pressing will do
+- `aria-pressed` is `true` when the list is sorted by newest-first
+
+**Type filter chip** (when present):
+
+- `aria-haspopup="menu"` + `aria-expanded` on the chip
+- Menu options use `role="menuitemradio"` with `aria-checked` reflecting the active filter
+- Chip `aria-label` reflects the current filter (e.g. `"Filter: Image"`, `"Filter: All types"`)
+
 **Keyboard Navigation** (provided by [cmdk](https://cmdk.paco.me/) and [Radix Popover](https://www.radix-ui.com/primitives/docs/components/popover)):
 
 - `↑` / `↓` — navigate the model list
@@ -797,6 +833,11 @@ The component implements the [ARIA combobox pattern](https://www.w3.org/WAI/ARIA
 
 - Model detail tooltips use `role="tooltip"` with a unique `id` linked via `aria-describedby` on the trigger
 - Tooltips appear on both hover and keyboard focus (`onFocus` / `onBlur`), and dismiss with `Escape`
+
+**Motion:**
+
+- The loading spinner respects `@media (prefers-reduced-motion: reduce)` and pulses in place instead of rotating
+- No other animations or transitions are required for core functionality
 
 ---
 

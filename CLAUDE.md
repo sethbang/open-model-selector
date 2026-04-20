@@ -9,7 +9,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | Build (dual CJS/ESM + types, validates `"use client"` banner)             | `npm run build`                                                |
 | Watch rebuild                                                             | `npm run dev`                                                  |
 | Typecheck only                                                            | `npm run typecheck`                                            |
+| Lint (ESLint flat config, blocks on any warning)                          | `npm run lint`                                                 |
+| Format with Prettier (writes files)                                       | `npm run format`                                               |
+| Format check (no write)                                                   | `npm run format:check`                                         |
 | Run all Vitest projects (unit + component + storybook/browser)            | `npm test`                                                     |
+| Run coverage (gates PRs via thresholds in `vitest.config.ts`)             | `npm run test:coverage`                                        |
 | Run a single test file                                                    | `npx vitest run src/utils/format.test.ts`                      |
 | Filter a single test by name                                              | `npx vitest run -t "formats per-token price"`                  |
 | Single Vitest project                                                     | `npx vitest run --project unit` (or `component` / `storybook`) |

@@ -4,13 +4,12 @@
 
 ### An accessible, themeable React model-selector combobox for any OpenAI-compatible API — with first-class [Venice.ai](https://venice.ai) support.
 
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/sethbang/open-model-selector/main/screenshots/main.png" alt="open-model-selector screenshot showing auto-discovery, code snippet, and the model selector popover" width="50%" />
 </p>
 
 > Drop it into your app to let users search, filter, and pick from Venice's frontier model catalog (GPT-5.2, Claude Opus 4.6, Gemini 3 Pro, GLM 4.7, Qwen 3 Coder 480B, and more) or any other `/v1/models` endpoint.
-<br />
+> <br />
 
 ## Table of Contents
 
@@ -46,7 +45,6 @@
 
 ### Check out the [demo here!](https://sethbang.github.io/open-model-selector-demo/)
 
-
 ## Installation
 
 ### Install the package
@@ -67,12 +65,12 @@ pnpm add open-model-selector
 
 The following peer dependencies are required and must be installed separately:
 
-| Package | Version |
-| --- | --- |
-| `react` | `^18.0.0 \|\| ^19.0.0` |
-| `react-dom` | `^18.0.0 \|\| ^19.0.0` |
-| `@radix-ui/react-popover` | `^1.0.0` |
-| `cmdk` | `^1.0.0` |
+| Package                   | Version                |
+| ------------------------- | ---------------------- |
+| `react`                   | `^18.0.0 \|\| ^19.0.0` |
+| `react-dom`               | `^18.0.0 \|\| ^19.0.0` |
+| `@radix-ui/react-popover` | `^1.0.0`               |
+| `cmdk`                    | `^1.0.0`               |
 
 Install the non-React peer dependencies (React and React DOM are typically already in your project):
 
@@ -92,7 +90,7 @@ pnpm add @radix-ui/react-popover cmdk
 You must import the stylesheet for the component to render correctly:
 
 ```tsx
-import "open-model-selector/styles.css";
+import 'open-model-selector/styles.css'
 ```
 
 > Import this once in your app's entry point or layout component.
@@ -110,13 +108,13 @@ Node.js **>=18.0.0** is required.
 The simplest way to use the component — point it at [Venice.ai](https://venice.ai) (or any OpenAI-compatible endpoint) and it handles the rest:
 
 ```tsx
-import { useState } from "react"
-import { ModelSelector } from "open-model-selector"
-import type { AnyModel } from "open-model-selector"
-import "open-model-selector/styles.css"
+import { useState } from 'react'
+import { ModelSelector } from 'open-model-selector'
+import type { AnyModel } from 'open-model-selector'
+import 'open-model-selector/styles.css'
 
 function App() {
-  const [modelId, setModelId] = useState<string>("")
+  const [modelId, setModelId] = useState<string>('')
   const [selectedModel, setSelectedModel] = useState<AnyModel | null>(null)
 
   return (
@@ -140,17 +138,17 @@ function App() {
 Pass models directly when you already have them or need full control over the list. Here's an example using Venice.ai's frontier models:
 
 ```tsx
-import { useState } from "react"
-import { ModelSelector } from "open-model-selector"
-import type { TextModel } from "open-model-selector"
-import "open-model-selector/styles.css"
+import { useState } from 'react'
+import { ModelSelector } from 'open-model-selector'
+import type { TextModel } from 'open-model-selector'
+import 'open-model-selector/styles.css'
 
 const models: TextModel[] = [
   {
-    id: "zai-org-glm-4.7",
-    name: "GLM 4.7",
-    provider: "venice.ai",
-    type: "text",
+    id: 'zai-org-glm-4.7',
+    name: 'GLM 4.7',
+    provider: 'venice.ai',
+    type: 'text',
     created: 1766534400,
     is_favorite: false,
     context_length: 198000,
@@ -162,10 +160,10 @@ const models: TextModel[] = [
     pricing: { prompt: 0.00000055, completion: 0.00000265 },
   },
   {
-    id: "qwen3-coder-480b-a35b-instruct",
-    name: "Qwen 3 Coder 480B",
-    provider: "venice.ai",
-    type: "text",
+    id: 'qwen3-coder-480b-a35b-instruct',
+    name: 'Qwen 3 Coder 480B',
+    provider: 'venice.ai',
+    type: 'text',
     created: 1745903059,
     is_favorite: false,
     context_length: 256000,
@@ -177,10 +175,10 @@ const models: TextModel[] = [
     pricing: { prompt: 0.00000075, completion: 0.000003 },
   },
   {
-    id: "claude-opus-4-6",
-    name: "Claude Opus 4.6",
-    provider: "venice.ai",
-    type: "text",
+    id: 'claude-opus-4-6',
+    name: 'Claude Opus 4.6',
+    provider: 'venice.ai',
+    type: 'text',
     created: 1770249600,
     is_favorite: false,
     context_length: 1000000,
@@ -195,7 +193,7 @@ const models: TextModel[] = [
 ]
 
 function App() {
-  const [modelId, setModelId] = useState<string>("zai-org-glm-4.7")
+  const [modelId, setModelId] = useState<string>('zai-org-glm-4.7')
 
   return (
     <ModelSelector
@@ -215,19 +213,31 @@ function App() {
 Type-filtered convenience components for common model categories:
 
 ```tsx
-import { useState } from "react"
-import { TextModelSelector, ImageModelSelector, VideoModelSelector } from "open-model-selector"
-import "open-model-selector/styles.css" // Required — same stylesheet as <ModelSelector>
+import { useState } from 'react'
+import { TextModelSelector, ImageModelSelector, VideoModelSelector } from 'open-model-selector'
+import 'open-model-selector/styles.css' // Required — same stylesheet as <ModelSelector>
 
 function App() {
-  const [model, setModel] = useState("")
+  const [model, setModel] = useState('')
 
   return (
     <>
       {/* These are pre-filtered wrappers around <ModelSelector type="..."> */}
-      <TextModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={(id) => setModel(id)} />
-      <ImageModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={(id) => setModel(id)} />
-      <VideoModelSelector baseUrl="https://api.venice.ai/api/v1" value={model} onChange={(id) => setModel(id)} />
+      <TextModelSelector
+        baseUrl="https://api.venice.ai/api/v1"
+        value={model}
+        onChange={(id) => setModel(id)}
+      />
+      <ImageModelSelector
+        baseUrl="https://api.venice.ai/api/v1"
+        value={model}
+        onChange={(id) => setModel(id)}
+      />
+      <VideoModelSelector
+        baseUrl="https://api.venice.ai/api/v1"
+        value={model}
+        onChange={(id) => setModel(id)}
+      />
     </>
   )
 }
@@ -245,33 +255,36 @@ The primary component. Renders an accessible combobox popover for searching and 
 
 The component forwards `ref` to the root `<div>`.
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `models` | `AnyModel[]` | `[]` | Static list of models. When non-empty, disables internal API fetch. |
-| `baseUrl` | `string` | — | Base URL for the OpenAI-compatible API (e.g., `"https://api.venice.ai/api/v1"`). |
-| `apiKey` | `string` | — | API key for authentication. ⚠️ Visible in browser DevTools — use a backend proxy in production. |
-| `type` | `ModelType` | — | Filter to a specific model type (`"text"`, `"image"`, `"video"`, etc.). |
-| `queryParams` | `Record<string, string>` | `{}` | Query parameters appended to the `/models` URL as a query string. See [Query Parameters](#query-parameters) below. |
-| `fetcher` | `(url: string, init?: RequestInit) => Promise<Response>` | `fetch` | Custom fetch function for SSR, proxies, or testing. |
-| `responseExtractor` | `ResponseExtractor` | `defaultResponseExtractor` | Custom function to extract the model array from the API response. |
-| `normalizer` | `ModelNormalizer` | `defaultModelNormalizer` | Custom function to normalize each raw model object into an `AnyModel`. |
-| `value` | `string` | — | Currently selected model ID (controlled). |
-| `onChange` | `(modelId: string, model: AnyModel \| null) => void` | — | Callback when a model is selected. Receives the model ID and the full model object (or `null` for the system-default sentinel). If omitted, a dev-mode warning is logged. |
-| `onToggleFavorite` | `(modelId: string) => void` | — | Callback for favorite toggle. If omitted, favorites use localStorage. |
-| `placeholder` | `string` | `"Select model..."` | Placeholder text when no model is selected. |
-| `sortOrder` | `"name" \| "created"` | — | Controlled sort order. If omitted, internal state is used. |
-| `onSortChange` | `(order: "name" \| "created") => void` | — | Callback when sort changes. |
-| `side` | `"top" \| "bottom" \| "left" \| "right"` | `"bottom"` | Popover placement relative to the trigger. |
-| `className` | `string` | — | Additional CSS class(es) for the root element. |
-| `storageKey` | `string` | `"open-model-selector-favorites"` | localStorage key for persisting favorites (uncontrolled mode). |
-| `showSystemDefault` | `boolean` | `true` | Whether to show the "Use System Default" option. |
-| `showDeprecated` | `boolean` | `true` | Whether to show deprecated models. When `false`, past-date deprecated models are hidden. |
-| `disabled` | `boolean` | `false` | When true, prevents opening the selector and dims the trigger button. |
+| Prop                 | Type                                                     | Default                           | Description                                                                                                                                                               |
+| -------------------- | -------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `models`             | `AnyModel[]`                                             | `[]`                              | Static list of models. When non-empty, disables internal API fetch.                                                                                                       |
+| `baseUrl`            | `string`                                                 | —                                 | Base URL for the OpenAI-compatible API (e.g., `"https://api.venice.ai/api/v1"`).                                                                                          |
+| `apiKey`             | `string`                                                 | —                                 | API key for authentication. ⚠️ Visible in browser DevTools — use a backend proxy in production.                                                                           |
+| `type`               | `ModelType`                                              | —                                 | Filter to a specific model type (`"text"`, `"image"`, `"video"`, etc.).                                                                                                   |
+| `queryParams`        | `Record<string, string>`                                 | `{}`                              | Query parameters appended to the `/models` URL as a query string. See [Query Parameters](#query-parameters) below.                                                        |
+| `fetcher`            | `(url: string, init?: RequestInit) => Promise<Response>` | `fetch`                           | Custom fetch function for SSR, proxies, or testing.                                                                                                                       |
+| `responseExtractor`  | `ResponseExtractor`                                      | `defaultResponseExtractor`        | Custom function to extract the model array from the API response.                                                                                                         |
+| `normalizer`         | `ModelNormalizer`                                        | `defaultModelNormalizer`          | Custom function to normalize each raw model object into an `AnyModel`.                                                                                                    |
+| `value`              | `string`                                                 | —                                 | Currently selected model ID (controlled).                                                                                                                                 |
+| `onChange`           | `(modelId: string, model: AnyModel \| null) => void`     | —                                 | Callback when a model is selected. Receives the model ID and the full model object (or `null` for the system-default sentinel). If omitted, a dev-mode warning is logged. |
+| `onToggleFavorite`   | `(modelId: string) => void`                              | —                                 | Callback for favorite toggle. If omitted, favorites use localStorage.                                                                                                     |
+| `placeholder`        | `string`                                                 | `"Select model..."`               | Placeholder text when no model is selected.                                                                                                                               |
+| `sortOrder`          | `"name" \| "created"`                                    | —                                 | Controlled sort order. If omitted, internal state is used.                                                                                                                |
+| `onSortChange`       | `(order: "name" \| "created") => void`                   | —                                 | Callback when sort changes.                                                                                                                                               |
+| `side`               | `"top" \| "bottom" \| "left" \| "right"`                 | `"bottom"`                        | Popover placement relative to the trigger.                                                                                                                                |
+| `className`          | `string`                                                 | —                                 | Additional CSS class(es) for the root element.                                                                                                                            |
+| `storageKey`         | `string`                                                 | `"open-model-selector-favorites"` | localStorage key for persisting favorites (uncontrolled mode).                                                                                                            |
+| `showSystemDefault`  | `boolean`                                                | `true`                            | Whether to show the "Use System Default" option.                                                                                                                          |
+| `showDeprecated`     | `boolean`                                                | `true`                            | Whether to show deprecated models. When `false`, past-date deprecated models are hidden.                                                                                  |
+| `disabled`           | `boolean`                                                | `false`                           | When true, prevents opening the selector and dims the trigger button.                                                                                                     |
+| `typeFilter`         | `ModelType \| null`                                      | —                                 | Controlled in-menu type filter. If omitted, the component manages filter state internally.                                                                                |
+| `onTypeFilterChange` | `(next: ModelType \| null) => void`                      | —                                 | Callback fired when the user changes the in-menu type filter. Required for controlled mode.                                                                               |
+| `showTypeFilter`     | `boolean`                                                | —                                 | Force-hide the in-menu type filter chip. Auto-hidden when `type` is set or the catalog contains fewer than 2 types.                                                       |
 
 The library exports a sentinel constant for the system default option:
 
 ```ts
-import { SYSTEM_DEFAULT_VALUE } from "open-model-selector"
+import { SYSTEM_DEFAULT_VALUE } from 'open-model-selector'
 // SYSTEM_DEFAULT_VALUE === "system_default"
 ```
 
@@ -280,36 +293,37 @@ import { SYSTEM_DEFAULT_VALUE } from "open-model-selector"
 Fetches and normalizes models from an OpenAI-compatible API endpoint. Used internally by `<ModelSelector>` but available for building custom UIs on top of Venice.ai or any other provider.
 
 ```tsx
-import { useModels } from "open-model-selector"
+import { useModels } from 'open-model-selector'
 
 const { models, loading, error } = useModels({
-  baseUrl: "https://api.venice.ai/api/v1",
-  apiKey: "your-key",
-  type: "text",
+  baseUrl: 'https://api.venice.ai/api/v1',
+  apiKey: 'your-key',
+  type: 'text',
 })
 ```
 
 #### Props (`UseModelsProps`)
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `baseUrl` | `string` | — | Base URL for the API. If omitted, no fetch occurs. |
-| `apiKey` | `string` | — | Bearer token for authentication. |
-| `type` | `ModelType` | — | Client-side filter by model type. |
-| `queryParams` | `Record<string, string>` | `{}` | Query parameters appended to the `/models` URL. See [Query Parameters](#query-parameters) below. |
-| `fetcher` | `(url: string, init?: RequestInit) => Promise<Response>` | `fetch` | Custom fetch function. |
-| `responseExtractor` | `ResponseExtractor` | `defaultResponseExtractor` | Extracts model array from response JSON. |
-| `normalizer` | `ModelNormalizer` | `defaultModelNormalizer` | Normalizes each raw model into `AnyModel`. |
+| Prop                | Type                                                     | Default                    | Description                                                                                      |
+| ------------------- | -------------------------------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------ |
+| `baseUrl`           | `string`                                                 | —                          | Base URL for the API. If omitted, no fetch occurs.                                               |
+| `apiKey`            | `string`                                                 | —                          | Bearer token for authentication.                                                                 |
+| `type`              | `ModelType`                                              | —                          | Client-side filter by model type.                                                                |
+| `queryParams`       | `Record<string, string>`                                 | `{}`                       | Query parameters appended to the `/models` URL. See [Query Parameters](#query-parameters) below. |
+| `fetcher`           | `(url: string, init?: RequestInit) => Promise<Response>` | `fetch`                    | Custom fetch function.                                                                           |
+| `responseExtractor` | `ResponseExtractor`                                      | `defaultResponseExtractor` | Extracts model array from response JSON.                                                         |
+| `normalizer`        | `ModelNormalizer`                                        | `defaultModelNormalizer`   | Normalizes each raw model into `AnyModel`.                                                       |
 
 #### Return Value (`UseModelsResult`)
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `models` | `AnyModel[]` | Normalized model array. |
-| `loading` | `boolean` | `true` while fetching. |
-| `error` | `Error \| null` | Fetch or normalization error, if any. |
+| Field     | Type            | Description                           |
+| --------- | --------------- | ------------------------------------- |
+| `models`  | `AnyModel[]`    | Normalized model array.               |
+| `loading` | `boolean`       | `true` while fetching.                |
+| `error`   | `Error \| null` | Fetch or normalization error, if any. |
 
 > **Notes:**
+>
 > - Automatically cleans up with `AbortController` on unmount
 > - Re-fetches when `baseUrl`, `apiKey`, or `queryParams` change
 > - `fetcher`, `responseExtractor`, and `normalizer` are stored in refs (no memoization needed)
@@ -350,16 +364,16 @@ The `queryParams` prop is appended to the `/models` endpoint URL as query string
 
 The library supports 8 model types, each with its own TypeScript interface extending `BaseModel`:
 
-| Type | Interface | Key Fields |
-|------|-----------|------------|
-| `"text"` | `TextModel` | `pricing.prompt`, `pricing.completion`, `pricing.cache_input`, `pricing.cache_write`, `context_length`, `capabilities`, `constraints.temperature`, `constraints.top_p` |
-| `"image"` | `ImageModel` | `pricing.generation`, `pricing.resolutions`, `constraints.aspectRatios`, `constraints.resolutions`, `supportsWebSearch` |
-| `"video"` | `VideoModel` | `constraints.resolutions`, `constraints.durations`, `constraints.aspect_ratios`, `model_sets` |
-| `"inpaint"` | `InpaintModel` | `pricing.generation`, `constraints.aspectRatios`, `constraints.combineImages` |
-| `"embedding"` | `EmbeddingModel` | `pricing.input`, `pricing.output` |
-| `"tts"` | `TtsModel` | `pricing.input`, `voices` |
-| `"asr"` | `AsrModel` | `pricing.per_audio_second` |
-| `"upscale"` | `UpscaleModel` | `pricing.generation` |
+| Type          | Interface        | Key Fields                                                                                                                                                             |
+| ------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `"text"`      | `TextModel`      | `pricing.prompt`, `pricing.completion`, `pricing.cache_input`, `pricing.cache_write`, `context_length`, `capabilities`, `constraints.temperature`, `constraints.top_p` |
+| `"image"`     | `ImageModel`     | `pricing.generation`, `pricing.resolutions`, `constraints.aspectRatios`, `constraints.resolutions`, `supportsWebSearch`                                                |
+| `"video"`     | `VideoModel`     | `constraints.resolutions`, `constraints.durations`, `constraints.aspect_ratios`, `model_sets`                                                                          |
+| `"inpaint"`   | `InpaintModel`   | `pricing.generation`, `constraints.aspectRatios`, `constraints.combineImages`                                                                                          |
+| `"embedding"` | `EmbeddingModel` | `pricing.input`, `pricing.output`                                                                                                                                      |
+| `"tts"`       | `TtsModel`       | `pricing.input`, `voices`                                                                                                                                              |
+| `"asr"`       | `AsrModel`       | `pricing.per_audio_second`                                                                                                                                             |
+| `"upscale"`   | `UpscaleModel`   | `pricing.generation`                                                                                                                                                   |
 
 The union type `AnyModel` represents any of the above.
 
@@ -380,7 +394,7 @@ The `BaseModel` interface includes these fields shared by all types:
 - `deprecation?: { date: string }`
 
 ```tsx
-import type { TextModel, ImageModel, AnyModel, ModelType } from "open-model-selector"
+import type { TextModel, ImageModel, AnyModel, ModelType } from 'open-model-selector'
 ```
 
 The library also exports prop types for each specialized selector:
@@ -391,7 +405,7 @@ import type {
   TextModelSelectorProps,
   ImageModelSelectorProps,
   VideoModelSelectorProps,
-} from "open-model-selector"
+} from 'open-model-selector'
 ```
 
 > `TextModelSelectorProps`, `ImageModelSelectorProps`, and `VideoModelSelectorProps` are each `Omit<ModelSelectorProps, 'type'>` — identical to `ModelSelectorProps` with the `type` prop removed.
@@ -411,32 +425,32 @@ import type {
   TextModelSelectorProps,
   ImageModelSelectorProps,
   VideoModelSelectorProps,
-} from "open-model-selector"
+} from 'open-model-selector'
 
 // Hook types
-import type { UseModelsProps, UseModelsResult, FetchFn } from "open-model-selector"
+import type { UseModelsProps, UseModelsResult, FetchFn } from 'open-model-selector'
 
 // Base model types
-import type { ModelType, BaseModel, Deprecation, AnyModel } from "open-model-selector"
+import type { ModelType, BaseModel, Deprecation, AnyModel } from 'open-model-selector'
 
 // Text model types
-import type { TextModel, TextPricing, TextCapabilities, TextConstraints } from "open-model-selector"
+import type { TextModel, TextPricing, TextCapabilities, TextConstraints } from 'open-model-selector'
 
 // Image model types
-import type { ImageModel, ImagePricing, ImageConstraints } from "open-model-selector"
+import type { ImageModel, ImagePricing, ImageConstraints } from 'open-model-selector'
 
 // Video model types
-import type { VideoModel, VideoConstraints } from "open-model-selector"
+import type { VideoModel, VideoConstraints } from 'open-model-selector'
 
 // Other model types
-import type { InpaintModel, InpaintPricing, InpaintConstraints } from "open-model-selector"
-import type { EmbeddingModel, EmbeddingPricing } from "open-model-selector"
-import type { TtsModel, TtsPricing } from "open-model-selector"
-import type { AsrModel, AsrPricing } from "open-model-selector"
-import type { UpscaleModel, UpscalePricing } from "open-model-selector"
+import type { InpaintModel, InpaintPricing, InpaintConstraints } from 'open-model-selector'
+import type { EmbeddingModel, EmbeddingPricing } from 'open-model-selector'
+import type { TtsModel, TtsPricing } from 'open-model-selector'
+import type { AsrModel, AsrPricing } from 'open-model-selector'
+import type { UpscaleModel, UpscalePricing } from 'open-model-selector'
 
 // Normalizer types (also available from "open-model-selector/utils")
-import type { ModelNormalizer, ResponseExtractor } from "open-model-selector"
+import type { ModelNormalizer, ResponseExtractor } from 'open-model-selector'
 ```
 
 > **Tip:** `import type` statements are erased at compile time and are always safe in React Server Components, regardless of `"use client"` directives.
@@ -482,7 +496,7 @@ const myNormalizer: ModelNormalizer = (raw): AnyModel => ({
 The built-in `defaultResponseExtractor` handles `{ data: [...] }`, `{ models: [...] }`, and top-level arrays. For non-standard response shapes, provide a custom extractor:
 
 ```tsx
-import type { ResponseExtractor } from "open-model-selector"
+import type { ResponseExtractor } from 'open-model-selector'
 
 const myExtractor: ResponseExtractor = (body) => {
   // Your API returns { results: { items: [...] } }
@@ -490,7 +504,7 @@ const myExtractor: ResponseExtractor = (body) => {
   return results?.items ?? []
 }
 
-<ModelSelector
+;<ModelSelector
   baseUrl="https://my-api.com/v1"
   responseExtractor={myExtractor}
   value={model}
@@ -514,17 +528,17 @@ All CSS variables are scoped under `.oms-reset` and use the `--oms-` prefix — 
 
 **Key CSS variables:**
 
-| Variable | Default (Light) | Purpose |
-|----------|----------------|---------|
-| `--oms-background` | `0 0% 100%` | Background color |
-| `--oms-foreground` | `222.2 84% 4.9%` | Text color |
-| `--oms-primary` | `222.2 47.4% 11.2%` | Primary/action color |
-| `--oms-accent` | `210 40% 96.1%` | Hover/selection highlight |
-| `--oms-muted-foreground` | `215.4 16.3% 46.9%` | Subdued text |
-| `--oms-border` | `214.3 31.8% 91.4%` | Border color |
-| `--oms-destructive` | `0 84.2% 60.2%` | Error/destructive color |
-| `--oms-radius` | `0.5rem` | Border radius |
-| `--oms-popover-width` | `300px` | Popover width |
+| Variable                 | Default (Light)     | Purpose                   |
+| ------------------------ | ------------------- | ------------------------- |
+| `--oms-background`       | `0 0% 100%`         | Background color          |
+| `--oms-foreground`       | `222.2 84% 4.9%`    | Text color                |
+| `--oms-primary`          | `222.2 47.4% 11.2%` | Primary/action color      |
+| `--oms-accent`           | `210 40% 96.1%`     | Hover/selection highlight |
+| `--oms-muted-foreground` | `215.4 16.3% 46.9%` | Subdued text              |
+| `--oms-border`           | `214.3 31.8% 91.4%` | Border color              |
+| `--oms-destructive`      | `0 84.2% 60.2%`     | Error/destructive color   |
+| `--oms-radius`           | `0.5rem`            | Border radius             |
+| `--oms-popover-width`    | `300px`             | Popover width             |
 
 > **Important:** CSS variable values must be space-separated HSL triplets (e.g., `220 14% 96%`), **not** hex, rgb, or named colors. The component uses these values inside `hsl()` wrappers internally, following the Shadcn/ui convention. This allows alpha composition: `hsl(var(--oms-accent) / 0.5)`.
 >
@@ -574,22 +588,22 @@ import {
   formatDuration,
   formatResolutions,
   formatAspectRatios,
-} from "open-model-selector/utils"
+} from 'open-model-selector/utils'
 ```
 
 Usage examples:
 
 ```ts
-formatPrice("0.000003")       // "$3.00"  — per-token price × 1,000,000
-formatPrice(0.00003)           // "$30.00" — works with numbers too
-formatPrice(0)                 // "Free"
-formatPrice(undefined)         // "—"
-formatContextLength(128000)    // "128k"
-formatFlatPrice(0.04)          // "$0.04"
-formatAudioPrice(0.006)        // "$0.0060 / sec"
-formatDuration(["5", "10"])    // "5s – 10s"
-formatResolutions(["720p", "1080p", "4K"])  // "720p, 1080p, 4K"
-formatAspectRatios(["1:1", "16:9", "4:3"]) // "1:1, 16:9, 4:3"
+formatPrice('0.000003') // "$3.00"  — per-token price × 1,000,000
+formatPrice(0.00003) // "$30.00" — works with numbers too
+formatPrice(0) // "Free"
+formatPrice(undefined) // "—"
+formatContextLength(128000) // "128k"
+formatFlatPrice(0.04) // "$0.04"
+formatAudioPrice(0.006) // "$0.0060 / sec"
+formatDuration(['5', '10']) // "5s – 10s"
+formatResolutions(['720p', '1080p', '4K']) // "720p, 1080p, 4K"
+formatAspectRatios(['1:1', '16:9', '4:3']) // "1:1, 16:9, 4:3"
 ```
 
 > **Note:** `formatPrice` expects the raw **per-token** price (as returned by OpenAI, Venice.ai, OpenRouter, etc.) and converts it to a **per-million-token** display value by multiplying by 1,000,000. For example, a per-token cost of `0.000003` becomes `$3.00` per million tokens. Very small values (< $0.01/M) use 6 decimal places to preserve precision.
@@ -612,45 +626,45 @@ import {
   normalizeTtsModel,
   normalizeAsrModel,
   normalizeUpscaleModel,
-} from "open-model-selector/utils"
+} from 'open-model-selector/utils'
 
 // Each accepts a raw object and returns the typed model
-const textModel = normalizeTextModel(rawApiObject)   // → TextModel
+const textModel = normalizeTextModel(rawApiObject) // → TextModel
 const imageModel = normalizeImageModel(rawApiObject) // → ImageModel
 ```
 
 > These are the same functions used internally by `defaultModelNormalizer`. Use them directly when you need to normalize models of a known type without the dispatching logic.
 
-| Function | Returns |
-|----------|---------|
-| `normalizeTextModel(raw)` | `TextModel` |
-| `normalizeImageModel(raw)` | `ImageModel` |
-| `normalizeVideoModel(raw)` | `VideoModel` |
-| `normalizeInpaintModel(raw)` | `InpaintModel` |
+| Function                       | Returns          |
+| ------------------------------ | ---------------- |
+| `normalizeTextModel(raw)`      | `TextModel`      |
+| `normalizeImageModel(raw)`     | `ImageModel`     |
+| `normalizeVideoModel(raw)`     | `VideoModel`     |
+| `normalizeInpaintModel(raw)`   | `InpaintModel`   |
 | `normalizeEmbeddingModel(raw)` | `EmbeddingModel` |
-| `normalizeTtsModel(raw)` | `TtsModel` |
-| `normalizeAsrModel(raw)` | `AsrModel` |
-| `normalizeUpscaleModel(raw)` | `UpscaleModel` |
+| `normalizeTtsModel(raw)`       | `TtsModel`       |
+| `normalizeAsrModel(raw)`       | `AsrModel`       |
+| `normalizeUpscaleModel(raw)`   | `UpscaleModel`   |
 
 #### Type Inference
 
 `defaultModelNormalizer` uses a **6-tier type resolution strategy** to correctly classify models across providers with different metadata formats:
 
-| Tier | Strategy | Providers |
-|------|----------|-----------|
-| 1 | Direct match against canonical types (`text`, `image`, etc.) | Venice |
-| 2 | Non-text alias mapping (e.g. `"audio"`→`"tts"`, `"transcribe"`→`"asr"`) | Together AI |
-| 3 | Architecture-based inference from `output_modalities` | OpenRouter |
-| 4 | Heuristic pattern matching on model ID | OpenAI, Nvidia, Helicone |
-| 5 | Text-aliased type (e.g. `"chat"`→`"text"`, `"base"`→`"text"`) | Together AI, Mistral, Vercel |
-| 6 | Default to `"text"` | All |
+| Tier | Strategy                                                                | Providers                    |
+| ---- | ----------------------------------------------------------------------- | ---------------------------- |
+| 1    | Direct match against canonical types (`text`, `image`, etc.)            | Venice                       |
+| 2    | Non-text alias mapping (e.g. `"audio"`→`"tts"`, `"transcribe"`→`"asr"`) | Together AI                  |
+| 3    | Architecture-based inference from `output_modalities`                   | OpenRouter                   |
+| 4    | Heuristic pattern matching on model ID                                  | OpenAI, Nvidia, Helicone     |
+| 5    | Text-aliased type (e.g. `"chat"`→`"text"`, `"base"`→`"text"`)           | Together AI, Mistral, Vercel |
+| 6    | Default to `"text"`                                                     | All                          |
 
 > Text aliases (Tier 5) are checked **after** the ID heuristic (Tier 4) so that e.g. Mistral's `mistral-embed` (type: `"base"`) still gets classified as `"embedding"` via its model ID rather than being swallowed by the `"base"`→`"text"` alias.
 
 **`TYPE_ALIASES`** maps provider-specific type vocabulary to canonical `ModelType` values:
 
 ```ts
-import { TYPE_ALIASES } from "open-model-selector/utils"
+import { TYPE_ALIASES } from 'open-model-selector/utils'
 
 // TYPE_ALIASES = {
 //   chat: 'text',        // Together AI
@@ -666,35 +680,35 @@ import { TYPE_ALIASES } from "open-model-selector/utils"
 **`inferTypeFromId`** uses heuristic pattern matching on a model's ID string (Tier 4). This is how `defaultModelNormalizer` classifies models from providers that don't include an explicit `type` field (e.g., OpenAI, Nvidia):
 
 ```ts
-import { inferTypeFromId, MODEL_ID_TYPE_PATTERNS } from "open-model-selector/utils"
+import { inferTypeFromId, MODEL_ID_TYPE_PATTERNS } from 'open-model-selector/utils'
 
-inferTypeFromId("dall-e-3")           // "image"
-inferTypeFromId("gpt-image-1")       // "image"
-inferTypeFromId("whisper-large-v3")   // "asr"
-inferTypeFromId("gpt-4o")            // undefined (no match → caller defaults to "text")
+inferTypeFromId('dall-e-3') // "image"
+inferTypeFromId('gpt-image-1') // "image"
+inferTypeFromId('whisper-large-v3') // "asr"
+inferTypeFromId('gpt-4o') // undefined (no match → caller defaults to "text")
 ```
 
 `MODEL_ID_TYPE_PATTERNS` is the `Array<[RegExp, ModelType]>` used internally. It's exported so you can inspect the built-in rules or extend them for custom providers.
 
 #### Low-Level Helpers
 
-| Function | Signature | Description |
-|----------|-----------|-------------|
+| Function            | Signature                               | Description                                                                                                                                                                            |
+| ------------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `extractBaseFields` | `(raw, type) → Omit<BaseModel, 'type'>` | Extracts shared `BaseModel` fields from a raw API object. Handles both Venice's nested `model_spec` format and flat top-level fields. Useful when writing custom per-type normalizers. |
-| `toNum` | `(v: unknown) → number \| undefined` | Safely coerces an unknown value to a number. Returns `undefined` for `undefined`, `null`, empty strings, and `NaN`. Used internally by all normalizers. |
+| `toNum`             | `(v: unknown) → number \| undefined`    | Safely coerces an unknown value to a number. Returns `undefined` for `undefined`, `null`, empty strings, and `NaN`. Used internally by all normalizers.                                |
 
 ### Helper Utilities
 
 These are exported from `"open-model-selector/utils"` (and also re-exported from the main entry):
 
 ```ts
-import { isDeprecated } from "open-model-selector/utils"
+import { isDeprecated } from 'open-model-selector/utils'
 // or equivalently:
-import { isDeprecated } from "open-model-selector"
+import { isDeprecated } from 'open-model-selector'
 ```
 
-| Function | Signature | Description |
-|----------|-----------|-------------|
+| Function       | Signature                     | Description                                                                                                                                                           |
+| -------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `isDeprecated` | `(dateStr: string) → boolean` | Returns `true` if the given ISO 8601 date string is in the past. Handles date-only strings (`"2025-01-15"`) by normalizing to UTC. Returns `false` for invalid dates. |
 
 ---
@@ -709,10 +723,10 @@ The **`open-model-selector/utils`** sub-path does **not** include `"use client"`
 
 ```tsx
 // ✅ Server Component — works fine
-import { formatPrice, formatContextLength } from "open-model-selector/utils"
+import { formatPrice, formatContextLength } from 'open-model-selector/utils'
 
 // ✅ Server Component — type-only imports are always safe
-import type { TextModel, AnyModel } from "open-model-selector"
+import type { TextModel, AnyModel } from 'open-model-selector'
 ```
 
 If you need the components or `useModels` hook, import them in a Client Component (any file with `"use client"` at the top, or rendered inside one).
@@ -766,18 +780,21 @@ This keeps your API key server-side and never exposes it to the browser.
 The component implements the [ARIA combobox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/) and is designed to work well with screen readers and keyboard-only navigation.
 
 **Combobox & Popover:**
+
 - Trigger button has `role="combobox"` with `aria-expanded`, `aria-haspopup="listbox"`, and `aria-controls` linking to the listbox
 - Dynamic `aria-label` reflects the current selection state
 - Search input is labeled (`aria-label="Search models"`)
 - Loading state uses `role="status"` with `aria-live="polite"`; errors use `role="alert"`
 
 **Keyboard Navigation** (provided by [cmdk](https://cmdk.paco.me/) and [Radix Popover](https://www.radix-ui.com/primitives/docs/components/popover)):
+
 - `↑` / `↓` — navigate the model list
 - `Enter` — select the highlighted model
 - `Escape` — close the popover and return focus to the trigger
 - Type-ahead filtering via the search input (auto-focused on open)
 
 **Tooltips:**
+
 - Model detail tooltips use `role="tooltip"` with a unique `id` linked via `aria-describedby` on the trigger
 - Tooltips appear on both hover and keyboard focus (`onFocus` / `onBlur`), and dismiss with `Escape`
 
@@ -787,15 +804,15 @@ The component implements the [ARIA combobox pattern](https://www.w3.org/WAI/ARIA
 
 ### Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run build` | Build with tsup (CJS + ESM + types + sourcemaps). Cleans `dist/` first via `prebuild`. |
-| `npm run dev` | Build in watch mode for development. |
-| `npm run typecheck` | Run TypeScript type checking (`tsc`). |
-| `npm test` | Run tests with Vitest. |
-| `npm run test:watch` | Run tests in watch mode. |
-| `npm run storybook` | Start Storybook dev server on port 6006. |
-| `npm run build-storybook` | Build static Storybook site. |
+| Command                                       | Description                                                                                                                     |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run build`                               | Build with tsup (CJS + ESM + types + sourcemaps). Cleans `dist/` first via `prebuild`.                                          |
+| `npm run dev`                                 | Build in watch mode for development.                                                                                            |
+| `npm run typecheck`                           | Run TypeScript type checking (`tsc`).                                                                                           |
+| `npm test`                                    | Run tests with Vitest.                                                                                                          |
+| `npm run test:watch`                          | Run tests in watch mode.                                                                                                        |
+| `npm run storybook`                           | Start Storybook dev server on port 6006.                                                                                        |
+| `npm run build-storybook`                     | Build static Storybook site.                                                                                                    |
 | `node scripts/capture-provider-snapshots.cjs` | Capture real provider API responses into `test-fixtures/providers/` for test fixture generation. Requires `.env` with API keys. |
 
 > `npm run prepublishOnly` runs typecheck → test → build automatically before publishing.

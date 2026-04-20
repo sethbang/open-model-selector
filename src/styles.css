@@ -764,6 +764,80 @@
   font-weight: 700;
 }
 
+/* Type filter chip + inline menu (no portal — lives inside the search header). */
+.oms-typefilter-wrap {
+  position: relative;
+  margin-left: 4px;
+}
+.oms-typefilter-btn {
+  background: transparent;
+  border: 1px solid hsl(var(--oms-border));
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  border-radius: var(--oms-radius);
+  color: hsl(var(--oms-muted-foreground));
+  font: inherit;
+}
+.oms-typefilter-btn:hover {
+  background-color: hsl(var(--oms-accent));
+  color: hsl(var(--oms-accent-foreground));
+}
+.oms-typefilter-btn:focus-visible {
+  outline: 2px solid hsl(var(--oms-ring));
+  outline-offset: 1px;
+}
+.oms-typefilter-label {
+  font-weight: 600;
+}
+.oms-typefilter-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 60;
+  min-width: 140px;
+  background-color: hsl(var(--oms-popover));
+  color: hsl(var(--oms-popover-foreground));
+  border: 1px solid hsl(var(--oms-border));
+  border-radius: var(--oms-radius);
+  box-shadow:
+    0 4px 16px rgb(0 0 0 / 0.1),
+    0 2px 6px rgb(0 0 0 / 0.06);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+}
+.oms-typefilter-menuitem {
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font: inherit;
+  font-size: 12px;
+  color: hsl(var(--oms-foreground));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.oms-typefilter-menuitem:hover {
+  background-color: hsl(var(--oms-accent));
+  color: hsl(var(--oms-accent-foreground));
+}
+.oms-typefilter-menuitem:focus-visible {
+  outline: 2px solid hsl(var(--oms-ring));
+  outline-offset: -2px;
+}
+.oms-typefilter-menuitem[aria-checked='true']::after {
+  content: '✓';
+  font-weight: 600;
+  margin-left: 8px;
+  color: hsl(var(--oms-muted-foreground));
+}
+
 /* Extra-small icon variant */
 .oms-icon-xs {
   width: 8px;

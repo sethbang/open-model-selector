@@ -3,7 +3,7 @@ import { render, screen, waitFor, cleanup } from '@testing-library/react'
 import { renderToString } from 'react-dom/server'
 import userEvent from '@testing-library/user-event'
 import { ModelSelector, SYSTEM_DEFAULT_VALUE } from './model-selector'
-import type { TextModel } from '../types'
+import type { TextModel, ImageModel, AnyModel } from '../types'
 
 // --- Test Fixtures ---
 
@@ -827,6 +827,189 @@ describe('ModelSelector', () => {
           expect.objectContaining({ id: expect.any(String) }),
         )
       })
+    })
+  })
+
+  describe('Type filter chip', () => {
+    const multiTypeModels: AnyModel[] = [
+      mockModels[0], // text
+      mockModels[1], // text
+      {
+        id: 'flux-dev',
+        name: 'Flux Dev',
+        provider: 'venice',
+        created: 1_700_000_000,
+        type: 'image',
+        is_favorite: false,
+        pricing: {},
+      } as ImageModel,
+      {
+        id: 'sdxl',
+        name: 'SDXL',
+        provider: 'venice',
+        created: 1_700_000_001,
+        type: 'image',
+        is_favorite: false,
+        pricing: {},
+      } as ImageModel,
+    ]
+
+    it('renders the chip when catalog has ≥2 types and `type` is unset', async () => {
+      const user = userEvent.setup()
+      render(<ModelSelector models={multiTypeModels} onChange={vi.fn()} />)
+      await user.click(screen.getByRole('combobox'))
+      expect(screen.getByRole('button', { name: /Filter:/ })).toBeInTheDocument()
+    })
+
+    it('hides the chip when the `type` prop is set (list is locked)', async () => {
+      const user = userEvent.setup()
+      render(<ModelSelector models={multiTypeModels} type="text" onChange={vi.fn()} />)
+      await user.click(screen.getByRole('combobox'))
+      expect(screen.queryByRole('button', { name: /Filter:/ })).not.toBeInTheDocument()
+    })
+
+    it('hides the chip when the catalog contains only one type', async () => {
+      const user = userEvent.setup()
+      render(<ModelSelector models={mockModels} onChange={vi.fn()} />)
+      await user.click(screen.getByRole('combobox'))
+      expect(screen.queryByRole('button', { name: /Filter:/ })).not.toBeInTheDocument()
+    })
+
+    it('hides the chip when `showTypeFilter={false}`', async () => {
+      const user = userEvent.setup()
+      render(<ModelSelector models={multiTypeModels} showTypeFilter={false} onChange={vi.fn()} />)
+      await user.click(screen.getByRole('combobox'))
+      expect(screen.queryByRole('button', { name: /Filter:/ })).not.toBeInTheDocument()
+    })
+
+    it('clicking the chip opens a menu with an All-types option + one per present type', async () => {
+      const user = userEvent.setup()
+      render(<ModelSelector models={multiTypeModels} onChange={vi.fn()} />)
+      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button', { name: /Filter:/ }))
+
+      const menu = screen.getByRole('menu')
+      const items = screen.getAllByRole('menuitemradio')
+      expect(items[0]).toHaveTextContent('All types')
+      expect(items[1]).toHaveTextContent('Text')
+      expect(items[2]).toHaveTextContent('Image')
+      expect(menu).toHaveAttribute('aria-label', 'Filter models by type')
+    })
+
+    it('selecting a type filters the list to that type only', async () => {
+      const user = userEvent.setup()
+      render(<ModelSelector models={multiTypeModels} onChange={vi.fn()} />)
+      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button', { name: /Filter:/ }))
+      await user.click(screen.getByRole('menuitemradio', { name: 'Image' }))
+
+      // Text models gone, image models remain
+      expect(screen.queryByText('GPT-4')).not.toBeInTheDocument()
+      expect(screen.queryByText('Claude 3 Opus')).not.toBeInTheDocument()
+      expect(screen.getByText('Flux Dev')).toBeInTheDocument()
+      expect(screen.getByText('SDXL')).toBeInTheDocument()
+    })
+
+    it('selecting "All types" restores the full list', async () => {
+      const user = userEvent.setup()
+      render(<ModelSelector models={multiTypeModels} onChange={vi.fn()} />)
+      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button', { name: /Filter:/ }))
+      await user.click(screen.getByRole('menuitemradio', { name: 'Image' }))
+      // Re-open the menu and pick All types
+      await user.click(screen.getByRole('button', { name: /Filter:/ }))
+      await user.click(screen.getByRole('menuitemradio', { name: 'All types' }))
+
+      expect(screen.getByText('GPT-4')).toBeInTheDocument()
+      expect(screen.getByText('Flux Dev')).toBeInTheDocument()
+    })
+
+    it('aria-checked reflects the active filter; aria-expanded reflects menu state', async () => {
+      const user = userEvent.setup()
+      render(<ModelSelector models={multiTypeModels} onChange={vi.fn()} />)
+      await user.click(screen.getByRole('combobox'))
+      const chip = screen.getByRole('button', { name: /Filter:/ })
+      expect(chip).toHaveAttribute('aria-expanded', 'false')
+      expect(chip).toHaveAttribute('aria-haspopup', 'menu')
+
+      await user.click(chip)
+      expect(chip).toHaveAttribute('aria-expanded', 'true')
+
+      // All types is the initial active filter
+      const allItem = screen.getByRole('menuitemradio', { name: 'All types' })
+      expect(allItem).toHaveAttribute('aria-checked', 'true')
+
+      await user.click(screen.getByRole('menuitemradio', { name: 'Image' }))
+      // Menu is closed after selection
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+
+      // Re-open and the Image option is now the active one
+      await user.click(screen.getByRole('button', { name: /Filter:/ }))
+      expect(screen.getByRole('menuitemradio', { name: 'Image' })).toHaveAttribute(
+        'aria-checked',
+        'true',
+      )
+      expect(screen.getByRole('menuitemradio', { name: 'Text' })).toHaveAttribute(
+        'aria-checked',
+        'false',
+      )
+    })
+
+    it('Escape dismisses the menu (Radix also closes the popover — expected)', async () => {
+      const user = userEvent.setup()
+      render(<ModelSelector models={multiTypeModels} onChange={vi.fn()} />)
+      await user.click(screen.getByRole('combobox'))
+      const chip = screen.getByRole('button', { name: /Filter:/ })
+      await user.click(chip)
+      expect(screen.getByRole('menu')).toBeInTheDocument()
+
+      const firstItem = screen.getAllByRole('menuitemradio')[0]
+      firstItem.focus()
+      await user.keyboard('{Escape}')
+
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    })
+
+    it('controlled mode: `typeFilter` + `onTypeFilterChange` drive the chip', async () => {
+      const onTypeFilterChange = vi.fn()
+      const user = userEvent.setup()
+      render(
+        <ModelSelector
+          models={multiTypeModels}
+          typeFilter="image"
+          onTypeFilterChange={onTypeFilterChange}
+          onChange={vi.fn()}
+        />,
+      )
+      await user.click(screen.getByRole('combobox'))
+
+      // Controlled prop wins — only image models shown.
+      expect(screen.queryByText('GPT-4')).not.toBeInTheDocument()
+      expect(screen.getByText('Flux Dev')).toBeInTheDocument()
+
+      // Label reflects current filter.
+      const chip = screen.getByRole('button', { name: 'Filter: Image' })
+      await user.click(chip)
+      await user.click(screen.getByRole('menuitemradio', { name: 'Text' }))
+
+      expect(onTypeFilterChange).toHaveBeenCalledWith('text')
+      // Controlled: no internal state change — list still reflects the prop.
+      expect(screen.getByText('Flux Dev')).toBeInTheDocument()
+    })
+
+    it('menu options are computed from the pre-filter catalog (stable after narrowing)', async () => {
+      const user = userEvent.setup()
+      render(<ModelSelector models={multiTypeModels} onChange={vi.fn()} />)
+      await user.click(screen.getByRole('combobox'))
+
+      // Narrow to Image.
+      await user.click(screen.getByRole('button', { name: /Filter:/ }))
+      await user.click(screen.getByRole('menuitemradio', { name: 'Image' }))
+
+      // Re-open — the Text option is still listed even though no Text rows are visible.
+      await user.click(screen.getByRole('button', { name: /Filter:/ }))
+      expect(screen.getByRole('menuitemradio', { name: 'Text' })).toBeInTheDocument()
+      expect(screen.getByRole('menuitemradio', { name: 'Image' })).toBeInTheDocument()
     })
   })
 })

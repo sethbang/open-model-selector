@@ -66,6 +66,108 @@ function SearchResultAnnouncer() {
   )
 }
 
+/** @internal Chip + inline menu used by ModelSelector to filter by type. */
+function TypeFilterChip({
+  value,
+  availableTypes,
+  onChange,
+}: {
+  value: ModelType | null
+  availableTypes: ModelType[]
+  onChange: (next: ModelType | null) => void
+}) {
+  const [menuOpen, setMenuOpen] = React.useState(false)
+  const chipRef = React.useRef<HTMLButtonElement>(null)
+  const menuRef = React.useRef<HTMLDivElement>(null)
+
+  // Close on outside click.
+  React.useEffect(() => {
+    if (!menuOpen) return
+    const onDocClick = (e: MouseEvent) => {
+      const t = e.target as Node
+      if (chipRef.current?.contains(t) === false && menuRef.current?.contains(t) === false) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onDocClick)
+    return () => document.removeEventListener('mousedown', onDocClick)
+  }, [menuOpen])
+
+  const handleSelect = (next: ModelType | null) => {
+    onChange(next)
+    setMenuOpen(false)
+    // Restore focus to the chip so keyboard users can continue without jumping.
+    chipRef.current?.focus()
+  }
+
+  const handleMenuKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      setMenuOpen(false)
+      // Defer focus restoration until after React unmounts the menu.
+      queueMicrotask(() => chipRef.current?.focus())
+      // Note: Radix Popover listens on document and will also close the outer
+      // popover on Escape. That's acceptable UX (Escape is a universal dismiss)
+      // and matches the behavior of the sort button and other controls inside
+      // the popover. If we wanted submenu-only dismiss, we'd need a document
+      // capture-phase listener to pre-empt Radix.
+    }
+  }
+
+  const label = value ? `Filter: ${TYPE_FILTER_LABELS[value]}` : 'Filter: All types'
+  const shortLabel = value ? TYPE_FILTER_LABELS[value] : 'All'
+
+  return (
+    <div className="oms-typefilter-wrap">
+      <button
+        ref={chipRef}
+        type="button"
+        aria-label={label}
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
+        onClick={() => setMenuOpen((o) => !o)}
+        className="oms-typefilter-btn"
+      >
+        <span className="oms-text-xxs oms-typefilter-label">{shortLabel}</span>
+        <ChevronDown className="oms-icon oms-icon-xs" />
+      </button>
+
+      {menuOpen && (
+        <div
+          ref={menuRef}
+          role="menu"
+          tabIndex={-1}
+          aria-label="Filter models by type"
+          onKeyDown={handleMenuKeyDown}
+          className="oms-typefilter-menu"
+        >
+          <button
+            type="button"
+            role="menuitemradio"
+            aria-checked={value === null}
+            onClick={() => handleSelect(null)}
+            className="oms-typefilter-menuitem"
+          >
+            All types
+          </button>
+          {availableTypes.map((t) => (
+            <button
+              key={t}
+              type="button"
+              role="menuitemradio"
+              aria-checked={value === t}
+              onClick={() => handleSelect(t)}
+              className="oms-typefilter-menuitem"
+            >
+              {TYPE_FILTER_LABELS[t]}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // --- Types ---
 /**
  * Props for the ModelSelector component.
@@ -161,6 +263,45 @@ export interface ModelSelectorProps {
 
   /** When true, prevents opening the selector and dims the trigger button. */
   disabled?: boolean
+
+  /**
+   * Controlled in-menu type filter. When provided, the component renders the
+   * filter chip in this state and emits `onTypeFilterChange` on user interaction.
+   * Omit for uncontrolled (internal state).
+   */
+  typeFilter?: ModelType | null
+
+  /** Callback fired when the user changes the in-menu type filter. */
+  onTypeFilterChange?: (next: ModelType | null) => void
+
+  /**
+   * Force-hide the in-menu type filter chip. By default the chip is shown
+   * automatically when the `type` prop is unset and the catalog contains
+   * two or more distinct types.
+   */
+  showTypeFilter?: boolean
+}
+
+// Canonical ordering for the type filter menu.
+const TYPE_FILTER_ORDER: ModelType[] = [
+  'text',
+  'image',
+  'video',
+  'inpaint',
+  'embedding',
+  'tts',
+  'asr',
+  'upscale',
+]
+const TYPE_FILTER_LABELS: Record<ModelType, string> = {
+  text: 'Text',
+  image: 'Image',
+  video: 'Video',
+  inpaint: 'Inpaint',
+  embedding: 'Embedding',
+  tts: 'TTS',
+  asr: 'ASR',
+  upscale: 'Upscale',
 }
 
 /**
@@ -196,6 +337,9 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
       showSystemDefault = true,
       showDeprecated = true,
       disabled,
+      typeFilter: controlledTypeFilter,
+      onTypeFilterChange,
+      showTypeFilter,
     },
     ref,
   ) {
@@ -246,6 +390,18 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
     const [internalSortOrder, setInternalSortOrder] = React.useState<'name' | 'created'>('name')
 
     const sortOrder = controlledSortOrder ?? internalSortOrder
+
+    // --- Internal Type Filter State (Uncontrolled Fallback) ---
+    const [internalTypeFilter, setInternalTypeFilter] = React.useState<ModelType | null>(null)
+    const typeFilter =
+      controlledTypeFilter !== undefined ? controlledTypeFilter : internalTypeFilter
+    const setTypeFilter = React.useCallback(
+      (next: ModelType | null) => {
+        if (onTypeFilterChange) onTypeFilterChange(next)
+        else setInternalTypeFilter(next)
+      },
+      [onTypeFilterChange],
+    )
     const handleSortChange = React.useCallback(
       (newOrder: 'name' | 'created') => {
         if (onSortChange) {
@@ -297,7 +453,10 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
       [onToggleFavorite, storageKey],
     )
 
-    const allModels = React.useMemo(() => {
+    // Pre-filter catalog: merged + favorites-overlaid + deprecation-filtered +
+    // sorted + deprecated-last. The in-menu type filter applies AFTER this, so
+    // the filter menu's options are derived from the full pre-filter catalog.
+    const preFilterModels = React.useMemo(() => {
       const map = new Map<string, AnyModel>()
 
       // Merge provided models and fetched models, dedupe by ID
@@ -345,9 +504,28 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
       return [...nonDeprecated, ...deprecated]
     }, [models, fetchedModels, sortOrder, localFavorites, onToggleFavorite, showDeprecated, now])
 
+    // Available types for the filter menu — taken from pre-filter catalog so
+    // options stay stable even after the user narrows to a single type.
+    const availableTypes = React.useMemo(() => {
+      const present = new Set<ModelType>(preFilterModels.map((m) => m.type))
+      return TYPE_FILTER_ORDER.filter((t) => present.has(t))
+    }, [preFilterModels])
+
+    // The in-menu filter is hidden when the `type` prop locks the list,
+    // when the catalog has <2 types, or when explicitly suppressed.
+    const typeFilterVisible =
+      showTypeFilter !== false && type === undefined && availableTypes.length >= 2
+
+    const allModels = React.useMemo(() => {
+      if (!typeFilter || !typeFilterVisible) return preFilterModels
+      return preFilterModels.filter((m) => m.type === typeFilter)
+    }, [preFilterModels, typeFilter, typeFilterVisible])
+
+    // selectedModel uses the pre-filter catalog so trigger text stays accurate
+    // even if the user hides the current selection's type via the filter.
     const selectedModel = React.useMemo(
-      () => allModels.find((model) => model.id === value),
-      [allModels, value],
+      () => preFilterModels.find((model) => model.id === value),
+      [preFilterModels, value],
     )
 
     const { favorites, otherModels } = React.useMemo(
@@ -358,15 +536,16 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
       [allModels],
     )
 
-    // Keep a ref to the live list so `handleModelSelect` stays referentially
-    // stable even when favorites/sort/filter recompute `allModels`. Otherwise,
-    // every memoized `ModelItem` would re-render on every favorite toggle.
-    const allModelsRef = React.useRef<AnyModel[]>([])
-    allModelsRef.current = allModels
+    // Keep a ref to the pre-filter list so `handleModelSelect` stays referentially
+    // stable even when favorites/sort/filter recompute `allModels`. Use the
+    // pre-filter list so selections still resolve correctly if the click-through
+    // row is in the currently-filtered view but also exists in the broader catalog.
+    const preFilterModelsRef = React.useRef<AnyModel[]>([])
+    preFilterModelsRef.current = preFilterModels
 
     const handleModelSelect = React.useCallback(
       (id: string) => {
-        const model = allModelsRef.current.find((m) => m.id === id) ?? null
+        const model = preFilterModelsRef.current.find((m) => m.id === id) ?? null
         onChange(id, model)
         setOpen(false)
       },
@@ -451,6 +630,14 @@ export const ModelSelector = React.forwardRef<HTMLDivElement, ModelSelectorProps
                     </span>
                     <ChevronDown className="oms-icon oms-icon-xs" />
                   </button>
+
+                  {typeFilterVisible && (
+                    <TypeFilterChip
+                      value={typeFilter}
+                      availableTypes={availableTypes}
+                      onChange={setTypeFilter}
+                    />
+                  )}
                 </div>
 
                 <SearchResultAnnouncer />

@@ -7,13 +7,31 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **In-menu type filter chip** — when the catalog contains 2+ model types and the `type` prop is unset, a "Filter" chip appears next to the sort button. Click to narrow the list to one type. New props: `typeFilter`, `onTypeFilterChange`, `showTypeFilter`.
+- **Strict coercion helpers** — `toBool`, `toStr`, `toStrArray` alongside `toNum`. Used internally to replace unsafe `as` casts throughout the normalizers; exported from both `"open-model-selector"` and `"open-model-selector/utils"`.
+- **Venice `supportsMultipleImages`** — added to `TextCapabilities`; extracted from `model_spec.capabilities`.
+- **Lint + format + pre-commit tooling** — ESLint 9 (flat config, typescript-eslint + react-hooks + jsx-a11y), Prettier, Husky + lint-staged. `npm run lint` is a new CI gate.
+
 ### Fixed
 
 - **OpenRouter cache pricing no longer silently dropped** — `normalizeTextModel` now reads OpenRouter's `input_cache_read` and `input_cache_write` fields in addition to `cache_input`/`cache_write`.
+- **Capability fields reject non-boolean shapes** — an API response like `{ supportsVision: { enabled: true } }` now resolves to `undefined` instead of being cast to `true`.
+- **Sort button ARIA** — `aria-label` describes the current sort state (not the next action); `aria-pressed` reflects whether "newest" is active.
+- **Pill contrast** — capability pills (vision/reasoning/code/etc.) now meet WCAG AA in both light and dark mode.
+- **Dark-mode tooltip portal** — `.oms-hover-content` gets explicit dark-mode overrides (background/border/shadow) in both media-query and class-based dark mode.
+- **Reduced-motion spinner** — the loading spinner pulses instead of rotating when `prefers-reduced-motion: reduce`.
 
 ### Changed
 
 - **BREAKING: `TextModel.context_length` is now `number | undefined`** — previously the field defaulted to `0` when no context-length source resolved, which was indistinguishable from a model with genuinely zero context. Now `undefined` signals "unknown". Consumers doing `if (model.context_length > 0)` are unaffected; anything branching on `=== 0` will need to handle `undefined`.
+- Icons in `icons.tsx` default to `aria-hidden="true"` (overridable via props).
+- `<ModelSelector>` warns in dev mode when rendered with neither `models` nor `baseUrl`.
+- `now` reference for deprecation filtering is captured once at mount (was refreshed on every popover open — caused memo cascades).
+- `handleModelSelect` reads from a live ref so its identity is stable across favorite toggles. `ModelItem`'s custom memo comparator works again.
+- tsup no longer emits a no-op `"use client"` banner on the CJS build (ESM still gets it; esbuild places the CJS banner after the runtime preamble where it has no effect).
+- CI runs `npm run test:coverage` — thresholds (70% statements/functions/lines, 65% branches) now actually gate PRs. Baseline: 95.79 / 90.36 / 96.09 / 98.3.
 
 ## [0.2.0] — 2026-02-20
 

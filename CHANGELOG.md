@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-04-20
+
 ### Added
 
 - **In-menu type filter chip** — when the catalog contains 2+ model types and the `type` prop is unset, a "Filter" chip appears next to the sort button. Click to narrow the list to one type. New props: `typeFilter`, `onTypeFilterChange`, `showTypeFilter`.

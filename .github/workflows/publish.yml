@@ -1,5 +1,11 @@
 name: Publish to npm
 
+# Uses npm's Trusted Publisher flow: this workflow authenticates to npm via
+# GitHub's OIDC id-token — no NPM_TOKEN secret needed. The package's
+# "Trusted Publishers" settings on npmjs.com must have this repo + this
+# workflow path (`.github/workflows/publish.yml`) configured.
+# Reference: https://docs.npmjs.com/trusted-publishers
+
 on:
   release:
     types: [created]
@@ -9,6 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      # id-token: write is required for OIDC authentication to npm and for
+      # npm provenance attestation.
       id-token: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -46,6 +54,7 @@ jobs:
           echo "✅ Tag $TAG_VERSION matches package.json version $PACKAGE_VERSION"
 
       - name: Publish to npm
+        # --provenance generates a Sigstore attestation linking the published
+        # tarball to this workflow run. Authentication is via OIDC (Trusted
+        # Publisher) — npm-cli detects the id-token automatically, no env.
         run: npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

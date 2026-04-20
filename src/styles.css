@@ -721,14 +721,19 @@
   gap: 4px;
   font-weight: 500;
   overflow: hidden;
-  /* Must allow children to shrink below their intrinsic width so the name
-   * text can truncate when the row is narrow. */
+  /* Stretch to the (capped) parent width and allow children to shrink below
+   * their intrinsic sizes so the name text can ellipsis-truncate. Without
+   * `width: 100%`, nested flex containers size to intrinsic content and the
+   * badge gets clipped by the outer `.oms-tooltip-trigger` max-width. */
+  width: 100%;
   min-width: 0;
 }
 
-/* The actual name text. Takes available space and ellipsis-truncates; the
- * type / deprecation badges next to it stay at natural size (flex-shrink: 0). */
+/* The actual name text. Grows into available space from a zero flex-basis so
+ * the parent doesn't infer its size from the text's intrinsic width — that
+ * would bubble up and defeat the tooltip-trigger's max-width cap. */
 .oms-item-name-text {
+  flex: 1 1 0;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
